@@ -21,10 +21,21 @@ _start:
   .option pop
   
   /* Clear BSS for flat non-ELF images */
+  la a0,__bss_start
+  la a1,__BSS_END__
+clear_BSS_loop:
+  addi a0,a0,4
+  beq a0,a1,set_up_C
+  sw zero,(a0)
+  j clear_BSS_loop
 
   /* setup C environment (set sp register)*/
+set_up_C:
+  lui sp,%hi(KERNEL_STACK)
+  addi sp,sp,%lo(KERNEL_STACK)
 
   /* Jump to the code in kernel.c*/
+  call main
 
 loop:
   wfi
