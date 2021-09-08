@@ -8,13 +8,17 @@
 .equ os_size_loc, 0x502001fc
 
 // 1. kernel address (move kernel to here ~)
-.equ kernel, 0x50201000
+.equ kernel, 0x50200000
+// .equ kernel, 0x50201000
 
 // 2. kernel main address (jmp here to start kernel main!)
-.equ kernel_main, 0x50201000
+.equ kernel_main, 0x50200000
+// .equ kernel_main, 0x50201000
 
-// 3. move bootblock to 0x5e00000
-//.equ bbl_new_addr, 0x5e00000
+// 3. move bootblock to 0x5e000000
+.equ bbl_new_addr, 0x5e000000
+.equ bbl_new_entrance,0x5e000026
+# see by objdump
 
 .text
 .global main
@@ -24,8 +28,7 @@ main:
 	fence
 	
 	// move bootblock
-	/*lui a0,%hi(bbl_new_addr)
-	addi a0,a0,%lo(bbl_new_addr)
+	la a0,bbl_new_addr
 	addi a1,zero,1 #unkown block number
 	addi a2,zero,0
 	SBI_CALL SBI_SD_READ
@@ -33,7 +36,11 @@ main:
 	fence.i    #refresh I-cache
 	
 	// jump to new address
-	*/
+	// calculate entrance
+	la a0,bbl_new_entrance
+	jr a0
+	
+	fence.i
 
 	// print a \n to avoid system output error...
 	li a0, 10
