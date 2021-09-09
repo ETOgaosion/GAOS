@@ -7,7 +7,7 @@ DISK = /dev/sdb
 BOOTLOADER_ENTRYPOINT = 0x50200000
 KERNEL_ENTRYPOINT = 0x50201000
 
-all: image
+all: createimage image
 
 bootblock: bootblock.S riscv.lds
 	${CC} ${CFLAGS} -o bootblock bootblock.S -e main -Ttext=${BOOTLOADER_ENTRYPOINT}
@@ -22,7 +22,7 @@ image: bootblock kernel createimage
 	./createimage --extended bootblock kernel
 
 clean:
-	rm -rf bootblock image kernel *.o
+	rm -rf bootblock image kernel *.o createimage
 
 floppy:
 	sudo fdisk -l ${DISK}

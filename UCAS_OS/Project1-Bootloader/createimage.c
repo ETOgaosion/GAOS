@@ -9,6 +9,8 @@
 #define IMAGE_FILE "./image"
 #define ARGS "[--extended] [--vm] <bootblock> <executable-file> ..."
 
+#define OS_SIZE_LOC 0x1fc
+
 
 /* structure to store command line options */
 static struct {
@@ -66,11 +68,16 @@ static void create_image(int nfiles, char *files[])
     Elf64_Phdr phdr;
 
     /* open the image file */
+    img = fopen("image","w+");
+    if(!img){
+        printf("Failure: cannot open image file!\n");
+    }
 
     /* for each input file */
     while (nfiles-- > 0) {
 
         /* open input file */
+        fp = fopen(files[0],"r+");
 
         /* read ELF header */
         read_ehdr(&ehdr, fp);
@@ -94,24 +101,41 @@ static void create_image(int nfiles, char *files[])
 
 static void read_ehdr(Elf64_Ehdr * ehdr, FILE * fp)
 {
-    ;
+    if(!fread(ehdr,sizeof(Elf64_Ehdr),1,fp)){
+        error("Warning: the format of input file is not ELF64\n");
+    }
 }
 
 static void read_phdr(Elf64_Phdr * phdr, FILE * fp, int ph,
                       Elf64_Ehdr ehdr)
 {
-    ;
+    fseek(fp,ehdr.e_phoff+ph*ehdr.e_phentsize,SEEK_SET);
+    if(!fread(phdr,sizeof(Elf64_Phdr),1,fp)){
+        error("Warning: fail to read program header\n");
+    }
 }
 
 static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first)
 {
-    ;
+    int total_size = (phdr.p_memsz/512+1)*512;
+    // read
+    fseek(fp,phdr.p_offset,SEEK_SET);
+    char *data=(char *)malloc(total_size*sizeof(char));
+    fread(data,phdr.p_filesz,1,fp);
+    // write
+    fseek(img,(*first-1) * 512,SEEK_SET);
+    fwrite(data,total_size,1,img);
+    *nbytes += total_size;
+    *first += phdr.p_memsz/512+1;
 }
 
 static void write_os_size(int nbytes, FILE * img)
 {
-    ;
+    int kernel_size = nbytes/512-1;   // -1 excludes bootblock
+    fseek(img,OS_SIZE_LOC,SEEK_SET);
+    char data[2]={kernel_size & 0xff, (kernel_size>>8) & 0xff};
+    fwrite(data,1,2,img);
 }
 
 /* print an error message and exit */
