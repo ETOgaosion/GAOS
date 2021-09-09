@@ -86,6 +86,8 @@ static void create_image(int nfiles, char *files[])
         /* for each program header */
         for (ph = 0; ph < ehdr.e_phnum; ph++) {
 
+            printf("\tsegment %d\n",ph);
+
             /* read program header */
             read_phdr(&phdr, fp, ph, ehdr);
 
@@ -119,6 +121,8 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first)
 {
     int total_size = (phdr.p_memsz/512+1)*512;
+    printf("\t\toffset %x\t\tvaddr %x\n",phdr.p_offset,phdr.p_vaddr);
+    printf("\t\tfilesz %x\t\tmemsz %x\n",phdr.p_filesz,phdr.p_memsz);
     // read
     fseek(fp,phdr.p_offset,SEEK_SET);
     char *data=(char *)malloc(total_size*sizeof(char));
@@ -128,6 +132,8 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
     fwrite(data,total_size,1,img);
     *nbytes += total_size;
     *first += phdr.p_memsz/512+1;
+    printf("\t\twriting %x bytes\n",*nbytes);
+    printf("\t\tpadding up to %x\n",(*first-1) * 512);
 }
 
 static void write_os_size(int nbytes, FILE * img)
