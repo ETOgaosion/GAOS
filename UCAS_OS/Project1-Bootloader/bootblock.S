@@ -5,7 +5,8 @@
 // #define OS_SIZE_LOC (BOOT_LOADER_SIG_OFFSET - 2)
 // #define OS_SIZE_LOC 0x1fc
 
-.equ os_size_loc, 0x502001fc
+.equ kn0_os_size_loc, 0x502001fc
+.equ kn1_os_size_loc, 0x502001fe
 
 // 1. kernel address (move kernel to here ~)
 .equ kernel, 0x50200000
@@ -51,9 +52,24 @@ main:
 	addi a0,a0,%lo(msg)
 	SBI_CALL SBI_CONSOLE_PUTSTR
 
+	// C core: read input char
+read_input:
+	SBI_CALL SBI_CONSOLE_GETCHAR
+	blt a0,zero,read_input
+	addi a1,zero,49
+	beq a0,a1,load_kernel0
+	bne a0,a1,load_kernel1
+
+	// load kernel0
+load_kernel0:
+	la a1,kn0_os_size_loc
+
+	// load kernel1
+load_kernel1:
+	la a1,kn1_os_size_loc
+
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
 	la a0,kernel
-	la a1,os_size_loc
 	lh a1,(a1)
 	addi a2,zero,1
 	SBI_CALL SBI_SD_READ
@@ -62,6 +78,9 @@ main:
 	la a3,kernel_main
 	jr a3
 	
+	// Jump to kernel_main
+	la a3,kernel_main
+	jr a3
 
 // while(1) --> stop here
 stop:
@@ -71,4 +90,5 @@ stop:
 .data
 
 msg: .string "It's a bootloader...\n\r"
-
+kernel0_start: .string "Kernel 0 has started!\n\r"
+kernel1_start: .string "Kernel 1 has started!\n\r"

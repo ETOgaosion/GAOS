@@ -26,7 +26,7 @@ static void read_phdr(Elf64_Phdr * phdr, FILE * fp, int ph,
                       Elf64_Ehdr ehdr);
 static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first);
-static void write_os_size(int nbytes, FILE * img);
+static void write_os_size(int nbytes, FILE * img, int os_size_offset);
 
 int main(int argc, char **argv)
 {
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
 static void create_image(int nfiles, char *files[])
 {
-    int ph, nbytes = 0, first = 1;
+    int ph, nbytes = 0, first = 1, os_size_offset = 0, is_bootblock = 1;
     FILE *fp, *img;
     Elf64_Ehdr ehdr;
     Elf64_Phdr phdr;
@@ -96,8 +96,15 @@ static void create_image(int nfiles, char *files[])
         }
         fclose(fp);
         files++;
+        if(!is_bootblock){
+            write_os_size(nbytes,img,os_size_offset);
+            os_size_offset+=2;
+        }
+        else{
+            is_bootblock = 0;
+        }
+        nbytes = 0;
     }
-    write_os_size(nbytes, img);
     fclose(img);
 }
 
@@ -120,9 +127,9 @@ static void read_phdr(Elf64_Phdr * phdr, FILE * fp, int ph,
 static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first)
 {
-    int total_size = (phdr.p_memsz/512+1)*512;
-    printf("\t\toffset %lx\t\tvaddr %lx\n",phdr.p_offset,phdr.p_vaddr);
-    printf("\t\tfilesz %lx\t\tmemsz %lx\n",phdr.p_filesz,phdr.p_memsz);
+    int total_size = ((phdr.p_memsz+511)/512)*512;
+    printf("\t\toffset 0x%lx\t\tvaddr 0x%lx\n",phdr.p_offset,phdr.p_vaddr);
+    printf("\t\tfilesz 0x%lx\t\tmemsz 0x%lx\n",phdr.p_filesz,phdr.p_memsz);
     // read
     fseek(fp,phdr.p_offset,SEEK_SET);
     char *data=(char *)malloc(total_size*sizeof(char));
@@ -131,17 +138,20 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
     fseek(img,(*first-1) * 512,SEEK_SET);
     fwrite(data,total_size,1,img);
     *nbytes += total_size;
-    *first += phdr.p_memsz/512+1;
-    printf("\t\twriting %x bytes\n",*nbytes);
-    printf("\t\tpadding up to %x\n",(*first-1) * 512);
+    *first += total_size/512;
+    if(phdr.p_filesz){
+        printf("\t\twriting 0x%lx bytes\n",phdr.p_filesz);
+        printf("\t\tpadding up to 0x%x\n",(*first-1) * 512);
+    }
 }
 
-static void write_os_size(int nbytes, FILE * img)
+static void write_os_size(int nbytes, FILE * img, int os_size_offset)
 {
-    int kernel_size = nbytes/512-1;   // -1 excludes bootblock
-    fseek(img,OS_SIZE_LOC,SEEK_SET);
+    int kernel_size = nbytes/512;   // -1 excludes bootblock
+    fseek(img,OS_SIZE_LOC + os_size_offset,SEEK_SET);
     char data[2]={kernel_size & 0xff, (kernel_size>>8) & 0xff};
     fwrite(data,1,2,img);
+    printf("kernel_size: %d sector(s)\n",kernel_size);
 }
 
 /* print an error message and exit */
