@@ -63,15 +63,19 @@ read_input:
 	// load kernel0
 load_kernel0:
 	la a1,kn0_os_size_loc
+	addi a2,zero,1
 
 	// load kernel1
 load_kernel1:
+	la a1,kn0_os_size_loc
+	lh a1,(a1)
+	addi a1,a1,1
+	add a2,zero,a1
 	la a1,kn1_os_size_loc
 
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
 	la a0,kernel
 	lh a1,(a1)
-	addi a2,zero,1
 	SBI_CALL SBI_SD_READ
 	
 	// Jump to kernel_main
@@ -90,5 +94,3 @@ stop:
 .data
 
 msg: .string "It's a bootloader...\n\r"
-kernel0_start: .string "Kernel 0 has started!\n\r"
-kernel1_start: .string "Kernel 1 has started!\n\r"
