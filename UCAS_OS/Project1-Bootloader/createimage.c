@@ -121,8 +121,8 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first)
 {
     int total_size = (phdr.p_memsz/512+1)*512;
-    printf("\t\toffset %x\t\tvaddr %x\n",phdr.p_offset,phdr.p_vaddr);
-    printf("\t\tfilesz %x\t\tmemsz %x\n",phdr.p_filesz,phdr.p_memsz);
+    printf("\t\toffset %lx\t\tvaddr %lx\n",phdr.p_offset,phdr.p_vaddr);
+    printf("\t\tfilesz %lx\t\tmemsz %lx\n",phdr.p_filesz,phdr.p_memsz);
     // read
     fseek(fp,phdr.p_offset,SEEK_SET);
     char *data=(char *)malloc(total_size*sizeof(char));
