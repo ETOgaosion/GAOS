@@ -46,13 +46,6 @@ int main(int argc, char *argv[])
 	sbi_console_putchar('\n');
     sbi_console_putstr("Hello OS");
 	sbi_console_putchar('\n');
-    
-	//print "which kernel"
-	sbi_console_putchar('\n');
-    for(int i=0;i<argc;i++)
-        sbi_console_putstr(argv[9]);
-    sbi_console_putstr(" has been started!");
-	sbi_console_putchar('\n');
 
 	//print array buf which is expected to be "Version: 1"
     sbi_console_putstr(buf);

@@ -6,7 +6,6 @@
 // #define OS_SIZE_LOC 0x1fc
 
 .equ kn0_os_size_loc, 0x502001fc
-.equ kn1_os_size_loc, 0x502001fe
 
 // 1. kernel address (move kernel to here ~)
 .equ kernel, 0x50200000
@@ -56,26 +55,30 @@ main:
 read_input:
 	SBI_CALL SBI_CONSOLE_GETCHAR
 	blt a0,zero,read_input
-	addi a1,zero,49
-	beq a0,a1,load_kernel0
-	bne a0,a1,load_kernel1
+	addi a1,zero,48
+	sub a0,a0,a1	# calculate which kernel: a0
 
-	// load kernel0
-load_kernel0:
+	// load kernel size
+	mv a3,a0
+	slli a3,a3,1
 	la a1,kn0_os_size_loc
-	addi a2,zero,1
-
-	// load kernel1
-load_kernel1:
-	la a1,kn0_os_size_loc
+	add a1,a1,a3
 	lh a1,(a1)
-	addi a1,a1,1
-	add a2,zero,a1
-	la a1,kn1_os_size_loc
 
+	addi a2,zero,1
+	la t0,kn0_os_size_loc
+sum:
+	addi a0,a0,-1
+	blt a0,zero,finish_sum
+	lh t0,(t0)
+	add a2,a2,t0
+	addi t0,t0,2
+	j sum
+	
+
+finish_sum:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
 	la a0,kernel
-	lh a1,(a1)
 	SBI_CALL SBI_SD_READ
 	
 	// Jump to kernel_main
