@@ -27,6 +27,7 @@ static void read_phdr(Elf64_Phdr * phdr, FILE * fp, int ph,
 static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first);
 static void write_os_size(int nbytes, FILE * img, int os_size_offset);
+static void write_kernel_num(FILE *img, int os_num);
 
 int main(int argc, char **argv)
 {
@@ -62,7 +63,7 @@ int main(int argc, char **argv)
 
 static void create_image(int nfiles, char *files[])
 {
-    int ph, nbytes = 0, first = 1, os_size_offset = 0, is_bootblock = 1;
+    int ph, nbytes = 0, first = 1, os_size_offset = 2, is_bootblock = 1, os_num = nfiles-1;
     FILE *fp, *img;
     Elf64_Ehdr ehdr;
     Elf64_Phdr phdr;
@@ -105,6 +106,7 @@ static void create_image(int nfiles, char *files[])
         }
         nbytes = 0;
     }
+    write_kernel_num(img,os_num);
     fclose(img);
 }
 
@@ -152,6 +154,13 @@ static void write_os_size(int nbytes, FILE * img, int os_size_offset)
     char data[2]={kernel_size & 0xff, (kernel_size>>8) & 0xff};
     fwrite(data,1,2,img);
     printf("kernel_size: %d sector(s)\n",kernel_size);
+}
+
+static void write_kernel_num(FILE *img, int os_num){
+    fseek(img,OS_SIZE_LOC,SEEK_SET);
+    char data[2]={os_num & 0xff, (os_num>>8) & 0xff};
+    fwrite(data,1,2,img);
+    printf("there are %d kernel(s) in image\n",os_num & 0xffff);
 }
 
 /* print an error message and exit */

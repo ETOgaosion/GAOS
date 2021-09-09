@@ -5,7 +5,8 @@
 // #define OS_SIZE_LOC (BOOT_LOADER_SIG_OFFSET - 2)
 // #define OS_SIZE_LOC 0x1fc
 
-.equ kn0_os_size_loc, 0x502001fc
+.equ os_num, 0x502001fc
+.equ kn0_os_size_loc, 0x502001fe
 
 // 1. kernel address (move kernel to here ~)
 .equ kernel, 0x50200000
@@ -43,18 +44,29 @@ main:
 	fence.i
 
 	// print a \n to avoid system output error...
-	li a0, 10
-	SBI_CALL SBI_CONSOLE_PUTCHAR
+	PRINT_N
 
 	// 1) task1 call BIOS print string "It's bootblock!"
 	lui a0,%hi(msg)
 	addi a0,a0,%lo(msg)
 	SBI_CALL SBI_CONSOLE_PUTSTR
 
+	PRINT_0
+
+	// print number of kernels
+	la a0,os_num
+	lh a0,(a0)
+	addi a0,a0,47
+	mv t0,a0
+	SBI_CALL SBI_CONSOLE_PUTCHAR
+
+	PRINT_N
+
 	// C core: read input char
 read_input:
 	SBI_CALL SBI_CONSOLE_GETCHAR
 	blt a0,zero,read_input
+	bgt a0,t0,read_input
 	addi a1,zero,48
 	sub a0,a0,a1	# calculate which kernel: a0
 
@@ -96,4 +108,4 @@ stop:
 
 .data
 
-msg: .string "It's a bootloader...\n\r"
+msg: .string "It's a bootloader...\n\rPlease choose which kernel you hope to use, 0 ~ ";
