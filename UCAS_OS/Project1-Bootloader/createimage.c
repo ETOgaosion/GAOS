@@ -152,7 +152,7 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
 static void write_os_size(int nbytes, FILE * img, int os_size_offset)
 {
     int kernel_size = nbytes/512;   // -1 excludes bootblock
-    fseek(img,OS_SIZE_LOC + os_size_offset,SEEK_SET);
+    fseek(img,OS_SIZE_LOC - os_size_offset,SEEK_SET);
     char data[2]={kernel_size & 0xff, (kernel_size>>8) & 0xff};
     fwrite(data,1,2,img);
     if(options.extended==1)

@@ -6,7 +6,7 @@
 // #define OS_SIZE_LOC 0x1fc
 
 .equ os_num, 0x502001fc
-.equ kn0_os_size_loc, 0x502001fe
+.equ kn0_os_size_loc, 0x502001fa
 
 // 1. kernel address (move kernel to here ~)
 .equ kernel, 0x50200000
@@ -84,7 +84,7 @@ sum:
 	blt a0,zero,finish_sum
 	lh t0,(t0)
 	add a2,a2,t0
-	addi t0,t0,2
+	addi t0,t0,-2
 	j sum
 	
 
