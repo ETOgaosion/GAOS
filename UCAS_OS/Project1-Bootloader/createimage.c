@@ -77,7 +77,7 @@ static void create_image(int nfiles, char *files[])
     /* for each input file */
     while (nfiles-- > 0) {
 
-        /* open input file */
+        /* open input file */ 
         fp = fopen(files[0],"r+");
 
         /* read ELF header */
