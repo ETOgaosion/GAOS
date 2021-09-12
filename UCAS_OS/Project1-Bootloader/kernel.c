@@ -26,11 +26,12 @@ int getch()
     return -1;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
     int check = bss_check();
     char output_str[] = "bss check: _ version: _\n\r";
     char output_val[2] = {0};
+    //char *kernel_which = argv[0];
     int i, output_val_pos = 0;
 
     output_val[0] = check ? 't' : 'f';
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 
 	//print "Hello OS!"
 	sbi_console_putchar('\n');
-    sbi_console_putstr("Hello OS");
+    sbi_console_putstr("Hello OS ");
 	sbi_console_putchar('\n');
 
 	//print array buf which is expected to be "Version: 1"
