@@ -130,8 +130,10 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
                           FILE * img, int *nbytes, int *first)
 {
     int total_size = ((phdr.p_memsz+511)/512)*512;
-    printf("\t\toffset 0x%lx\t\tvaddr 0x%lx\n",phdr.p_offset,phdr.p_vaddr);
-    printf("\t\tfilesz 0x%lx\t\tmemsz 0x%lx\n",phdr.p_filesz,phdr.p_memsz);
+    if(options.extended==1){
+        printf("\t\toffset 0x%lx\t\tvaddr 0x%lx\n",phdr.p_offset,phdr.p_vaddr);
+        printf("\t\tfilesz 0x%lx\t\tmemsz 0x%lx\n",phdr.p_filesz,phdr.p_memsz);
+    }
     // read
     fseek(fp,phdr.p_offset,SEEK_SET);
     char *data=(char *)malloc(total_size*sizeof(char));
@@ -141,7 +143,7 @@ static void write_segment(Elf64_Ehdr ehdr, Elf64_Phdr phdr, FILE * fp,
     fwrite(data,total_size,1,img);
     *nbytes += total_size;
     *first += total_size/512;
-    if(phdr.p_filesz){
+    if(phdr.p_filesz && options.extended==1){
         printf("\t\twriting 0x%lx bytes\n",phdr.p_filesz);
         printf("\t\tpadding up to 0x%x\n",(*first-1) * 512);
     }
@@ -153,14 +155,16 @@ static void write_os_size(int nbytes, FILE * img, int os_size_offset)
     fseek(img,OS_SIZE_LOC + os_size_offset,SEEK_SET);
     char data[2]={kernel_size & 0xff, (kernel_size>>8) & 0xff};
     fwrite(data,1,2,img);
-    printf("kernel_size: %d sector(s)\n",kernel_size);
+    if(options.extended==1)
+        printf("kernel_size: %d sector(s)\n",kernel_size);
 }
 
 static void write_kernel_num(FILE *img, int os_num){
     fseek(img,OS_SIZE_LOC,SEEK_SET);
     char data[2]={os_num & 0xff, (os_num>>8) & 0xff};
     fwrite(data,1,2,img);
-    printf("there are %d kernel(s) in image\n",os_num & 0xffff);
+    if(options.extended==1)
+        printf("there are %d kernel(s) in image\n",os_num & 0xffff);
 }
 
 /* print an error message and exit */
