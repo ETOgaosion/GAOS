@@ -1,0 +1,6 @@
+[submodule "UCAS_OS/UCAS_OS/ucas_os_prj0"]
+	path = UCAS_OS/UCAS_OS/ucas_os_prj0
+	url = https://gitlab.agileserve.org.cn:8001/gaoziyuan19/ucas_os_prj0.git
+[submodule "UCAS_OS/ucas_os_prj0"]
+	path = UCAS_OS/ucas_os_prj0
+	url = https://gitlab.agileserve.org.cn:8001/gaoziyuan19/ucas_os_prj0.git

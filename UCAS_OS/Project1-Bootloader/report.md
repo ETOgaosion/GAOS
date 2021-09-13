@@ -321,7 +321,7 @@ read_input:
 	mv a3,a0
 	slli a3,a3,1
 	la a1,kn0_os_size_loc
-	add a1,a1,a3
+	sub a1,a1,a3
 	lh a1,(a1)
 
 	addi a2,zero,1

@@ -17,8 +17,8 @@
 // .equ kernel_main, 0x50201000
 
 // 3. move bootblock to 0x5e000000
-.equ bbl_new_addr, 0x5e000000
-.equ bbl_new_entrance,0x5e000026
+.equ bbl_new_addr, 0x5efff000
+.equ bbl_new_entrance,0x5efff026
 # see by objdump
 
 .text
@@ -40,8 +40,6 @@ main:
 	// calculate entrance
 	la a0,bbl_new_entrance
 	jr a0
-	
-	fence.i
 
 	// print a \n to avoid system output error...
 	PRINT_N
@@ -92,6 +90,8 @@ finish_sum:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
 	la a0,kernel
 	SBI_CALL SBI_SD_READ
+
+	fence.i
 	
 	// Jump to kernel_main
 	la a3,kernel_main
