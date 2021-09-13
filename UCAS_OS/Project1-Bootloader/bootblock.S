@@ -16,9 +16,11 @@
 .equ kernel_main, 0x50200000
 // .equ kernel_main, 0x50201000
 
-// 3. move bootblock to 0x5e000000
-.equ bbl_new_addr, 0x5efff000
-.equ bbl_new_entrance,0x5efff026
+.equ kernel_stack, 0x50500000
+
+// 3. move bootblock to total_os_size
+// .equ bbl_new_addr, 0x5efff000
+// .equ bbl_new_entrance,0x5efff026
 # see by objdump
 
 .text
@@ -27,19 +29,6 @@
 main:
 	// fence on all memory and I/O
 	fence
-	
-	// move bootblock
-	la a0,bbl_new_addr
-	addi a1,zero,1 #unkown block number
-	addi a2,zero,0
-	SBI_CALL SBI_SD_READ
-	
-	fence.i    #refresh I-cache
-	
-	// jump to new address
-	// calculate entrance
-	la a0,bbl_new_entrance
-	jr a0
 
 	// print a \n to avoid system output error...
 	PRINT_N
@@ -71,31 +60,51 @@ read_input:
 	// load kernel size
 	mv a3,a0
 	slli a3,a3,1
-	la a1,kn0_os_size_loc
-	sub a1,a1,a3
-	lh a1,(a1)
+	la a4,kn0_os_size_loc
+	sub a4,a4,a3
+	lh a4,(a4)
 
-	addi a2,zero,1
+	addi a3,zero,1
 	la t0,kn0_os_size_loc
 sum:
 	addi a0,a0,-1
-	blt a0,zero,finish_sum
+	blt a0,zero,move_bootblock
 	lh t0,(t0)
-	add a2,a2,t0
+	add a3,a3,t0
 	addi t0,t0,-2
 	j sum
-	
 
-finish_sum:
+move_bootblock:
+	// move bootblock
+	la a0,kernel
+	slli a5,a4,9
+	la a6,kernel_stack
+	blt a5,a6,normal
+	add a0,a0,a5
+	j mov
+normal:
+	mv a0,a6
+	mv t0,a0
+mov:
+	addi a1,zero,1 #unkown block number
+	addi a2,zero,0
+	SBI_CALL SBI_SD_READ
+	
+	fence.i
+	// jump to new address
+	// calculate entrance
+	mv a0,t0
+	addi a0,a0,0xc0
+	jr a0
+	
+read_kernel:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
+	mv a2,a3
+	mv a1,a4
 	la a0,kernel
 	SBI_CALL SBI_SD_READ
 
 	fence.i
-	
-	// Jump to kernel_main
-	la a3,kernel_main
-	jr a3
 	
 	// Jump to kernel_main
 	la a3,kernel_main
