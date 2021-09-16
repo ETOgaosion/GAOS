@@ -78,9 +78,9 @@ move_bootblock:
 	// move bootblock
 	la a0,kernel
 	slli a5,a4,9
-	la a6,kernel_stack
-	blt a5,a6,normal
 	add a0,a0,a5
+	la a6,kernel_stack
+	blt a0,a6,normal
 	j mov
 normal:
 	mv a0,a6
@@ -94,7 +94,10 @@ mov:
 	// jump to new address
 	// calculate entrance
 	mv a0,t0
-	addi a0,a0,0xc0
+	lla a1,read_kernel
+	la a2,kernel
+	sub a1,a1,a2
+	add a0,a0,a1
 	jr a0
 	
 read_kernel:
