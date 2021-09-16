@@ -12,20 +12,23 @@ all: createimage image
 bootblock: bootblock.S riscv.lds
 	${CC} ${CFLAGS} -o bootblock bootblock.S -e main -Ttext=${BOOTLOADER_ENTRYPOINT}
 
-kernel0: kernel.c head.S riscv.lds
-	${CC} ${CFLAGS} -o kernel0 kernel.c head.S -Ttext=${KERNEL_ENTRYPOINT}
+kernel0: kernel0.c head.S riscv.lds
+	${CC} ${CFLAGS} -o kernel0 kernel0.c head.S -Ttext=${KERNEL_ENTRYPOINT}
 
-kernel1: kernel.c head.S riscv.lds
-	${CC} ${CFLAGS} -o kernel1 kernel.c head.S -Ttext=${KERNEL_ENTRYPOINT}
+kernel1: kernel1.c head.S riscv.lds
+	${CC} ${CFLAGS} -o kernel1 kernel1.c head.S -Ttext=${KERNEL_ENTRYPOINT}
+
+kernel2: kernel2.c head.S riscv.lds
+	${CC} ${CFLAGS} -o kernel2 kernel2.c head.S -Ttext=${KERNEL_ENTRYPOINT}
 
 createimage: createimage.c
 	${HOST_CC} createimage.c -o createimage -ggdb -Wall
 
-image: bootblock kernel0 kernel1 createimage
-	./createimage --extended bootblock kernel0 kernel1
+image: bootblock kernel0 kernel1 kernel2 createimage
+	./createimage --extended bootblock kernel0 kernel1 kernel2
 
 clean:
-	rm -rf bootblock image kernel *.o createimage
+	rm -rf bootblock image kernel? *.o createimage
 
 floppy:
 	sudo fdisk -l ${DISK}

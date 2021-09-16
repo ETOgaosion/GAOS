@@ -69,8 +69,8 @@ read_input:
 sum:
 	addi a0,a0,-1
 	blt a0,zero,move_bootblock
-	lh t0,(t0)
-	add a3,a3,t0
+	lh t1,(t0)
+	add a3,a3,t1
 	addi t0,t0,-2
 	j sum
 

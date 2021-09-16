@@ -17,5 +17,10 @@
 	SBI_CALL SBI_CONSOLE_PUTCHAR
 .endm
 
+.macro PRINT_a0 which
+    addi a0,a0,48
+    SBI_CALL SBI_CONSOLE_PUTCHAR
+    addi a0,a0,-48
+.endm
 
 #endif /* _SBI_ASM_H */
