@@ -155,6 +155,12 @@ main:
     // below are the same with S-core
 ```
 
+以上为1.0方案，在找到蒋老师design review之后换了一种新思路，如果kernel过大，使用固定地址存放`bootblock`有可能仍然存在冲突，因此灵活起见，根据`kernel`本身的大小决定放置位置，进跟着kernel放置即可，此处默认`kernel`大小考虑了栈空间
+
+变换思路，首先读取用户输入，索引到想要加载的`kernel`，然后根据`kernel stack`栈索引该`kernel`的便宜量和大小，根据大小放置`bootblock`，跳转至对应的下一条语句进行执行，然后从sd卡中读入`kernel`，跳转执行`kernel`即可
+
+这套方案支持大核与多核的加载
+
 ### task3:制作createimage
 
 直接叙述C-core整体的实现方式

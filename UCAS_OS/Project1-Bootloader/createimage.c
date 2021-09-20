@@ -76,9 +76,12 @@ static void create_image(int nfiles, char *files[])
 
     /* for each input file */
     while (nfiles-- > 0) {
-
         /* open input file */ 
         fp = fopen(files[0],"r+");
+        
+        if(fp){
+            printf("%s can open\n",files[0]);
+        }
 
         /* read ELF header */
         read_ehdr(&ehdr, fp);
@@ -112,6 +115,7 @@ static void create_image(int nfiles, char *files[])
 
 static void read_ehdr(Elf64_Ehdr * ehdr, FILE * fp)
 {
+    fseek(fp,0,SEEK_SET);
     if(!fread(ehdr,sizeof(Elf64_Ehdr),1,fp)){
         error("Warning: the format of input file is not ELF64\n");
     }

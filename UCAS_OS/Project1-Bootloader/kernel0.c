@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 	//print "Hello OS!"
 	sbi_console_putchar('\n');
-    sbi_console_putstr("Hello OS ");
+    sbi_console_putstr("Hello Gao Zi Yuan ");
 	sbi_console_putchar('\n');
 
 	//print array buf which is expected to be "Version: 1"
