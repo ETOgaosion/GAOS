@@ -5,7 +5,7 @@ CFLAGS = -O2 -fno-builtin -nostdlib -T riscv.lds -Iinclude -Wall -mcmodel=medany
 DISK = /dev/sdb
 
 BOOTLOADER_ENTRYPOINT = 0x50200000
-KERNEL_ENTRYPOINT = 0x50201000
+KERNEL_ENTRYPOINT = 0x50200000
 
 all: createimage image
 

@@ -11,7 +11,7 @@ qemu:
     before_script:
         - cp run_qemu.sh /
         - cp debug.sh /
-        - cd UCAS_OS/Project1-Bootloader
+        - cd UCAS_OS/Project2-SimpleKernel
         - make
         - cp image /
         - cd /
