@@ -30,7 +30,7 @@ pid_t process_id = 1;
 pcb_t *select_ready(list_head *queue){
     // plain and simple way
     #ifdef FIFO
-    pcb_t *ret = list_entry(queue->next,pcb_t,list);
+    pcb_t *ret = container_of(queue->next,pcb_t,list);
     list_del(queue->next);
     return ret;
     #endif

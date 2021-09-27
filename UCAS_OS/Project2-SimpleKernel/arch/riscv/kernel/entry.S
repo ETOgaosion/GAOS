@@ -167,7 +167,7 @@ ENTRY(switch_to)
   /* TODO: store all callee save registers,
    * see the definition of `struct switchto_context` in sched.h*/
   SAVE_SWITCH(ra,RA)
-  SAVE_SWITCH(t1,SP)  //sp
+  SAVE_SWITCH(sp,SP)  //sp
   SAVE_SWITCH(s0,S0)
   SAVE_SWITCH(s1,S1)
   SAVE_SWITCH(s2,S2)
@@ -186,7 +186,6 @@ ENTRY(switch_to)
    * see the definition of `struct switchto_context` in sched.h*/
   ld sp,PCB_KERNEL_SP(a1)
   LOAD_SWITCH(ra,RA)
-  LOAD_SWITCH(t0,SP)
   LOAD_SWITCH(s0,S0)
   LOAD_SWITCH(s1,S1)
   LOAD_SWITCH(s2,S2)
