@@ -9,7 +9,15 @@
         "*.tcc": "cpp",
         "cstdbool": "cpp",
         "cstdint": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "atomic.h": "c",
+        "lock.h": "c",
+        "sched.h": "c",
+        "test2.h": "c",
+        "syscall.h": "c",
+        "mthread.h": "c",
+        "stdatomic.h": "c",
+        "random": "c"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Enabled"
 }

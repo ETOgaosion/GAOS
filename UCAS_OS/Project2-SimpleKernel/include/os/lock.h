@@ -35,9 +35,15 @@ typedef enum {
     LOCKED,
 } lock_status_t;
 
+typedef enum {
+    UNGUARDED,
+    GUARDED,
+} guard_status_t;
+
 typedef struct spin_lock
 {
-    volatile lock_status_t status;
+    volatile lock_status_t flag;
+    volatile guard_status_t guard;
 } spin_lock_t;
 
 typedef struct mutex_lock
@@ -47,10 +53,12 @@ typedef struct mutex_lock
 } mutex_lock_t;
 
 /* init lock */
+/*
 void spin_lock_init(spin_lock_t *lock);
 int spin_lock_try_acquire(spin_lock_t *lock);
 void spin_lock_acquire(spin_lock_t *lock);
 void spin_lock_release(spin_lock_t *lock);
+*/
 
 void do_mutex_lock_init(mutex_lock_t *lock);
 void do_mutex_lock_acquire(mutex_lock_t *lock);

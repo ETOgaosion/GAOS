@@ -37,8 +37,10 @@
 
 #include <csr.h>
 
-#define SCHEDULED_1
-#define TASK_1
+// #define SCHEDULED_1
+// #define TASK_1
+// #define LOCK
+#define TASK_2
 
 extern void ret_from_exception();
 extern void __global_pointer$();
@@ -107,6 +109,22 @@ static void init_pcb()
     #ifdef SCHEDULED_1
         tasks = sched1_tasks;
         tasks_num = num_sched1_tasks;
+    #endif
+    #ifdef LOCK
+        tasks = lock_tasks;
+        tasks_num = num_lock_tasks;
+    #endif
+    #ifdef TASK_2
+        tasks_num = num_sched1_tasks + num_lock_tasks;
+        tasks = (task_info_t **)kmalloc(sizeof(task_info_t *) * tasks_num);
+        for (int i = 0; i < num_sched1_tasks; i++)
+        {
+            tasks[i] = sched1_tasks[i];
+        }
+        for (int i = 0; i < num_lock_tasks; i++)
+        {
+            tasks[i+num_sched1_tasks] = lock_tasks[i];
+        }
     #endif
     for(int i=0;i<tasks_num;i++){
         // use allocPage in mm.c, first time allocate 1 page only

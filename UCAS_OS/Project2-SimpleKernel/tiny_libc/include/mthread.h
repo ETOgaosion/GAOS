@@ -27,8 +27,9 @@
 #ifndef MTHREAD_H_
 #define MTHREAD_H_
 
-#include <stdint.h>
+//#include <stdint.h>
 #include <stdatomic.h>
+#include <os/lock.h>
 
 /* on success, these functions return zero. Otherwise, return an error number */
 #define EBUSY  1 /* the lock is busy(for example, it is locked by another thread) */

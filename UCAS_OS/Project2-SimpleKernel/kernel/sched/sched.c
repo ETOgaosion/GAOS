@@ -27,10 +27,10 @@ pcb_t * volatile current_running;
 /* global process id */
 pid_t process_id = 1;
 
-pcb_t *select_ready(list_head *queue){
+pcb_t *dequeue(list_head *queue){
     // plain and simple way
     #ifdef FIFO
-    pcb_t *ret = container_of(queue->next,pcb_t,list);
+    pcb_t *ret = list_entry(queue->next,pcb_t,list);
     list_del(queue->next);
     return ret;
     #endif
@@ -45,7 +45,7 @@ void do_scheduler(void)
         list_add_tail(&(curr->list), &ready_queue);
         curr->status = TASK_READY;
     }
-    pcb_t *next_pcb = select_ready(&ready_queue);
+    pcb_t *next_pcb = dequeue(&ready_queue);
     next_pcb->status = TASK_RUNNING;
     current_running = next_pcb;
     process_id = next_pcb->pid;
@@ -73,9 +73,15 @@ void do_sleep(uint32_t sleep_time)
 void do_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
+    list_add_tail(pcb_node,queue);
+    current_running->status = TASK_BLOCKED;
+    do_scheduler();
 }
 
-void do_unblock(list_node_t *pcb_node)
+void do_unblock(list_head *queue)
 {
     // TODO: unblock the `pcb` from the block queue
+    pcb_t *fetch_pcb = dequeue(queue);
+    fetch_pcb->status = TASK_READY;
+    list_add_tail(&fetch_pcb->list,&ready_queue);
 }

@@ -42,4 +42,6 @@ void sys_reflush();
 long sys_get_timebase();
 long sys_get_tick();
 
+void sys_yield();
+
 #endif

@@ -1,6 +1,7 @@
 #include <sys/syscall.h>
 #include <stdint.h>
-#include<screen.h>
+#include <screen.h>
+#include <os/sched.h>
 
 void sys_sleep(uint32_t time)
 {
