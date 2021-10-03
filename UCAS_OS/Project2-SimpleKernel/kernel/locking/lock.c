@@ -13,7 +13,7 @@ void do_mutex_lock_init(mutex_lock_t *lock)
 void do_mutex_lock_acquire(mutex_lock_t *lock)
 {
     /* TODO */
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == 1)
+    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
     {
         ;
     }
@@ -24,13 +24,14 @@ void do_mutex_lock_acquire(mutex_lock_t *lock)
     else{
         do_block(&current_running->list,&lock->block_queue);
         lock->lock.guard = 0;
+        do_scheduler();
     }
 }
 
 void do_mutex_lock_release(mutex_lock_t *lock)
 {
     /* TODO */
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == 1)
+    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
     {
         ;
     }

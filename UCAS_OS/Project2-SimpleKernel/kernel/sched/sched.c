@@ -75,7 +75,6 @@ void do_block(list_node_t *pcb_node, list_head *queue)
     // TODO: block the pcb task into the block queue
     list_add_tail(pcb_node,queue);
     current_running->status = TASK_BLOCKED;
-    do_scheduler();
 }
 
 void do_unblock(list_head *queue)
