@@ -40,8 +40,8 @@ typedef struct mthread_mutex
     // TODO:
 } mthread_mutex_t;
 
-int mthread_mutex_init(void* handle);
-int mthread_mutex_lock(void* handle);
-int mthread_mutex_unlock(void* handle);
+int mthread_mutex_init(mutex_lock_t *lock);
+int mthread_mutex_lock(mutex_lock_t *lock);
+int mthread_mutex_unlock(mutex_lock_t *lock);
 
 #endif

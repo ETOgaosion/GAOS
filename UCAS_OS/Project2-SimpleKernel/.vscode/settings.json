@@ -17,7 +17,8 @@
         "syscall.h": "c",
         "mthread.h": "c",
         "stdatomic.h": "c",
-        "random": "c"
+        "random": "c",
+        "mutex": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
