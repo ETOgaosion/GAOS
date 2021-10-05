@@ -30,6 +30,8 @@
 
 #include <os/list.h>
 
+long global_lock_id = 0;
+
 typedef enum {
     UNLOCKED,
     LOCKED,
@@ -48,6 +50,7 @@ typedef struct spin_lock
 
 typedef struct mutex_lock
 {
+    int lock_id;
     spin_lock_t lock;
     list_head block_queue;
 } mutex_lock_t;
@@ -60,8 +63,8 @@ void spin_lock_acquire(spin_lock_t *lock);
 void spin_lock_release(spin_lock_t *lock);
 */
 
-void do_mutex_lock_init(mutex_lock_t *lock);
-void do_mutex_lock_acquire(mutex_lock_t *lock);
-void do_mutex_lock_release(mutex_lock_t *lock);
+int do_mutex_lock_init(mutex_lock_t *lock);
+int do_mutex_lock_acquire(mutex_lock_t *lock);
+int do_mutex_lock_release(mutex_lock_t *lock);
 
 #endif

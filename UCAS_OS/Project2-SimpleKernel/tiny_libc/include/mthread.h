@@ -38,10 +38,14 @@
 typedef struct mthread_mutex
 {
     // TODO:
+    atomic_long data;
 } mthread_mutex_t;
 
-int mthread_mutex_init(mutex_lock_t *lock);
-int mthread_mutex_lock(mutex_lock_t *lock);
-int mthread_mutex_unlock(mutex_lock_t *lock);
+int mutex_get(int key);
+int mutex_op(int handle, int op);
+
+int mthread_mutex_init(void* handle);
+int mthread_mutex_lock(void* handle);
+int mthread_mutex_unlock(void* handle);
 
 #endif

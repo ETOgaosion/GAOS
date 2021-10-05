@@ -2,15 +2,18 @@
 #include <os/sched.h>
 #include <atomic.h>
 
-void do_mutex_lock_init(mutex_lock_t *lock)
+int do_mutex_lock_init(mutex_lock_t *lock)
 {
     /* TODO */
+    lock->lock_id = global_lock_id;
+    global_lock_id++;
     lock->lock.flag = UNLOCKED;
     lock->lock.guard = UNGUARDED;
     init_list_head(&lock->block_queue);
+    return lock->lock_id;
 }
 
-void do_mutex_lock_acquire(mutex_lock_t *lock)
+int do_mutex_lock_acquire(mutex_lock_t *lock)
 {
     /* TODO */
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
@@ -26,9 +29,10 @@ void do_mutex_lock_acquire(mutex_lock_t *lock)
         lock->lock.guard = 0;
         do_scheduler();
     }
+    return lock->lock_id;
 }
 
-void do_mutex_lock_release(mutex_lock_t *lock)
+int do_mutex_lock_release(mutex_lock_t *lock)
 {
     /* TODO */
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
@@ -42,4 +46,5 @@ void do_mutex_lock_release(mutex_lock_t *lock)
         do_unblock(&lock->block_queue);
     }
     lock->lock.guard = 0;
+    return lock->lock_id;
 }

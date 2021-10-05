@@ -28,7 +28,7 @@ void print_task2(void)
     for (i = 0;; i++)
     {
         sys_move_cursor(1, print_location);
-        printf("> [TASK] This task is to test scheduler. (%d)", i);
+        printf("> [TASK] Gao Ziyuan. (%d)", i);
         sys_yield();
     }
 }

@@ -52,7 +52,7 @@ static inline uint64_t atomic_cmpxchg_d(uint64_t old_val, uint64_t new_val, ptr_
     register unsigned int __rc;
     __asm__ __volatile__ (
           "0:\n\t"
-          "ld %0, %2\n\t"	
+          "ld %0, %2\n\t"
           "bne  %0, %3, 1f\n\t"
           "sd %4, %2\n\t"
           "fence\n\t"
