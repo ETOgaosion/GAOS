@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <sbi.h>
 #include <screen.h>
+#include <csr.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -20,12 +21,18 @@ void reset_irq_timer()
 
     // note: use sbi_set_timer
     // remember to reschedule
+    sbi_set_timer(get_ticks() + TIMER_INTERVAL);
+    do_scheduler();
 }
 
 void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t cause)
 {
     // TODO interrupt handler.
     // call corresponding handler by the value of `cause`
+    handler_t *handle_table = (cause & SCAUSE_IRQ_FLAG) ? irq_table : exc_table;
+    uint64_t exception_code = cause & ~SCAUSE_IRQ_FLAG;
+    handle_table[exception_code](regs,stval,cause);
+
 }
 
 void handle_int(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
@@ -37,7 +44,15 @@ void init_exception()
 {
     /* TODO: initialize irq_table and exc_table */
     /* note: handle_int, handle_syscall, handle_other, etc.*/
-
+    int i = 0;
+    for (; i<IRQC_COUNT; i++)
+    {
+        irq_table[i] = &handle_int;
+    }
+    for(i=0; i<EXCC_COUNT; i++){
+        exc_table[i] = &handle_other;
+    }
+    exc_table[EXCC_SYSCALL] = &handle_syscall;
     setup_exception();
 }
 

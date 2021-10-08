@@ -32,6 +32,7 @@
 #include <type.h>
 #include <os/list.h>
 #include <os/mm.h>
+#include <os/time.h>
 
 #define NUM_MAX_TASK 16
 
@@ -97,6 +98,10 @@ typedef struct pcb
     /* cursor position */
     int cursor_x;
     int cursor_y;
+
+    /* timer */
+    list_node_t timer_list;
+    timer_t timer;
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -108,6 +113,7 @@ typedef struct task_info
 
 /* ready queue to run */
 extern list_head ready_queue;
+extern list_head blocked_queue;
 
 
 /* current running task PCB */
@@ -126,5 +132,6 @@ void do_sleep(uint32_t);
 void do_block(list_node_t *, list_head *queue);
 void do_unblock(list_node_t *);
 
+pcb_t *dequeue(list_head *queue, int field);
 
 #endif

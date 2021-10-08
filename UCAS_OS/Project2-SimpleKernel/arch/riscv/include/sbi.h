@@ -69,6 +69,7 @@ static inline int sbi_console_getchar(void)
     return SBI_CALL_0(SBI_CONSOLE_GETCHAR);
 }
 
+// stime_value is ticks number
 static inline void sbi_set_timer(uint64_t stime_value)
 {
 #if __riscv_xlen == 32

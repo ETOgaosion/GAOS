@@ -108,6 +108,19 @@ static inline void list_del(list_head *entry)
 	entry->prev = NULL;
 }
 
+static inline void list_move(list_head *list, list_head *head)
+{
+	__list_del_entry(list);
+	list_add(list, head);
+}
+
+static inline void list_move_tail(list_head *list, list_head *head)
+{
+	__list_del(list->prev, list->next);
+	list_add_tail(list, head);
+}
+
+
 // judge
 static inline int list_is_first(list_head *list, const list_head *head)
 {
@@ -123,4 +136,5 @@ static inline int list_empty(list_head *head)
 {
 	return head->next == head;
 }
+
 #endif

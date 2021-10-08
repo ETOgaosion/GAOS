@@ -24,8 +24,6 @@ _save_context:
   SAVE(zero,ZERO)
   SAVE(ra,RA)
   // SAVE(sp,SP)
-  ld a0,PCB_USER_SP(tp)
-  SAVE(a0,SP)
   SAVE(gp,GP)
   SAVE(tp,TP)
   SAVE(t0,T0)
@@ -67,16 +65,15 @@ _save_context:
   csrrc a0,CSR_SSTATUS,t0
 
   /* TODO: save sstatus, sepc, stval, scause and sscratch on user stack */
-  /* ERROR: 1. not user stack, but kernel stack . 2. WHERE IS SSCRATCH on stack*/
+  /* ERROR: 1. not user stack, but kernel stack.*/
   csrr a1,CSR_SEPC
   csrr a2,CSR_STVAL
   csrr a3,CSR_SCAUSE
-  csrr a4,CSR_SSCRATCH
+  // csrr a4,CSR_SSCRATCH
   SAVE(a0,SSTATUS)
   SAVE(a1,SEPC)
   SAVE(a2,SBADADDR)
   SAVE(a3,SCAUSE)
-  // SAVE(a4,SSTATUS)
 .endm
 
 .macro RESTORE_CONTEXT
@@ -205,6 +202,9 @@ ENDPROC(switch_to)
 
 ENTRY(ret_from_exception)
   /* TODO: */
+  RESTORE_CONTEXT
+  csrw CSR_SSCRATCH,tp
+  sret
 ENDPROC(ret_from_exception)
 
 ENTRY(exception_handler_entry)
@@ -222,8 +222,13 @@ ENTRY(exception_handler_entry)
    * so that we can return to ret_from_exception
    * when interrupt_help complete.
    */
-
   /* TODO: call interrupt_helper
    * note: don't forget to pass parameters for it.
    */
+  ld a0,PCB_KERNEL_SP(tp)
+  csrr a1,CSR_STVEC
+  csrr a2,CSR_SSTATUS
+  call interrupt_helper
+  la ra,ret_from_exception
+  jr ra
 ENDPROC(exception_handler_entry)

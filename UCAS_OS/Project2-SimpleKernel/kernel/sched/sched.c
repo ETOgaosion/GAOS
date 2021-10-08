@@ -2,7 +2,6 @@
 #include <os/lock.h>
 #include <os/sched.h>
 #include <os/list.h>
-#include <os/time.h>
 #include <os/irq.h>
 #include <screen.h>
 #include <stdio.h>
@@ -20,6 +19,7 @@ pcb_t pid0_pcb = {
 };
 
 LIST_HEAD(ready_queue);
+LIST_HEAD(blocked_queue);
 
 /* current running task PCB */
 pcb_t * volatile current_running;
@@ -27,10 +27,16 @@ pcb_t * volatile current_running;
 /* global process id */
 pid_t process_id = 1;
 
-pcb_t *dequeue(list_head *queue){
+pcb_t *dequeue(list_head *queue, int field){
     // plain and simple way
     #ifdef FIFO
-    pcb_t *ret = list_entry(queue->next,pcb_t,list);
+    pcb_t *ret;
+    if(field == 0){
+        ret = list_entry(queue->next,pcb_t,list);
+    }
+    else if(field == 1){
+        ret = list_entry(queue->next,pcb_t,timer_list);
+    }
     list_del(queue->next);
     return ret;
     #endif
@@ -45,7 +51,7 @@ void do_scheduler(void)
         list_add_tail(&(curr->list), &ready_queue);
         curr->status = TASK_READY;
     }
-    pcb_t *next_pcb = dequeue(&ready_queue);
+    pcb_t *next_pcb = dequeue(&ready_queue,0);
     next_pcb->status = TASK_RUNNING;
     current_running = next_pcb;
     process_id = next_pcb->pid;
@@ -65,9 +71,11 @@ void do_sleep(uint32_t sleep_time)
     // TODO: sleep(seconds)
     // note: you can assume: 1 second = `timebase` ticks
     // 1. block the current_running
-    current_running->status = TASK_BLOCKED;
+    do_block(&current_running->list,&blocked_queue);
     // 2. create a timer which calls `do_unblock` when timeout
+    create_timer(sleep_time*get_time_base(),(void (*)(void *))&do_block,(void *)&blocked_queue);
     // 3. reschedule because the current_running is blocked.
+    do_scheduler();
 }
 
 void do_block(list_node_t *pcb_node, list_head *queue)
@@ -80,7 +88,7 @@ void do_block(list_node_t *pcb_node, list_head *queue)
 void do_unblock(list_head *queue)
 {
     // TODO: unblock the `pcb` from the block queue
-    pcb_t *fetch_pcb = dequeue(queue);
+    pcb_t *fetch_pcb = dequeue(queue,0);
     fetch_pcb->status = TASK_READY;
     list_add_tail(&fetch_pcb->list,&ready_queue);
 }

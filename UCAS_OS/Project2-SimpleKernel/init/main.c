@@ -149,6 +149,17 @@ static void init_pcb()
 static void init_syscall(void)
 {
     // initialize system call table.
+    for(int i=0;i<NUM_SYSCALLS;i++){
+        syscall[i] = (long (*)())&handle_other; // only print register info
+    }
+    syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
+    syscall[SYSCALL_YIELD]          = (long (*)())&do_scheduler;
+    syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
+    syscall[SYSCALL_READ]           = (long (*)())&sbi_console_getchar;
+    syscall[SYSCALL_CURSOR]         = (long (*)())&screen_move_cursor;
+    syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
+    syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
+    syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
 }
 
 // jump from bootloader.
@@ -167,7 +178,7 @@ int main()
     printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
 
     // init system call table (0_0)
-    // init_syscall();
+    //init_syscall();
     printk("> [INIT] System call initialized successfully.\n\r");
 
     // fdt_print(riscv_dtb);

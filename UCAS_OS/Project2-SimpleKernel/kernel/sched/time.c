@@ -33,3 +33,25 @@ void latency(uint64_t time)
     while (get_timer() - begin_time < time);
     return;
 }
+
+void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *parameter){
+    current_running->timer.init_tick = get_ticks();
+    current_running->timer.timeout_tick = timeout_ticks + current_running->timer.init_tick;
+    current_running->timer.timeout_func = timeout_func;
+    current_running->timer.parameter = parameter;
+    list_add_tail(&(current_running->timer_list),&timers);
+}
+
+void check_timer(void){
+    pcb_t *pcb_check;
+    list_node_t *iterator = timers.next;
+    while (!list_empty(&timers) && iterator != &timers)
+    {
+        pcb_check = dequeue(&timers,1);
+        if(get_ticks() >= pcb_check->timer.timeout_tick){
+            list_del(iterator);
+            pcb_check->timer.timeout_func(pcb_check->timer.parameter);
+        }
+        iterator = iterator->next;
+    }
+}
