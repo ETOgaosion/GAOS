@@ -14,18 +14,18 @@
 
 _restore_kernel_tpsp:
   csrr tp, CSR_SSCRATCH
-  sd sp, PCB_KERNEL_SP(tp)
+  // sd sp, PCB_KERNEL_SP(tp)
 _save_context:
   sd sp, PCB_USER_SP(tp)
   ld sp, PCB_KERNEL_SP(tp)
-  addi sp, sp, -(OFFSET_SIZE)
+  addi sp, sp, SWITCH_TO_SIZE
 
   /* TODO: save all general purpose registers here! */
   SAVE(zero,ZERO)
   SAVE(ra,RA)
   // SAVE(sp,SP)
   SAVE(gp,GP)
-  SAVE(tp,TP)
+  // SAVE(tp,TP)
   SAVE(t0,T0)
   SAVE(t1,T1)
   SAVE(t2,T2)
@@ -69,17 +69,18 @@ _save_context:
   csrr a1,CSR_SEPC
   csrr a2,CSR_STVAL
   csrr a3,CSR_SCAUSE
-  // csrr a4,CSR_SSCRATCH
+  csrr a4,CSR_SSCRATCH
   SAVE(a0,SSTATUS)
   SAVE(a1,SEPC)
   SAVE(a2,SBADADDR)
   SAVE(a3,SCAUSE)
+  SAVE(a4,TP)
 .endm
 
 .macro RESTORE_CONTEXT
   /* TODO: Restore all registers and sepc,sstatus */
   ld sp, PCB_KERNEL_SP(tp)
-  addi sp, sp, -(OFFSET_SIZE)
+  addi sp, sp, SWITCH_TO_SIZE
   // restore s first
   LOAD(a0,SSTATUS)
   LOAD(a1,SEPC)
@@ -90,7 +91,6 @@ _save_context:
   LOAD(ra,RA)
   // LOAD(sp,SP)
   LOAD(gp,GP)
-  LOAD(tp,TP)
   LOAD(t0,T0)
   LOAD(t1,T1)
   LOAD(t2,T2)
@@ -160,11 +160,12 @@ ENDPROC(disable_interrupt)
 // the address of next pcb in a1
 ENTRY(switch_to)
   // save all callee save registers on kernel stack
-  addi sp, sp, -(SWITCH_TO_SIZE)
+  mv t0,sp
+  ld sp, PCB_KERNEL_SP(a0)
   /* TODO: store all callee save registers,
    * see the definition of `struct switchto_context` in sched.h*/
   SAVE_SWITCH(ra,RA)
-  SAVE_SWITCH(sp,SP)  //sp
+  SAVE_SWITCH(t0,SP)  //sp
   SAVE_SWITCH(s0,S0)
   SAVE_SWITCH(s1,S1)
   SAVE_SWITCH(s2,S2)
@@ -177,12 +178,13 @@ ENTRY(switch_to)
   SAVE_SWITCH(s9,S9)
   SAVE_SWITCH(s10,S10)
   SAVE_SWITCH(s11,S11)
-  sd sp,PCB_KERNEL_SP(a0)
+  
   // restore next
   /* TODO: restore all callee save registers,
    * see the definition of `struct switchto_context` in sched.h*/
   ld sp,PCB_KERNEL_SP(a1)
   LOAD_SWITCH(ra,RA)
+  LOAD_SWITCH(t0,SP)
   LOAD_SWITCH(s0,S0)
   LOAD_SWITCH(s1,S1)
   LOAD_SWITCH(s2,S2)
@@ -195,7 +197,8 @@ ENTRY(switch_to)
   LOAD_SWITCH(s9,S9)
   LOAD_SWITCH(s10,S10)
   LOAD_SWITCH(s11,S11)
-  addi sp, sp, SWITCH_TO_SIZE
+  mv sp,t0
+  mv tp,a1
   jr ra
 
 ENDPROC(switch_to)
@@ -204,7 +207,7 @@ ENTRY(ret_from_exception)
   /* TODO: */
   RESTORE_CONTEXT
   csrw CSR_SSCRATCH,tp
-  sret
+  ret
 ENDPROC(ret_from_exception)
 
 ENTRY(exception_handler_entry)
@@ -222,13 +225,14 @@ ENTRY(exception_handler_entry)
    * so that we can return to ret_from_exception
    * when interrupt_help complete.
    */
+  la ra,ret_from_exception
   /* TODO: call interrupt_helper
    * note: don't forget to pass parameters for it.
    */
-  ld a0,PCB_KERNEL_SP(tp)
+  mv a0,sp
+  ld sp,PCB_USER_SP(tp)
   csrr a1,CSR_STVEC
-  csrr a2,CSR_SSTATUS
-  call interrupt_helper
-  la ra,ret_from_exception
+  csrr a2,CSR_SCAUSE
+  call t0,interrupt_helper
   jr ra
 ENDPROC(exception_handler_entry)

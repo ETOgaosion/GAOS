@@ -34,7 +34,7 @@
 #include <os/time.h>
 #include <os/syscall.h>
 #include <test.h>
-
+#include <os/lock.h>
 #include <csr.h>
 
 // #define SCHEDULED_1
@@ -80,7 +80,7 @@ static void init_pcb_stack(
      * simulate a pcb context.
      */
     pcb->kernel_sp = kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
-    pcb->user_sp = user_stack;
+    pcb->user_sp = pcb->kernel_sp;
     switchto_context_t *stored_switchto_k = (switchto_context_t *) pt_regs->regs[2];
     // push values in
     for(int i=0;i<2;i++){
@@ -154,6 +154,8 @@ static void init_syscall(void)
     }
     syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
     syscall[SYSCALL_YIELD]          = (long (*)())&do_scheduler;
+    syscall[SYSCALL_GETLOCK]        = (long (*)())&do_mutex_lock_init;
+    syscall[SYSCALL_LOCKOP]         = (long (*)())&do_mutex_lock_op;
     syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
     syscall[SYSCALL_READ]           = (long (*)())&sbi_console_getchar;
     syscall[SYSCALL_CURSOR]         = (long (*)())&screen_move_cursor;
@@ -174,11 +176,11 @@ int main()
     time_base = sbi_read_fdt(TIMEBASE);
 
     // init interrupt (^_^)
-    // init_exception();
+    init_exception();
     printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
 
     // init system call table (0_0)
-    //init_syscall();
+    init_syscall();
     printk("> [INIT] System call initialized successfully.\n\r");
 
     // fdt_print(riscv_dtb);

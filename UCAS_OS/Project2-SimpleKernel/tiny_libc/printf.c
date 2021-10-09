@@ -45,6 +45,8 @@
 #include <string.h>
 #include <sys/syscall.h>
 
+char buff[256];
+
 static unsigned int mini_itoa(
     long value, unsigned int radix, unsigned int uppercase,
     unsigned int unsig, char *buffer, unsigned int zero_pad)
@@ -215,7 +217,6 @@ int vprintf(const char *fmt, va_list _va)
     va_copy(va, _va);
 
     int ret;
-    char buff[256];
 
     ret = mini_vsnprintf(buff, 256, fmt, va);
 
@@ -233,7 +234,7 @@ int printf(const char *fmt, ...)
     va_list va;
 
     va_start(va, fmt);
-    ret = vprintk(fmt, va);
+    ret = vprintf(fmt, va);
     va_end(va);
 
     return ret;

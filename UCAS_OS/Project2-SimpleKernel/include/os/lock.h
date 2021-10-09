@@ -65,6 +65,7 @@ void spin_lock_release(spin_lock_t *lock);
 */
 
 long do_mutex_lock_init(void);
+long do_mutex_lock_op(long key,int op);
 long do_mutex_lock_acquire(long key);
 long do_mutex_lock_release(long key);
 

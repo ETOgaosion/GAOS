@@ -1,9 +1,8 @@
 #include <stdatomic.h>
 #include <mthread.h>
-#include <sys/syscall.h>
 
 int mutex_get(mthread_mutex_t *key){
-    long res = do_mutex_lock_init();
+    long res = sys_getlock();
     if(res < 0){
         return EINVAL;
     }
@@ -13,8 +12,8 @@ int mutex_get(mthread_mutex_t *key){
 
 int mutex_op(mthread_mutex_t *handle, int op){
     long res;
+    res = sys_lockop(handle->data,op);
     if(op == 0){
-        res = do_mutex_lock_acquire(handle->data);
         if(res == -1){
             return EINVAL;
         }
@@ -26,7 +25,6 @@ int mutex_op(mthread_mutex_t *handle, int op){
         }
     }
     else{
-        res = do_mutex_lock_release(handle->data);
         if(res == -1){
             return EINVAL;
         }

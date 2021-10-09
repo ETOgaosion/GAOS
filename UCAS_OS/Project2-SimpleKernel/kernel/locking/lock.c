@@ -28,6 +28,15 @@ long do_mutex_lock_init(void)
     return global_lock_id - 1;
 }
 
+long do_mutex_lock_op(long key,int op){
+    if(op == 0){
+        return do_mutex_lock_acquire(key);
+    }
+    else{
+        return do_mutex_lock_release(key);
+    }
+}
+
 long do_mutex_lock_acquire(long key)
 {
     /* TODO */
