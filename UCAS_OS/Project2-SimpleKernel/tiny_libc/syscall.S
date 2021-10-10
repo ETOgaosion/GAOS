@@ -1,5 +1,7 @@
 #include <asm.h>
 #include <csr.h>
+#define KERNEL_MODE
+#define USER_MODE
 
 ENTRY(invoke_syscall)
   /* TODO: */
@@ -7,7 +9,8 @@ ENTRY(invoke_syscall)
   mv a0,a1
   mv a1,a2
   mv a2,a3
-  // ecall
+  ecall
+  /*
   li a3,8
   csrw CSR_SCAUSE,a3
   auipc a3,0
@@ -15,5 +18,6 @@ ENTRY(invoke_syscall)
   csrw CSR_SEPC,a3
   la a4,exception_handler_entry
   jr a4
+  */
   ret
 ENDPROC(invoke_syscall)

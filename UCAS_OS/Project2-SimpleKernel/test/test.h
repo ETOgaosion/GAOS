@@ -35,6 +35,9 @@ extern int num_sched1_tasks;
 extern struct task_info *lock_tasks[16];
 extern int num_lock_tasks;
 
+extern struct task_info *sleep_tasks[16];
+extern int num_sleep_tasks;
+
 extern struct task_info *timer_tasks[16];
 extern int num_timer_tasks;
 

@@ -37,10 +37,13 @@
 #include <os/lock.h>
 #include <csr.h>
 
-// #define SCHEDULED_1
-// #define TASK_1
-// #define LOCK
-#define TASK_2
+// #define TEST_SCHEDULE_1
+// TASK_1
+// #define TEST_LOCK
+// #define TASK_2
+// #define TEST_SLEEP
+// #define TEST_SCHEDULE_2
+#define TASK_3
 
 extern void ret_from_exception();
 extern void __global_pointer$();
@@ -65,14 +68,15 @@ static void init_pcb_stack(
     pt_regs->regs[3] = (reg_t)__global_pointer$;
     pt_regs->regs[4] = (reg_t)pcb;
     pt_regs->sepc = entry_point;
-    pt_regs->sstatus = pt_regs->sstatus | SR_SPP | SR_SPIE;
     pt_regs->scause = 0;
     pt_regs->sbadaddr = 0;
     if(pcb->type == USER_PROCESS || pcb->type == USER_THREAD){
         pt_regs->regs[2] = user_stack;
+        pt_regs->sstatus = 0;
     }
     else{
-        pt_regs->regs[2] = kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
+        pt_regs->regs[2] = kernel_stack - sizeof(regs_context_t) - sizeof(switchto_context_t);
+        pt_regs->sstatus = pt_regs->sstatus | SR_SPP | SR_SPIE;
     }
 
     // set sp to simulate return from switch_to
@@ -80,8 +84,8 @@ static void init_pcb_stack(
      * simulate a pcb context.
      */
     pcb->kernel_sp = kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
-    pcb->user_sp = pcb->kernel_sp;
-    switchto_context_t *stored_switchto_k = (switchto_context_t *) pt_regs->regs[2];
+    pcb->user_sp = user_stack;
+    switchto_context_t *stored_switchto_k = (switchto_context_t *) pcb->kernel_sp;
     // push values in
     for(int i=0;i<2;i++){
         stored_switchto_k->regs[i] = pt_regs->regs[i+1];
@@ -91,6 +95,9 @@ static void init_pcb_stack(
     }
     for(int i=4;i<14;i++){
         stored_switchto_k->regs[i] = pt_regs->regs[i+15];
+    }
+    if(pcb->type == USER_PROCESS || pcb->type == USER_THREAD){
+        stored_switchto_k->regs[0] = &ret_from_exception;
     }
 }
 
@@ -106,11 +113,11 @@ static void init_pcb()
     task_info_t **tasks;
     int tasks_num;
     init_list_head(&ready_queue);
-    #ifdef SCHEDULED_1
+    #ifdef TEST_SCHEDULE_1
         tasks = sched1_tasks;
         tasks_num = num_sched1_tasks;
     #endif
-    #ifdef LOCK
+    #ifdef TEST_LOCK
         tasks = lock_tasks;
         tasks_num = num_lock_tasks;
     #endif
@@ -124,6 +131,26 @@ static void init_pcb()
         for (int i = 0; i < num_lock_tasks; i++)
         {
             tasks[i+num_sched1_tasks] = lock_tasks[i];
+        }
+    #endif
+    #ifdef TEST_SLEEP
+        tasks = sleep_tasks;
+        tasks_num = num_sleep_tasks;
+    #endif
+    #ifdef TEST_SCHEDULE_2
+        tasks = sched2_tasks;
+        tasks_num = num_sched2_tasks;
+    #endif
+    #ifdef TASK_3
+        tasks_num = num_sleep_tasks + num_sched2_tasks;
+        tasks = (task_info_t **)kmalloc(sizeof(task_info_t *) * tasks_num);
+        for (int i = 0; i < num_sleep_tasks; i++)
+        {
+            tasks[i] = sleep_tasks[i];
+        }
+        for (int i = 0; i < num_sched2_tasks; i++)
+        {
+            tasks[i+num_sleep_tasks] = sched2_tasks[i];
         }
     #endif
     for(int i=0;i<tasks_num;i++){
@@ -150,7 +177,7 @@ static void init_syscall(void)
 {
     // initialize system call table.
     for(int i=0;i<NUM_SYSCALLS;i++){
-        syscall[i] = (long (*)())&handle_other; // only print register info
+        syscall[i] = (long (*)())&unknown_syscall; // only print register info
     }
     syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
     syscall[SYSCALL_YIELD]          = (long (*)())&do_scheduler;

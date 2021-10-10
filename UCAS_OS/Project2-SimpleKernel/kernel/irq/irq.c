@@ -56,7 +56,7 @@ void init_exception()
     setup_exception();
 }
 
-void handle_other(regs_context_t *regs, uint64_t stval, uint64_t cause)
+void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
 {
     char* reg_name[] = {
         "zero "," ra  "," sp  "," gp  "," tp  ",
@@ -77,4 +77,9 @@ void handle_other(regs_context_t *regs, uint64_t stval, uint64_t cause)
            regs->sstatus, regs->sbadaddr, regs->scause);
     printk("sepc: 0x%lx\n\r", regs->sepc);
     assert(0);
+}
+
+void unknown_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause){
+    printk(">[ERROR] unkonwn syscall, undefined syscall number: %d\n!",regs->regs[17]);
+    handle_other(regs,interrupt,cause);
 }

@@ -51,6 +51,11 @@ void do_scheduler(void)
         list_add_tail(&(curr->list), &ready_queue);
         curr->status = TASK_READY;
     }
+    if(list_empty(&ready_queue)){
+        printk("No valid task to run!\n");
+        while (1) ;
+        assert(0);
+    }
     pcb_t *next_pcb = dequeue(&ready_queue,0);
     next_pcb->status = TASK_RUNNING;
     current_running = next_pcb;
@@ -75,7 +80,9 @@ void do_sleep(uint32_t sleep_time)
     // 2. create a timer which calls `do_unblock` when timeout
     create_timer(sleep_time*get_time_base(),(void (*)(void *))&do_block,(void *)&blocked_queue);
     // 3. reschedule because the current_running is blocked.
+    // [TASK 4 do this]
     do_scheduler();
+    // do_unblock(&blocked_queue);
 }
 
 void do_block(list_node_t *pcb_node, list_head *queue)

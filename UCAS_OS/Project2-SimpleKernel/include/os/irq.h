@@ -78,6 +78,7 @@ extern void reset_irq_timer();
 extern void handle_int(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 extern void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 extern void handle_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
+extern void unknown_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 
 extern void enable_interrupt(void);
 extern void disable_interrupt(void);

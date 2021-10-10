@@ -184,7 +184,6 @@ ENTRY(switch_to)
    * see the definition of `struct switchto_context` in sched.h*/
   ld sp,PCB_KERNEL_SP(a1)
   LOAD_SWITCH(ra,RA)
-  LOAD_SWITCH(t0,SP)
   LOAD_SWITCH(s0,S0)
   LOAD_SWITCH(s1,S1)
   LOAD_SWITCH(s2,S2)
@@ -197,7 +196,7 @@ ENTRY(switch_to)
   LOAD_SWITCH(s9,S9)
   LOAD_SWITCH(s10,S10)
   LOAD_SWITCH(s11,S11)
-  mv sp,t0
+  LOAD_SWITCH(sp,SP)
   mv tp,a1
   jr ra
 
@@ -207,7 +206,8 @@ ENTRY(ret_from_exception)
   /* TODO: */
   RESTORE_CONTEXT
   csrw CSR_SSCRATCH,tp
-  ret
+  //ret
+  sret
 ENDPROC(ret_from_exception)
 
 ENTRY(exception_handler_entry)
