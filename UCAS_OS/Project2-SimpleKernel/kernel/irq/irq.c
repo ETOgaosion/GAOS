@@ -16,8 +16,8 @@ void reset_irq_timer()
 {
     // TODO clock interrupt handler.
     // TODO: call following functions when task4
-    // screen_reflush();
-    // timer_check();
+    screen_reflush();
+    check_timer();
 
     // note: use sbi_set_timer
     // remember to reschedule

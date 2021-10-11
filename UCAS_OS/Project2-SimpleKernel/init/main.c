@@ -41,9 +41,12 @@
 // TASK_1
 // #define TEST_LOCK
 // #define TASK_2
-// #define TEST_SLEEP
+// #define TEST_TIMER
 // #define TEST_SCHEDULE_2
-#define TASK_3
+// #define TASK_3
+// #define TEST_LOCK_2
+// #define TEST_SCHEDULE_2
+#define TASK_4
 
 extern void ret_from_exception();
 extern void __global_pointer$();
@@ -133,32 +136,51 @@ static void init_pcb()
             tasks[i+num_sched1_tasks] = lock_tasks[i];
         }
     #endif
-    #ifdef TEST_SLEEP
-        tasks = sleep_tasks;
-        tasks_num = num_sleep_tasks;
+    #ifdef TEST_TIMER
+        tasks = timer_tasks;
+        tasks_num = num_timer_tasks;
     #endif
     #ifdef TEST_SCHEDULE_2
         tasks = sched2_tasks;
         tasks_num = num_sched2_tasks;
     #endif
     #ifdef TASK_3
-        tasks_num = num_sleep_tasks + num_sched2_tasks;
+        tasks_num = num_timer_tasks + num_sched2_tasks;
         tasks = (task_info_t **)kmalloc(sizeof(task_info_t *) * tasks_num);
-        for (int i = 0; i < num_sleep_tasks; i++)
+        for (int i = 0; i < num_timer_tasks; i++)
         {
-            tasks[i] = sleep_tasks[i];
+            tasks[i] = timer_tasks[i];
         }
         for (int i = 0; i < num_sched2_tasks; i++)
         {
-            tasks[i+num_sleep_tasks] = sched2_tasks[i];
+            tasks[i+num_timer_tasks] = sched2_tasks[i];
+        }
+    #endif
+    #ifdef TEST_LOCK_2
+        tasks = lock2_tasks;
+        tasks_num = num_lock2_task;
+    #endif
+    #ifdef TASK_4
+        tasks_num = num_sched2_tasks + num_lock2_tasks;
+        tasks = (task_info_t **)kmalloc(sizeof(task_info_t *) * tasks_num);
+        for (int i = 0; i < num_sched2_tasks; i++)
+        {
+            tasks[i] = sched2_tasks[i];
+        }
+        for (int i = 0; i < num_sched2_tasks; i++)
+        {
+            tasks[i+num_sched2_tasks] = lock2_tasks[i];
         }
     #endif
     for(int i=0;i<tasks_num;i++){
         // use allocPage in mm.c, first time allocate 1 page only
         pcb[i].kernel_sp = allocPage(1);
         pcb[i].user_sp = allocPage(1);
-        #ifdef TASK_1 // no preempt
+        #ifndef TASK_4 // no preempt
         pcb[i].preempt_count = 1;
+        #endif
+        #ifdef TASK_4 // enable preempt
+        pcb[i].preempt_count = 0;
         #endif
         pcb[i].list.prev = NULL;
         pcb[i].list.next = NULL;
@@ -167,6 +189,7 @@ static void init_pcb()
         pcb[i].status = TASK_READY;
         pcb[i].cursor_x = 0;
         pcb[i].cursor_y = 0;
+        pcb[i].timer.initialized = 0;
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
     }
@@ -223,9 +246,14 @@ int main()
         // (QAQQQQQQQQQQQ)
         // If you do non-preemptive scheduling, you need to use it
         // to surrender control do_scheduler();
-        // enable_interrupt();
-        // __asm__ __volatile__("wfi\n\r":::);
+        #ifdef TASK_4
+        sbi_set_timer(get_ticks()+TIMER_INTERVAL);
+        enable_interrupt();
+        __asm__ __volatile__("wfi\n\r":::);
+        #endif
+        #ifndef TASK_4
         do_scheduler();
+        #endif
     };
     return 0;
 }

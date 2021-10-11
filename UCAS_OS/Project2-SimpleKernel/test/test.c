@@ -18,20 +18,16 @@ int num_lock_tasks = 2;
 
 /* [TASK3] task group to test syscall */
 // sleep_test.c : simple test to sleep without awake
-
-struct task_info task2_6 = {(ptr_t)&sleep_task, USER_PROCESS};
-struct task_info *sleep_tasks[16] = {&task2_6};
-int num_sleep_tasks = 1;
+struct task_info task2_7 = {(ptr_t)&sleep_task, USER_PROCESS};
+struct task_info task2_8 = {(ptr_t)&timer_task, USER_PROCESS};
+struct task_info *timer_tasks[16] = {&task2_7, &task2_8};
+int num_timer_tasks = 2;
 
 /* [TASK4] task group to test interrupt */
 // When the task is running, please implement the following system call :
 // (1) sys_sleep()
 // (2) sys_move_cursor()
 // (3) sys_write()
-struct task_info task2_7 = {(ptr_t)&sleep_task, USER_PROCESS};
-struct task_info task2_8 = {(ptr_t)&timer_task, USER_PROCESS};
-struct task_info *timer_tasks[16] = {&task2_7, &task2_8};
-int num_timer_tasks = 2;
 
 struct task_info task2_9 = {(ptr_t)&print_task1, USER_PROCESS};
 struct task_info task2_10 = {(ptr_t)&print_task2, USER_PROCESS};

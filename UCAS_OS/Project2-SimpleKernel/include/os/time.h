@@ -38,6 +38,7 @@ extern uint64_t MHZ;
 typedef void (*timer_ret)(void *parameter);
 
 typedef struct timer{
+    int initialized;
     uint64_t init_tick;
     uint64_t timeout_tick;
     timer_ret timeout_func;

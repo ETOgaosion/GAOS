@@ -52,7 +52,7 @@ _save_context:
   SAVE(t3,T3)
   SAVE(t4,T4)
   SAVE(t5,T5)
-  SAVE(t6,T5)
+  SAVE(t6,T6)
 
   /*
    * Disable user-mode memory access as it should only be set in the
@@ -117,7 +117,7 @@ _save_context:
   LOAD(t3,T3)
   LOAD(t4,T4)
   LOAD(t5,T5)
-  LOAD(t6,T5)
+  LOAD(t6,T6)
   ld sp, PCB_USER_SP(tp)
 .endm
 
