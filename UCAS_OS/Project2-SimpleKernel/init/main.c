@@ -36,20 +36,14 @@
 #include <test.h>
 #include <os/lock.h>
 #include <csr.h>
+#include <tasks.h>
+#include <ticks.h>
 
-// #define TEST_SCHEDULE_1
-// TASK_1
-// #define TEST_LOCK
-// #define TASK_2
-// #define TEST_TIMER
-// #define TEST_SCHEDULE_2
-// #define TASK_3
-// #define TEST_LOCK_2
-// #define TEST_SCHEDULE_2
-#define TASK_4
 
 extern void ret_from_exception();
 extern void __global_pointer$();
+extern task_info_t **tasks;
+extern long tasks_num;
 
 static void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
@@ -73,6 +67,7 @@ static void init_pcb_stack(
     pt_regs->sepc = entry_point;
     pt_regs->scause = 0;
     pt_regs->sbadaddr = 0;
+    pt_regs->sie = 0;
     if(pcb->type == USER_PROCESS || pcb->type == USER_THREAD){
         pt_regs->regs[2] = user_stack;
         pt_regs->sstatus = 0;
@@ -87,20 +82,19 @@ static void init_pcb_stack(
      * simulate a pcb context.
      */
     pcb->kernel_sp = kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
-    pcb->user_sp = user_stack;
     switchto_context_t *stored_switchto_k = (switchto_context_t *) pcb->kernel_sp;
-    // push values in
-    for(int i=0;i<2;i++){
-        stored_switchto_k->regs[i] = pt_regs->regs[i+1];
+    if(pcb->type == USER_PROCESS || pcb->type == USER_THREAD){
+        stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
     }
+    else{
+        stored_switchto_k->regs[0] = entry_point;
+    }
+    stored_switchto_k->regs[1] = pcb->kernel_sp;
     for(int i=2;i<4;i++){
         stored_switchto_k->regs[i] = pt_regs->regs[i+7];
     }
     for(int i=4;i<14;i++){
         stored_switchto_k->regs[i] = pt_regs->regs[i+15];
-    }
-    if(pcb->type == USER_PROCESS || pcb->type == USER_THREAD){
-        stored_switchto_k->regs[0] = &ret_from_exception;
     }
 }
 
@@ -113,10 +107,12 @@ static void init_pcb()
     /* remember to initialize `current_running`
      * TODO:
      */
-    task_info_t **tasks;
-    int tasks_num;
     init_list_head(&ready_queue);
     #ifdef TEST_SCHEDULE_1
+        tasks = sched1_tasks;
+        tasks_num = num_sched1_tasks;
+    #endif
+    #ifdef TASK_1
         tasks = sched1_tasks;
         tasks_num = num_sched1_tasks;
     #endif
@@ -158,7 +154,7 @@ static void init_pcb()
     #endif
     #ifdef TEST_LOCK_2
         tasks = lock2_tasks;
-        tasks_num = num_lock2_task;
+        tasks_num = num_lock2_tasks;
     #endif
     #ifdef TASK_4
         tasks_num = num_sched2_tasks + num_lock2_tasks;
@@ -167,7 +163,7 @@ static void init_pcb()
         {
             tasks[i] = sched2_tasks[i];
         }
-        for (int i = 0; i < num_sched2_tasks; i++)
+        for (int i = 0; i < num_lock2_tasks; i++)
         {
             tasks[i+num_sched2_tasks] = lock2_tasks[i];
         }
@@ -176,10 +172,10 @@ static void init_pcb()
         // use allocPage in mm.c, first time allocate 1 page only
         pcb[i].kernel_sp = allocPage(1);
         pcb[i].user_sp = allocPage(1);
-        #ifndef TASK_4 // no preempt
+        #if !defined (TASK_4) && !defined (TASK_5) && !defined (USE_CLOCK_INT) // no preempt
         pcb[i].preempt_count = 1;
         #endif
-        #ifdef TASK_4 // enable preempt
+        #if defined (TASK_4) || defined (TASK_5) || defined (USE_CLOCK_INT) // enable preempt
         pcb[i].preempt_count = 0;
         #endif
         pcb[i].list.prev = NULL;
@@ -193,6 +189,9 @@ static void init_pcb()
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
     }
+    // help initialize pid0
+    switchto_context_t *stored_switchto_k = (switchto_context_t *) pid0_pcb.kernel_sp;
+    stored_switchto_k->regs[1] = pid0_pcb.kernel_sp;
     current_running = &pid0_pcb;
 }
 
@@ -222,9 +221,6 @@ int main()
     init_pcb();
     printk("> [INIT] PCB initialization succeeded.\n\r");
 
-    // read CPU frequency
-    time_base = sbi_read_fdt(TIMEBASE);
-
     // init interrupt (^_^)
     init_exception();
     printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
@@ -242,16 +238,20 @@ int main()
     // TODO:
     // Setup timer interrupt and enable all interrupt
 
+    // read CPU frequency
+    time_base = sbi_read_fdt(TIMEBASE);
+    printk("time_base:%d\n",time_base);
+
     while (1) {
         // (QAQQQQQQQQQQQ)
         // If you do non-preemptive scheduling, you need to use it
         // to surrender control do_scheduler();
-        #ifdef TASK_4
-        sbi_set_timer(get_ticks()+TIMER_INTERVAL);
+        #if defined TASK_4 || defined (TASK_5) || defined (USE_CLOCK_INT)
+        reset_irq_timer();
         enable_interrupt();
         __asm__ __volatile__("wfi\n\r":::);
         #endif
-        #ifndef TASK_4
+        #if !defined (TASK_4) && !defined (TASK_5) && !defined (USE_CLOCK_INT)
         do_scheduler();
         #endif
     };

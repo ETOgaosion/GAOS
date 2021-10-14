@@ -47,6 +47,7 @@ typedef struct regs_context
     reg_t sepc;
     reg_t sbadaddr;
     reg_t scause;
+    reg_t sie;
 } regs_context_t;
 
 /* used to save register infomation in switch_to */
@@ -111,10 +112,21 @@ typedef struct task_info
     task_type_t type;
 } task_info_t;
 
+typedef struct unblock_args{
+    list_head *queue;
+    int way;
+} unblock_args_t;
+
+
+extern void ret_from_exception();
+extern void __global_pointer$();
+
 /* ready queue to run */
 extern list_head ready_queue;
 extern list_head blocked_queue;
 
+task_info_t **tasks;
+long tasks_num;
 
 /* current running task PCB */
 extern pcb_t * volatile current_running;
@@ -128,9 +140,11 @@ extern void switch_to(pcb_t *prev, pcb_t *next);
 void do_scheduler(void);
 void do_sleep(uint32_t);
 
-
 void do_block(list_node_t *, list_head *queue);
-void do_unblock(list_node_t *);
+void do_unblock(void *args);
+
+void do_fork(void);
+void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
 pcb_t *dequeue(list_head *queue, int field);
 

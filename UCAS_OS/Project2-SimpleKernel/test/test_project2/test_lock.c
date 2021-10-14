@@ -3,13 +3,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <sys/syscall.h>
+#include <os/time.h>
+#include <tasks.h>
 
 static int is_init = FALSE;
 static char blank[] = {"                                             "};
 
 /* if you want to use mutex lock, you need define MUTEX_LOCK */
 #define MUTEX_LOCK
-static mthread_mutex_t mutex_lock;
+static mthread_mutex_t mutex_lock = {.data = 0};
 
 void lock_task1(void)
 {
@@ -21,9 +23,8 @@ void lock_task1(void)
                 {
 
 #ifdef MUTEX_LOCK
-                        mthread_mutex_init(&mutex_lock);
+                        is_init = (mthread_mutex_init(&mutex_lock) == 0);
 #endif
-                        is_init = TRUE;
                 }
 
                 sys_move_cursor(1, print_location);
@@ -32,7 +33,9 @@ void lock_task1(void)
                 sys_move_cursor(1, print_location);
                 printf("> [TASK] Applying for a lock.\n");
                 
+                #ifndef TASK_4
                 sys_yield();
+                #endif
 
 #ifdef MUTEX_LOCK
                 mthread_mutex_lock(&mutex_lock);
@@ -42,7 +45,9 @@ void lock_task1(void)
                 {
                         sys_move_cursor(1, print_location);
                         printf("> [TASK] Has acquired lock and running.(%d)\n", i);
+                        #ifndef TASK_4
                         sys_yield();
+                        #endif
                 }
 
                 sys_move_cursor(1, print_location);
@@ -54,7 +59,9 @@ void lock_task1(void)
 #ifdef MUTEX_LOCK
                 mthread_mutex_unlock(&mutex_lock);
 #endif
+                #ifndef TASK_4
                 sys_yield();
+                #endif
         }
 }
 
@@ -68,9 +75,8 @@ void lock_task2(void)
                 {
 
 #ifdef MUTEX_LOCK
-                        mthread_mutex_init(&mutex_lock);
+                        is_init = (mthread_mutex_init(&mutex_lock) == 0);
 #endif
-                        is_init = TRUE;
                 }
 
                 sys_move_cursor(1, print_location);
@@ -79,7 +85,9 @@ void lock_task2(void)
                 sys_move_cursor(1, print_location);
                 printf("> [TASK] Applying for a lock.\n");
                 
+                #ifndef TASK_4
                 sys_yield();
+                #endif
 
 #ifdef MUTEX_LOCK
                 mthread_mutex_lock(&mutex_lock);
@@ -89,7 +97,9 @@ void lock_task2(void)
                 {
                         sys_move_cursor(1, print_location);
                         printf("> [TASK] Has acquired lock and running.(%d)\n", i);
+                        #ifndef TASK_4
                         sys_yield();
+                        #endif
                 }
 
                 sys_move_cursor(1, print_location);
@@ -101,6 +111,8 @@ void lock_task2(void)
 #ifdef MUTEX_LOCK
                 mthread_mutex_unlock(&mutex_lock);
 #endif
+                #ifndef TASK_4
                 sys_yield();
+                #endif
         }
 }

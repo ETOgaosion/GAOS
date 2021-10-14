@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sys/syscall.h>
+#include <tasks.h>
 
 static char blank[] = {"                    "};
 static char plane1[] = {"    ___         _   "};
@@ -16,7 +17,9 @@ void print_task1(void)
     {
         sys_move_cursor(1, print_location);
         printf("> [TASK] This task is to test scheduler. (%d)", i);
+        #ifndef TASK_4
         sys_yield();
+        #endif
     }
 }
 
@@ -29,7 +32,9 @@ void print_task2(void)
     {
         sys_move_cursor(1, print_location);
         printf("> [TASK] Gao Ziyuan. (%d)", i);
+        #ifndef TASK_4
         sys_yield();
+        #endif
     }
 }
 
@@ -53,7 +58,9 @@ void drawing_task(void)
             sys_move_cursor(i, j + 3);
             printf("%s", plane4);
         }
+        #ifndef TASK_4
         sys_yield();
+        #endif
 
         sys_move_cursor(1, j + 0);
         printf("%s", blank);

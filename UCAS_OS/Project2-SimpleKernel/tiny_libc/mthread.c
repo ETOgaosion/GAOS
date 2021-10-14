@@ -2,11 +2,13 @@
 #include <mthread.h>
 
 int mutex_get(mthread_mutex_t *key){
-    long res = sys_getlock();
-    if(res < 0){
+    long res = sys_getlock(&key->data);
+    if(res == -1 || res == -3){
         return EINVAL;
     }
-    key->data = res;
+    else if(res == -2){
+        return EBUSY;
+    }
     return 0;
 }
 

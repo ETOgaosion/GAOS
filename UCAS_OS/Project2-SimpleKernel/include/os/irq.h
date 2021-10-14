@@ -60,7 +60,7 @@ enum ExcCode
 };
 
 // ticks number
-#define TIMER_INTERVAL 150000
+#define TIMER_INTERVAL 1500000
 
 typedef void (*handler_t)(regs_context_t*, uint64_t, uint64_t);
 

@@ -30,21 +30,20 @@
 
 #include <stdint.h>
 
-extern long invoke_syscall(long, long, long, long);
+extern long invoke_syscall(long, long, long, long, int);
 
-void sys_sleep(uint32_t);
 void sys_yield();
-
+void sys_fork();
+long sys_prior(long);
 long sys_getlock();
 long sys_lockop(long key, int op);
-
 void sys_write(char *);
 char *sys_read();
 void sys_move_cursor(int, int);
 void sys_reflush();
-
 long sys_get_timebase();
 long sys_get_tick();
+void sys_sleep(uint32_t);
 
 
 #endif

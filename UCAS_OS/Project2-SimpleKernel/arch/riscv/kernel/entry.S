@@ -1,7 +1,7 @@
 #include <asm.h>
 #include <csr.h>
 
-.macro SAVE_CONTEXT
+.macro SAVE_CONTEXT_HEAD
   .local _restore_kernel_tpsp
   .local _save_context
   /*
@@ -19,7 +19,10 @@ _save_context:
   sd sp, PCB_USER_SP(tp)
   ld sp, PCB_KERNEL_SP(tp)
   addi sp, sp, SWITCH_TO_SIZE
+.endm
 
+.macro SAVE_CONTEXT
+  SAVE_CONTEXT_HEAD
   /* TODO: save all general purpose registers here! */
   SAVE(zero,ZERO)
   SAVE(ra,RA)
@@ -54,6 +57,21 @@ _save_context:
   SAVE(t5,T5)
   SAVE(t6,T6)
 
+  // kernel mode program save sp
+  beqz a3,next_mv
+  csrr a3,CSR_SCAUSE
+  li a6,8
+  bne a3,a6,next_mv
+  csrr a3,CSR_SSTATUS
+  li a6,SR_SPP
+  and a3,a3,a6
+  beqz a3,next_mv
+  ld a4,PCB_USER_SP(tp)
+  addi sp,sp,-(SWITCH_TO_SIZE)
+  SAVE_SWITCH(a4,SP)
+  addi sp,sp,(SWITCH_TO_SIZE)
+next_mv:
+
   /*
    * Disable user-mode memory access as it should only be set in the
    * actual user copy routines.
@@ -70,16 +88,20 @@ _save_context:
   csrr a2,CSR_STVAL
   csrr a3,CSR_SCAUSE
   csrr a4,CSR_SSCRATCH
+  csrr a5,CSR_SIE
   SAVE(a0,SSTATUS)
   SAVE(a1,SEPC)
   SAVE(a2,SBADADDR)
   SAVE(a3,SCAUSE)
   SAVE(a4,TP)
+  SAVE(a5,SIE)
 .endm
 
 .macro RESTORE_CONTEXT
   /* TODO: Restore all registers and sepc,sstatus */
+  mv a0,sp
   ld sp, PCB_KERNEL_SP(tp)
+  SAVE_SWITCH(a0,SP)
   addi sp, sp, SWITCH_TO_SIZE
   // restore s first
   LOAD(a0,SSTATUS)
@@ -118,7 +140,42 @@ _save_context:
   LOAD(t4,T4)
   LOAD(t5,T5)
   LOAD(t6,T6)
-  ld sp, PCB_USER_SP(tp)
+.endm
+
+.macro ENABLE_PREEMPT
+  ld t1, current_running
+  ld t0, PCB_PREEMPT_COUNT(t1)
+  beq t0, zero, macro_do_enable
+  addi t0, t0, -1
+  sd t0, PCB_PREEMPT_COUNT(t1)
+  beq t0, zero, macro_do_enable
+  la t0,break
+  jr t0
+macro_do_enable:
+  not t0, x0
+  csrs CSR_SIE, t0
+break:
+.endm
+
+.macro DISABLE_PREEMPT
+  csrw CSR_SIE, zero
+  ld t1, current_running
+  ld t0, PCB_PREEMPT_COUNT(t1)
+  addi t0, t0, 1
+  sd t0, PCB_PREEMPT_COUNT(t1)
+.endm
+
+.macro ENABLE_INTERRUPT
+  li t0, SR_SIE
+  csrs CSR_SSTATUS, t0
+.endm
+
+.macro DISABLE_INTERRUPT
+  csrr t0,CSR_SSTATUS
+  li t1,SR_SIE
+  not t1,t1
+  and t0,t0,t1
+  csrs CSR_SSTATUS, t0
 .endm
 
 ENTRY(enable_preempt)
@@ -151,7 +208,10 @@ ENTRY(enable_interrupt)
 ENDPROC(enable_interrupt)
 
 ENTRY(disable_interrupt)
-  li t0, SR_SIE
+  csrr t0,CSR_SSTATUS
+  li t1,SR_SIE
+  not t1,t1
+  and t0,t0,t1
   csrs CSR_SSTATUS, t0
   jr ra
 ENDPROC(disable_interrupt)
@@ -206,11 +266,27 @@ ENTRY(ret_from_exception)
   /* TODO: */
   RESTORE_CONTEXT
   csrw CSR_SSCRATCH,tp
-  //ret
+  //ENABLE_PREEMPT
+  //ENABLE_INTERRUPT
+  ld sp, PCB_USER_SP(tp)
+  beqz a3,u_mode_ret
+  csrr a3,CSR_SCAUSE
+  li a6,8
+  bne a3,a6,u_mode_ret
+  csrr a3,CSR_SSTATUS
+  li a6,SR_SPP
+  and a3,a3,a6
+  beqz a3,u_mode_ret
+k_mode_ret:
+  mv ra,a5
+  ret
+u_mode_ret:
   sret
 ENDPROC(ret_from_exception)
 
 ENTRY(exception_handler_entry)
+  //DISABLE_PREEMPT
+  //DISABLE_INTERRUPT
   SAVE_CONTEXT
 
   csrw CSR_SSCRATCH, x0
@@ -230,7 +306,8 @@ ENTRY(exception_handler_entry)
    * note: don't forget to pass parameters for it.
    */
   mv a0,sp
-  ld sp,PCB_USER_SP(tp)
+  addi sp,sp,-(SWITCH_TO_SIZE)
+  LOAD_SWITCH(sp,SP)
   csrr a1,CSR_STVEC
   csrr a2,CSR_SCAUSE
   call t0,interrupt_helper

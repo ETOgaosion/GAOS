@@ -1,15 +1,15 @@
 #include <os/lock.h>
 #include <os/sched.h>
-#include <atomic.h>
 
 int first_time = 0;
-long global_lock_id = 0;
+long global_lock_id = 1;
 mutex_lock_t *locks[LOCK_NUM];
 
-long do_mutex_lock_init(void)
+long do_mutex_lock_init(int *key)
 {
     /* TODO */
     if(global_lock_id == LOCK_NUM){
+        *key = 0;
         return -1;
     }
     if(!first_time){
@@ -19,13 +19,19 @@ long do_mutex_lock_init(void)
         }
         first_time = 1;
     }
+    if(*key > 0){
+        return -2;
+    }
+    if(*key < 0){
+        return -3;
+    }
     locks[global_lock_id]->lock_id = global_lock_id;
     locks[global_lock_id]->initialized = 1;
     locks[global_lock_id]->lock.flag = UNLOCKED;
     locks[global_lock_id]->lock.guard = UNGUARDED;
     init_list_head(&(locks[global_lock_id]->block_queue));
-    global_lock_id++;
-    return global_lock_id - 1;
+    *key = global_lock_id++;
+    return 0;
 }
 
 long do_mutex_lock_op(long key,int op){
@@ -55,7 +61,6 @@ long do_mutex_lock_acquire(long key)
     else{
         do_block(&current_running->list,&locks[key]->block_queue);
         locks[key]->lock.guard = 0;
-        do_scheduler();
         return -2;
     }
 }
@@ -74,7 +79,10 @@ long do_mutex_lock_release(long key)
         locks[key]->lock.flag = 0;
     }
     else{
-        do_unblock(&locks[key]->block_queue);
+        unblock_args_t *args = (unblock_args_t *)kmalloc(sizeof(unblock_args_t));
+        args->queue = &locks[key]->block_queue;
+        args->way = 0;
+        do_unblock(args);
     }
     locks[key]->lock.guard = 0;
     return locks[key]->lock_id;

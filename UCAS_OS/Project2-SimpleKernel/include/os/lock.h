@@ -29,6 +29,8 @@
 #define INCLUDE_LOCK_H_
 
 #include <os/list.h>
+#include <atomic.h>
+#include <stdarg.h>
 
 #define LOCK_NUM 65535
 
@@ -64,7 +66,7 @@ void spin_lock_acquire(spin_lock_t *lock);
 void spin_lock_release(spin_lock_t *lock);
 */
 
-long do_mutex_lock_init(void);
+long do_mutex_lock_init(int *key);
 long do_mutex_lock_op(long key,int op);
 long do_mutex_lock_acquire(long key);
 long do_mutex_lock_release(long key);

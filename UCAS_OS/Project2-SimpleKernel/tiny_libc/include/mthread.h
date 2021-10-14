@@ -38,7 +38,7 @@
 typedef struct mthread_mutex
 {
     // TODO:
-    atomic_long data;
+    int data;
 } mthread_mutex_t;
 
 int mutex_get(mthread_mutex_t *key);

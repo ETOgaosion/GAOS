@@ -7,6 +7,7 @@
 #include <sbi.h>
 #include <screen.h>
 #include <csr.h>
+#include <ticks.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -21,7 +22,7 @@ void reset_irq_timer()
 
     // note: use sbi_set_timer
     // remember to reschedule
-    sbi_set_timer(get_ticks() + TIMER_INTERVAL);
+    sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
     do_scheduler();
 }
 
@@ -73,9 +74,12 @@ void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
         }
         printk("\n\r");
     }
+    printk("current running pid:%d\n",current_running->pid);
+    printk("current running preempt_count:%d\n",current_running->preempt_count);
     printk("sstatus: 0x%lx sbadaddr: 0x%lx scause: %lu\n\r",
            regs->sstatus, regs->sbadaddr, regs->scause);
     printk("sepc: 0x%lx\n\r", regs->sepc);
+    printk("sie: 0x%lx\n\r", regs->sie);
     assert(0);
 }
 

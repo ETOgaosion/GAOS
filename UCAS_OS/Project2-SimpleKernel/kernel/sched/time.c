@@ -34,19 +34,16 @@ void latency(uint64_t time)
     return;
 }
 
-void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *parameter){
-    disable_preempt();
+void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *args){
     current_running->timer.initialized = 1;
     current_running->timer.init_tick = get_ticks();
     current_running->timer.timeout_tick = timeout_ticks + current_running->timer.init_tick;
     current_running->timer.timeout_func = timeout_func;
-    current_running->timer.parameter = parameter;
+    current_running->timer.args = args;
     list_add_tail(&(current_running->timer_list),&timers);
-    enable_preempt();
 }
 
 void check_timer(void){
-    disable_preempt();
     pcb_t *pcb_check;
     list_node_t *iterator = timers.next;
     while (!list_empty(&timers) && iterator != &timers)
@@ -55,11 +52,10 @@ void check_timer(void){
         if(get_ticks() >= pcb_check->timer.timeout_tick){
             iterator = iterator->next;
             list_del(iterator->prev);
-            pcb_check->timer.timeout_func(pcb_check->timer.parameter);
+            pcb_check->timer.timeout_func(pcb_check->timer.args);
         }
         else{
             iterator = iterator->next;
         }
     }
-    enable_preempt();
 }

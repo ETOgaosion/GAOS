@@ -27,7 +27,8 @@
         "stdio.h": "c",
         "sbi.h": "c",
         "mm.h": "c",
-        "csr.h": "c"
+        "csr.h": "c",
+        "stdarg.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
