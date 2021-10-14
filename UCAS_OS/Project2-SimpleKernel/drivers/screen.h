@@ -41,6 +41,8 @@ void screen_clear(void);
 /* reflush screen buffer */
 void screen_reflush(void);
 
+void load_curpcb_cursor(void);
+
 /* screen write string */
 void screen_write(char *buff);
 

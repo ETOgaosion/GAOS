@@ -40,3 +40,7 @@ struct task_info task2_13 = {(ptr_t)&lock_task2, USER_THREAD};
 struct task_info *lock2_tasks[16] = {&task2_12, &task2_13};
 int num_lock2_tasks = 2;
 
+/* [TASK 5] fork and priority schedule */
+struct task_info task2_14 = {(ptr_t)&fork_priority_task,USER_THREAD};
+struct task_info *fork_prior_tasks[16] = {&task2_14};
+int num_fork_prior_tasks = 1;

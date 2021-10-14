@@ -38,6 +38,7 @@
 #define INCLUDE_LIST_H_
 
 #include <type.h>
+#include <os/mm.h>
 
 // double-linked list
 //   TODO: use your own list design!!
@@ -135,6 +136,20 @@ static inline int list_is_last(list_head *list, list_head *head)
 static inline int list_empty(list_head *head)
 {
 	return head->next == head;
+}
+
+// fetch the keyth element from list
+static inline list_head * list_fetch(list_head *head, long key){
+	if(list_empty(head) || key == 0){
+		return NULL;
+	}
+	list_head *iterator = (list_head *)kmalloc(sizeof(list_head));
+	*iterator = *head;
+	while (key-- && iterator->next != iterator)
+	{
+		iterator = iterator->next;
+	}
+	return iterator;
 }
 
 #endif

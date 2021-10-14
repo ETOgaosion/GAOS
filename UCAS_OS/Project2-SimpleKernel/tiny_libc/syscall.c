@@ -1,6 +1,7 @@
 #include <sys/syscall.h>
 #include <stdint.h>
 #include <os/syscall_number.h>
+#include <os/syscall.h>
 #include <os/sched.h>
 #include <os/irq.h>
 #include <tasks.h>
@@ -17,8 +18,12 @@
 
 void sys_yield()
 {
+    if(MODE){
+        syscall[SYSCALL_YIELD]();
+        return;
+    }
     // TODO:
-    invoke_syscall(SYSCALL_YIELD, IGNORE, IGNORE, IGNORE,MODE);
+    invoke_syscall(SYSCALL_YIELD, IGNORE, IGNORE, IGNORE);
     //   or
     // do_scheduler();
     // ???
@@ -27,62 +32,95 @@ void sys_yield()
 /*
 // see syscall.S
 // use assembly function
-void sys_fork()
+long sys_fork()
 {
-    invoke_syscall(SYSCALL_FORK,IGNORE,IGNORE,IGNORE,MODE);
+    return invoke_syscall(SYSCALL_FORK,IGNORE,IGNORE,IGNORE);
 }
 */
 
-long sys_setpriority(long priority)
+void sys_setpriority(long priority)
 {
-    return invoke_syscall(SYSCALL_SET_PRIORITY,priority,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_SET_PRIORITY](priority);
+    }
+    invoke_syscall(SYSCALL_SET_PRIORITY,priority,IGNORE,IGNORE);
 }
 
-long sys_getlock(int *key){
-    return invoke_syscall(SYSCALL_GETLOCK,key,IGNORE,IGNORE,MODE);
+long sys_getlock(int *key)
+{
+    if(MODE){
+        return syscall[SYSCALL_GETLOCK](key);
+    }
+    return invoke_syscall(SYSCALL_GETLOCK,key,IGNORE,IGNORE);
 }
 
-long sys_lockop(long key, int op){
-    return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE,MODE);
+long sys_lockop(long key, int op)
+{
+    if(MODE){
+        return syscall[SYSCALL_LOCKOP](key,op);
+    }
+    return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE);
 }
 
 void sys_write(char *buff)
 {
     // TODO:
-    invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_WRITE](buff);
+    }
+    invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
 }
 
-char *sys_read(){
-    return invoke_syscall(SYSCALL_READ,IGNORE,IGNORE,IGNORE,MODE);
+char sys_read_ch()
+{
+    if(MODE){
+        return syscall[SYSCALL_READ_CH]();
+    }
+    return invoke_syscall(SYSCALL_READ_CH,IGNORE,IGNORE,IGNORE);
 }
 
 void sys_reflush()
 {
     // TODO:
-    invoke_syscall(SYSCALL_REFLUSH,IGNORE,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_REFLUSH]();
+    }
+    invoke_syscall(SYSCALL_REFLUSH,IGNORE,IGNORE,IGNORE);
 }
 
 void sys_move_cursor(int x, int y)
 {
     // TODO:
-    invoke_syscall(SYSCALL_CURSOR,x,y,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_CURSOR](x,y);
+    }
+    invoke_syscall(SYSCALL_CURSOR,x,y,IGNORE);
     //vt100_move_cursor(x,y);
 }
 
 long sys_get_timebase()
 {
     // TODO:
-    return invoke_syscall(SYSCALL_GET_TIMEBASE,IGNORE,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_GET_TIMEBASE]();
+    }
+    return invoke_syscall(SYSCALL_GET_TIMEBASE,IGNORE,IGNORE,IGNORE);
 }
 
 long sys_get_tick()
 {
     // TODO:
-    return invoke_syscall(SYSCALL_GET_TICK,IGNORE,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_GET_TICK]();
+    }
+    return invoke_syscall(SYSCALL_GET_TICK,IGNORE,IGNORE,IGNORE);
 }
 
 void sys_sleep(uint32_t time)
 {
     // TODO:
-    invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE,MODE);
+    if(MODE){
+        return syscall[SYSCALL_SLEEP](time);
+    }
+    invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE);
 }

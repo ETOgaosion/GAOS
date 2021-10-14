@@ -42,6 +42,7 @@
 
 extern void ret_from_exception();
 extern void __global_pointer$();
+extern void kp_ret_from_exception();
 extern task_info_t **tasks;
 extern long tasks_num;
 
@@ -168,6 +169,10 @@ static void init_pcb()
             tasks[i+num_sched2_tasks] = lock2_tasks[i];
         }
     #endif
+    #ifdef TASK_5
+        tasks = fork_priority_task;
+        tasks_num = num_fork_prior_tasks;
+    #endif
     for(int i=0;i<tasks_num;i++){
         // use allocPage in mm.c, first time allocate 1 page only
         pcb[i].kernel_sp = allocPage(1);
@@ -186,6 +191,7 @@ static void init_pcb()
         pcb[i].cursor_x = 0;
         pcb[i].cursor_y = 0;
         pcb[i].timer.initialized = 0;
+        pcb[i].priority = 0;
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
     }
@@ -207,7 +213,7 @@ static void init_syscall(void)
     syscall[SYSCALL_GETLOCK]        = (long (*)())&do_mutex_lock_init;
     syscall[SYSCALL_LOCKOP]         = (long (*)())&do_mutex_lock_op;
     syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
-    syscall[SYSCALL_READ]           = (long (*)())&sbi_console_getchar;
+    syscall[SYSCALL_READ_CH]        = (long (*)())&sbi_console_getchar;
     syscall[SYSCALL_CURSOR]         = (long (*)())&screen_move_cursor;
     syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;

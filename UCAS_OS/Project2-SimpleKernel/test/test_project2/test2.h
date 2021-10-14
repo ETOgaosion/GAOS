@@ -12,4 +12,6 @@ extern void timer_task(void);
 extern void lock_task1(void);
 extern void lock_task2(void);
 
+extern void fork_priority_task(void);
+
 #endif

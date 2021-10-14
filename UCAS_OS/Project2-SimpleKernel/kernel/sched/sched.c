@@ -43,13 +43,19 @@ pcb_t *dequeue(list_head *queue, int field){
     #endif
 }
 
-void do_scheduler(void)
+void do_scheduler()
 {
     // TODO schedule
     // Modify the current_running pointer.
     pcb_t *curr = current_running;
     if(curr->status == TASK_RUNNING && curr->pid != 0){
-        list_add_tail(&(curr->list), &ready_queue);
+        if(list_empty(&ready_queue) || curr->priority == 0){
+            list_add_tail(&(curr->list), &ready_queue);
+        }
+        else{
+            list_head *insert_point = list_fetch(&ready_queue,curr->priority);
+            list_add(&(curr->list), insert_point);
+        }
         curr->status = TASK_READY;
     }
     if(list_empty(&ready_queue)){
@@ -67,10 +73,7 @@ void do_scheduler(void)
     process_id = next_pcb->pid;
     
     // restore the current_runnint's cursor_x and cursor_y
-    vt100_move_cursor(current_running->cursor_x,
-                      current_running->cursor_y);
-    screen_cursor_x = current_running->cursor_x;
-    screen_cursor_y = current_running->cursor_y;
+    load_curpcb_cursor();
 
     // TODO: switch_to current_running
     switch_to(curr,next_pcb);
@@ -113,7 +116,7 @@ void do_unblock(void *args)
     }
 }
 
-void do_fork(void)
+long do_fork(void)
 {
     pcb_t *curr = current_running, *kid = (pcb_t *)kmalloc(sizeof(pcb_t));
     kid->kernel_sp = allocPage(1);
@@ -164,6 +167,6 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     memcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
 }
 
-long set_priority(long priority){
-
+void set_priority(long priority){
+    current_running->priority = priority;
 }

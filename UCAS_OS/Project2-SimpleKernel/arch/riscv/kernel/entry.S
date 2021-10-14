@@ -57,21 +57,6 @@ _save_context:
   SAVE(t5,T5)
   SAVE(t6,T6)
 
-  // kernel mode program save sp
-  beqz a3,next_mv
-  csrr a3,CSR_SCAUSE
-  li a6,8
-  bne a3,a6,next_mv
-  csrr a3,CSR_SSTATUS
-  li a6,SR_SPP
-  and a3,a3,a6
-  beqz a3,next_mv
-  ld a4,PCB_USER_SP(tp)
-  addi sp,sp,-(SWITCH_TO_SIZE)
-  SAVE_SWITCH(a4,SP)
-  addi sp,sp,(SWITCH_TO_SIZE)
-next_mv:
-
   /*
    * Disable user-mode memory access as it should only be set in the
    * actual user copy routines.
@@ -263,24 +248,11 @@ ENTRY(switch_to)
 ENDPROC(switch_to)
 
 ENTRY(ret_from_exception)
-  /* TODO: */
   RESTORE_CONTEXT
   csrw CSR_SSCRATCH,tp
   //ENABLE_PREEMPT
   //ENABLE_INTERRUPT
   ld sp, PCB_USER_SP(tp)
-  beqz a3,u_mode_ret
-  csrr a3,CSR_SCAUSE
-  li a6,8
-  bne a3,a6,u_mode_ret
-  csrr a3,CSR_SSTATUS
-  li a6,SR_SPP
-  and a3,a3,a6
-  beqz a3,u_mode_ret
-k_mode_ret:
-  mv ra,a5
-  ret
-u_mode_ret:
   sret
 ENDPROC(ret_from_exception)
 

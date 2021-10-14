@@ -90,8 +90,14 @@ void screen_move_cursor(int x, int y)
     current_running->cursor_y = screen_cursor_y;
 }
 
+void load_curpcb_cursor(){
+    screen_cursor_x = current_running->cursor_x;
+    screen_cursor_y = current_running->cursor_y;
+}
+
 void screen_write(char *buff)
 {
+    load_curpcb_cursor();
     int i = 0;
     int l = kstrlen(buff);
 

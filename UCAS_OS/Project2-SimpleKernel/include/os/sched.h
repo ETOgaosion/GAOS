@@ -103,6 +103,8 @@ typedef struct pcb
     /* timer */
     list_node_t timer_list;
     timer_t timer;
+
+    long priority;
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -137,16 +139,16 @@ extern pcb_t pid0_pcb;
 extern const ptr_t pid0_stack;
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
-void do_scheduler(void);
+void do_scheduler();
 void do_sleep(uint32_t);
 
 void do_block(list_node_t *, list_head *queue);
 void do_unblock(void *args);
 
-void do_fork(void);
+long do_fork(void);
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
-long set_priority(long priority);
+void set_priority(long priority);
 
 pcb_t *dequeue(list_head *queue, int field);
 

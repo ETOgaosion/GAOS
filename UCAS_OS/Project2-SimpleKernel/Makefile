@@ -26,7 +26,7 @@ SRC_LIBS	= ./libs/string.c ./libs/printk.c
 SRC_LIBC	= ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c
 
 SRC_TEST	= ./test/test.c
-SRC_TEST2	= ./test/test_project2/test_scheduler.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c ./test/test_project2/test_lock.c
+SRC_TEST2	= ./test/test_project2/test_scheduler.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c ./test/test_project2/test_lock.c ./test/test_project2/test_fork_prior.c
 
 SRC_MAIN	= ${SRC_ARCH} ${SRC_INIT} ${SRC_INT} ${SRC_DRIVER} ${SRC_LOCK} ${SRC_SCHED} ${SRC_MM} ${SRC_SYSCALL} ${SRC_LIBS} ${SRC_LIBC} ${SRC_TEST} ${SRC_TEST2}
 
