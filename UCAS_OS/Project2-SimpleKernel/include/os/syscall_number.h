@@ -34,7 +34,7 @@
 /* define */
 #define SYSCALL_YIELD 1
 #define SYSCALL_FORK 2
-#define SYSCALL_PRIOR 3
+#define SYSCALL_SET_PRIORITY 3
 #define SYSCALL_GETLOCK 4
 #define SYSCALL_LOCKOP 5
 #define SYSCALL_WRITE 6

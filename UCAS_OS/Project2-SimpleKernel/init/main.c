@@ -201,8 +201,9 @@ static void init_syscall(void)
     for(int i=0;i<NUM_SYSCALLS;i++){
         syscall[i] = (long (*)())&unknown_syscall; // only print register info
     }
-    syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
     syscall[SYSCALL_YIELD]          = (long (*)())&do_scheduler;
+    syscall[SYSCALL_FORK]           = (long (*)())&do_fork;
+    syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
     syscall[SYSCALL_GETLOCK]        = (long (*)())&do_mutex_lock_init;
     syscall[SYSCALL_LOCKOP]         = (long (*)())&do_mutex_lock_op;
     syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
@@ -211,6 +212,7 @@ static void init_syscall(void)
     syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
     syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
+    syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
 }
 
 // jump from bootloader.

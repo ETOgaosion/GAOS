@@ -6,6 +6,7 @@
 #include <screen.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #define FIFO
 
@@ -88,6 +89,7 @@ void do_sleep(uint32_t sleep_time)
     create_timer(sleep_time*get_time_base(),(void (*)(void *))&do_unblock,(void *)args);
     // 3. reschedule because the current_running is blocked.
     // must restore context, so see at sys_sleep()
+    do_scheduler();
 }
 
 void do_block(list_node_t *pcb_node, list_head *queue)
@@ -149,9 +151,19 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     kid->kernel_sp = kid_kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
     switchto_context_t *kid_stored_switchto_k = (switchto_context_t *) kid->kernel_sp;
     switchto_context_t *src_stored_switchto_k = (switchto_context_t *) src->kernel_sp;
+    // kid's ra, after do scheduler of the last task, kid shall go to ret_from_exception
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
+    // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
+    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
     for(int i=2;i<14;i++){
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }
+    // kid's usp, copy from src, but shall move to it's own page
+    kid->user_sp = kid_user_stack - (PAGE_SIZE - src->user_sp % PAGE_SIZE);
+    memcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
+}
+
+long set_priority(long priority){
+
 }

@@ -61,6 +61,7 @@ long do_mutex_lock_acquire(long key)
     else{
         do_block(&current_running->list,&locks[key]->block_queue);
         locks[key]->lock.guard = 0;
+        do_scheduler();
         return -2;
     }
 }

@@ -33,9 +33,9 @@ void sys_fork()
 }
 */
 
-long sys_prior(long priority)
+long sys_setpriority(long priority)
 {
-    return invoke_syscall(SYSCALL_PRIOR,priority,IGNORE,IGNORE,MODE);
+    return invoke_syscall(SYSCALL_SET_PRIORITY,priority,IGNORE,IGNORE,MODE);
 }
 
 long sys_getlock(int *key){
@@ -43,11 +43,7 @@ long sys_getlock(int *key){
 }
 
 long sys_lockop(long key, int op){
-    long ret = invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE,MODE);
-    if(ret == -2){
-        sys_yield();
-    }
-    return ret;
+    return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE,MODE);
 }
 
 void sys_write(char *buff)
@@ -89,5 +85,4 @@ void sys_sleep(uint32_t time)
 {
     // TODO:
     invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE,MODE);
-    sys_yield();
 }

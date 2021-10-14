@@ -34,7 +34,7 @@ extern long invoke_syscall(long, long, long, long, int);
 
 void sys_yield();
 void sys_fork();
-long sys_prior(long);
+long sys_setpriority(long);
 long sys_getlock();
 long sys_lockop(long key, int op);
 void sys_write(char *);

@@ -146,6 +146,8 @@ void do_unblock(void *args);
 void do_fork(void);
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
+long set_priority(long priority);
+
 pcb_t *dequeue(list_head *queue, int field);
 
 #endif
