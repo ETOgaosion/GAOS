@@ -30,10 +30,11 @@
 
 #include <stdint.h>
 
+// the last parameter shows with/without return value
 extern long invoke_syscall(long, long, long, long);
 
 void sys_yield();
-long sys_fork();
+extern long sys_fork();
 void sys_setpriority(long);
 long sys_getlock();
 long sys_lockop(long key, int op);

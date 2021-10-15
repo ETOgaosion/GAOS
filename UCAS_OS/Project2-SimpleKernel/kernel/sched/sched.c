@@ -124,23 +124,25 @@ long do_fork(void)
     kid->preempt_count = curr->preempt_count;
     kid->list.prev = NULL;
     kid->list.next = NULL;
-    kid->pid = tasks_num++;
+    kid->pid = ++tasks_num;
     kid->type = curr->type;
     kid->status = TASK_READY;
     kid->cursor_x = curr->cursor_x;
-    kid->cursor_y = curr->cursor_y;
+    kid->cursor_y = curr->cursor_y + 1;
     kid->timer.initialized = curr->timer.initialized;
     copy_pcb_stack(kid->kernel_sp,kid->user_sp,kid,curr->kernel_sp,curr->user_sp,curr);
     list_add_tail(&(kid->list),&ready_queue);
+    return kid->pid;
 }
 
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src)
 {
     regs_context_t *kid_pt_regs = (regs_context_t *)(kid_kernel_stack - sizeof(regs_context_t));
-    regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack - sizeof(regs_context_t));
+    regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
     for(int i=0;i<32;i++){
         kid_pt_regs->regs[i]=src_pt_regs->regs[i];
     }
+    kid_pt_regs->regs[10] = 0;
     kid_pt_regs->sepc = src_pt_regs->sepc;
     kid_pt_regs->scause = src_pt_regs->scause;
     kid_pt_regs->sbadaddr = src_pt_regs->sbadaddr;
@@ -158,7 +160,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
     // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
-    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
+    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
     for(int i=2;i<14;i++){
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }

@@ -1,5 +1,6 @@
 #include <asm.h>
 #include <csr.h>
+#include <os/syscall_number.h>
 
 ENTRY(invoke_syscall)
   /* TODO: */
@@ -13,6 +14,8 @@ syscall_return:
 ENDPROC(invoke_syscall)
 
 ENTRY(sys_fork)
-  call invoke_syscall
+  li a7,SYSCALL_FORK
+  li a3,1
+  ecall
   ret
 ENDPROC(sys_fork)

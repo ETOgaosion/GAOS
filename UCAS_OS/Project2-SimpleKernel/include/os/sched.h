@@ -33,6 +33,7 @@
 #include <os/list.h>
 #include <os/mm.h>
 #include <os/time.h>
+#include <asm/regs.h>
 
 #define NUM_MAX_TASK 16
 

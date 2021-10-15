@@ -170,7 +170,7 @@ static void init_pcb()
         }
     #endif
     #ifdef TASK_5
-        tasks = fork_priority_task;
+        tasks = fork_prior_tasks;
         tasks_num = num_fork_prior_tasks;
     #endif
     for(int i=0;i<tasks_num;i++){

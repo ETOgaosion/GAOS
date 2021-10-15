@@ -14,6 +14,8 @@ void timer_task(void)
 	    uint32_t time = time_elapsed / CLOCKS_PER_SEC;
         sys_move_cursor(1, print_location);
         printf("> [TASK] This is a thread to timing! (%u/%u seconds).\n", time, time_elapsed);
+        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
         sys_yield();
+        #endif
     }
 }

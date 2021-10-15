@@ -10,11 +10,11 @@
 // #define TASK_3
 // #define TEST_LOCK_2
 // #define TEST_SCHEDULE_2
-#define TASK_4
-// #define TASK_5
+// #define TASK_4
+#define TASK_5
 
 
-// #define USE_CLOCK_INT
+#define USE_CLOCK_INT
 // #define BLOCK_CLOCK_INT
 
 #endif

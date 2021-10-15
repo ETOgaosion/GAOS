@@ -283,5 +283,7 @@ ENTRY(exception_handler_entry)
   csrr a1,CSR_STVEC
   csrr a2,CSR_SCAUSE
   call t0,interrupt_helper
+  ld sp, PCB_KERNEL_SP(tp)
+  LOAD(a3,A3)
   jr ra
 ENDPROC(exception_handler_entry)
