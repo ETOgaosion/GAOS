@@ -128,8 +128,8 @@ extern void __global_pointer$();
 extern list_head ready_queue;
 extern list_head blocked_queue;
 
-task_info_t **tasks;
-long tasks_num;
+extern task_info_t **tasks;
+extern long tasks_num;
 
 /* current running task PCB */
 extern pcb_t * volatile current_running;

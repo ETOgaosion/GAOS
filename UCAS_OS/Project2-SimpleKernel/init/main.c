@@ -43,8 +43,8 @@
 extern void ret_from_exception();
 extern void __global_pointer$();
 extern void kp_ret_from_exception();
-extern task_info_t **tasks;
-extern long tasks_num;
+task_info_t **tasks;
+long tasks_num;
 
 static void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
