@@ -4,7 +4,7 @@ author: Gao Ziyuan   &nbsp;&nbsp;   Stu. Num:2019K8009929026
 
 ---
 
-TASK 1\~2 has been finished
+TASK 1\~2 has been finisched
 
 ## How to run
 

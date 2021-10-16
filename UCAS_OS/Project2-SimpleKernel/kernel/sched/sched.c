@@ -8,8 +8,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define FIFO
-
 pcb_t pcb[NUM_MAX_TASK];
 const ptr_t pid0_stack = INIT_KERNEL_STACK + PAGE_SIZE;
 pcb_t pid0_pcb = {
@@ -30,17 +28,20 @@ pid_t process_id = 1;
 
 pcb_t *dequeue(list_head *queue, int field){
     // plain and simple way
-    #ifdef FIFO
     pcb_t *ret;
     if(field == 0){
         ret = list_entry(queue->next,pcb_t,list);
+        list_del(&(ret->list));
     }
     else if(field == 1){
         ret = list_entry(queue->next,pcb_t,timer_list);
+        list_del(&(ret->timer_list));
     }
-    list_del(queue->next);
+    else if(field == 2){
+        ret = choose_sched_task(queue);
+        list_del(&(ret->list));
+    }
     return ret;
-    #endif
 }
 
 void do_scheduler()
@@ -49,11 +50,11 @@ void do_scheduler()
     // Modify the current_running pointer.
     pcb_t *curr = current_running;
     if(curr->status == TASK_RUNNING && curr->pid != 0){
-        if(list_empty(&ready_queue) || curr->priority == 0){
+        if(list_empty(&ready_queue) || curr->sched_prior.priority == 0){
             list_add_tail(&(curr->list), &ready_queue);
         }
         else{
-            list_head *insert_point = list_fetch(&ready_queue,curr->priority);
+            list_head *insert_point = list_fetch(&ready_queue,curr->sched_prior.priority);
             list_add(&(curr->list), insert_point);
         }
         curr->status = TASK_READY;
@@ -67,7 +68,7 @@ void do_scheduler()
     {
         check_timer();
     }
-    pcb_t *next_pcb = dequeue(&ready_queue,0);
+    pcb_t *next_pcb = dequeue(&ready_queue,2);
     next_pcb->status = TASK_RUNNING;
     current_running = next_pcb;
     process_id = next_pcb->pid;
@@ -170,5 +171,35 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
 }
 
 void set_priority(long priority){
-    current_running->priority = priority;
+    current_running->sched_prior.priority = priority;
+}
+
+uint64_t cal_priority(uint64_t time, long priority){
+    return time + priority * 10000;
+}
+
+pcb_t *choose_sched_task(list_head *queue){
+    uint64_t cur_time = get_ticks();
+    uint64_t max_priority = 0;
+    uint64_t cur_priority = 0;
+    list_head *list_iterator = &(*(queue->next));
+    pcb_t *max_one;
+    if(list_iterator->next == queue){
+        max_one = list_entry(list_iterator,pcb_t,list);
+    }
+    else{
+        pcb_t *pcb_iterator;
+        while (list_iterator->next != queue)
+        {
+            pcb_iterator = list_entry(list_iterator,pcb_t,list);
+            cur_priority = cal_priority(cur_time - pcb_iterator->sched_prior.last_sched_time, pcb_iterator->sched_prior.priority);
+            if(max_priority < cur_priority){
+                max_priority = cur_priority;
+                max_one = pcb_iterator;
+            }
+            list_iterator = list_iterator->next;
+        }
+    }
+    max_one->sched_prior.last_sched_time = get_ticks();
+    return max_one;
 }

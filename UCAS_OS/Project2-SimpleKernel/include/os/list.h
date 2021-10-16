@@ -16,7 +16,7 @@
  * restriction, including without limitation the rights to use,
  * copy, modify, merge, publish, distribute, sublicense, and/or
  * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
+ * Software is furnisched to do so, subject to the following
  * conditions:
  *
  * The above copyright notice and this permission notice shall be
@@ -143,8 +143,7 @@ static inline list_head * list_fetch(list_head *head, long key){
 	if(list_empty(head) || key == 0){
 		return NULL;
 	}
-	list_head *iterator = (list_head *)kmalloc(sizeof(list_head));
-	*iterator = *head;
+	list_head *iterator = &(*head);
 	while (key-- && iterator->next != head->prev)
 	{
 		iterator = iterator->next;

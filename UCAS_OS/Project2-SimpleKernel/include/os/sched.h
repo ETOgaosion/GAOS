@@ -11,7 +11,7 @@
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * furnisched to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
@@ -57,6 +57,11 @@ typedef struct switchto_context
     /* Callee saved registers.*/
     reg_t regs[14];
 } switchto_context_t;
+typedef struct prior
+{
+    long priority;
+    uint64_t last_sched_time;
+} prior_t;
 
 /*MODIFIED*/
 typedef enum {
@@ -105,7 +110,8 @@ typedef struct pcb
     list_node_t timer_list;
     timer_t timer;
 
-    long priority;
+    /* priority */
+    prior_t sched_prior;
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -150,6 +156,9 @@ long do_fork(void);
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
 void set_priority(long priority);
+uint64_t cal_priority(uint64_t time, long priority);
+
+pcb_t *choose_sched_task(list_head *queue);
 
 pcb_t *dequeue(list_head *queue, int field);
 

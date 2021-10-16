@@ -9,7 +9,7 @@
  * software and associated documentation files (the "Software"), to deal in the Software
  * without restriction, including without limitation the rights to use, copy, modify,
  * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the following conditions:
+ * persons to whom the Software is furnisched to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
@@ -173,6 +173,7 @@ static void init_pcb()
         tasks = fork_prior_tasks;
         tasks_num = num_fork_prior_tasks;
     #endif
+    int init_ticks = get_ticks();
     for(int i=0;i<tasks_num;i++){
         // use allocPage in mm.c, first time allocate 1 page only
         pcb[i].kernel_sp = allocPage(1);
@@ -191,7 +192,8 @@ static void init_pcb()
         pcb[i].cursor_x = 0;
         pcb[i].cursor_y = 0;
         pcb[i].timer.initialized = 0;
-        pcb[i].priority = i;
+        pcb[i].sched_prior.priority = i;
+        pcb[i].sched_prior.last_sched_time = init_ticks;
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
     }
