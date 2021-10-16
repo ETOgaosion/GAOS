@@ -191,7 +191,7 @@ static void init_pcb()
         pcb[i].cursor_x = 0;
         pcb[i].cursor_y = 0;
         pcb[i].timer.initialized = 0;
-        pcb[i].priority = 0;
+        pcb[i].priority = i;
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
     }

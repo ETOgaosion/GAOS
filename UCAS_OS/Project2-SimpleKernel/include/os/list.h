@@ -145,11 +145,11 @@ static inline list_head * list_fetch(list_head *head, long key){
 	}
 	list_head *iterator = (list_head *)kmalloc(sizeof(list_head));
 	*iterator = *head;
-	while (key-- && iterator->next != iterator)
+	while (key-- && iterator->next != head->prev)
 	{
 		iterator = iterator->next;
 	}
-	return iterator;
+	return iterator->next;
 }
 
 #endif
