@@ -256,12 +256,12 @@ int main()
         // (QAQQQQQQQQQQQ)
         // If you do non-preemptive scheduling, you need to use it
         // to surrender control do_scheduler();
-        #if defined TASK_4 || !defined (TASK_5) || defined (USE_CLOCK_INT)
+        #if defined TASK_4 || defined (TASK_5) || defined (USE_CLOCK_INT)
         reset_irq_timer();
         enable_interrupt();
         __asm__ __volatile__("wfi\n\r":::);
         #endif
-        #if !defined (TASK_4) && defined (TASK_5) && !defined (USE_CLOCK_INT)
+        #if !defined (TASK_4) && !defined (TASK_5) && !defined (USE_CLOCK_INT)
         do_scheduler();
         #endif
     };

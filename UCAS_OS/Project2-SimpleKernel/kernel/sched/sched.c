@@ -209,7 +209,7 @@ pcb_t *choose_sched_task(list_head *queue){
     uint64_t max_priority = 0;
     uint64_t cur_priority = 0;
     list_head *list_iterator = &(*(queue->next));
-    pcb_t *max_one;
+    pcb_t *max_one = NULL;
     if(list_iterator->next == queue){
         max_one = list_entry(list_iterator,pcb_t,list);
     }

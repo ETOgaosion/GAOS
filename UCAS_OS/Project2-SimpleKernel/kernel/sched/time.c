@@ -40,12 +40,22 @@ void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *args){
     current_running->timer.timeout_tick = timeout_ticks + current_running->timer.init_tick;
     current_running->timer.timeout_func = timeout_func;
     current_running->timer.args = args;
-    list_add_tail(&(current_running->timer_list),&timers);
+    list_head *list_iterator = &(*(timers.next));
+    pcb_t *pcb_iterator = NULL;
+    while (list_iterator != &timers)
+    {
+        pcb_iterator = list_entry(list_iterator,pcb_t,timer_list);
+        if(pcb_iterator->timer.timeout_tick > current_running->timer.timeout_tick){
+            break;
+        }
+        list_iterator = list_iterator->next;
+    }
+    list_add(&(current_running->timer_list),list_iterator->prev);
 }
 
 void check_timer(void){
-    pcb_t *pcb_check;
-    list_node_t *iterator = timers.next;
+    pcb_t *pcb_check = NULL;
+    list_node_t *iterator = &(*(timers.next));
     while (!list_empty(&timers) && iterator != &timers)
     {
         pcb_check = list_entry(iterator,pcb_t,timer_list);
@@ -55,7 +65,7 @@ void check_timer(void){
             pcb_check->timer.timeout_func(pcb_check->timer.args);
         }
         else{
-            iterator = iterator->next;
+            break;
         }
     }
 }
