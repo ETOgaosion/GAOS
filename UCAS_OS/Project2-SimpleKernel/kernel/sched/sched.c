@@ -119,7 +119,11 @@ void do_unblock(void *args)
 
 long do_fork(void)
 {
-    pcb_t *curr = current_running, *kid = (pcb_t *)kmalloc(sizeof(pcb_t));
+    if(tasks_num == NUM_MAX_TASK){
+        return -1;
+    }
+    // pcb_t *curr = current_running, *kid = (pcb_t *)kmalloc(sizeof(pcb_t));
+    pcb_t *curr = current_running, *kid = &pcb[tasks_num];
     kid->kernel_sp = allocPage(1);
     kid->user_sp = allocPage(1);
     kid->preempt_count = curr->preempt_count;
@@ -131,6 +135,8 @@ long do_fork(void)
     kid->cursor_x = curr->cursor_x;
     kid->cursor_y = curr->cursor_y + 1;
     kid->timer.initialized = curr->timer.initialized;
+    kid->sched_prior.last_sched_time = 0;
+    kid->sched_prior.priority = 0;
     copy_pcb_stack(kid->kernel_sp,kid->user_sp,kid,curr->kernel_sp,curr->user_sp,curr);
     list_add_tail(&(kid->list),&ready_queue);
     return kid->pid;
@@ -175,7 +181,22 @@ void set_priority(long priority){
 }
 
 uint64_t cal_priority(uint64_t time, long priority){
-    return time + priority * 10000;
+    uint64_t mid_div = time, mul_res = 1;
+    while(mid_div > 10){
+        mid_div /= 10;
+        mul_res *= 10;
+    }
+    mid_div = priority;
+    while(mid_div > 10){
+        mid_div /= 10;
+        mul_res /= 10;
+    }
+    uint64_t cal_res = time + priority * mul_res;
+    vt100_move_cursor(1,1);
+    printk("priority calculation:\n");
+    vt100_move_cursor(1,2);
+    printk("time argument: %lu, priority argument: %ld, cal_res:%lu\n",time,priority,cal_res);
+    return cal_res;
 }
 
 pcb_t *choose_sched_task(list_head *queue){
