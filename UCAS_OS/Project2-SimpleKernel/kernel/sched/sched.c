@@ -181,14 +181,10 @@ void set_priority(long priority){
 }
 
 uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
-    uint64_t mid_div = cur_time, mul_res = 1;
+    uint64_t mid_div = cur_time/1000, mul_res = 1;
     while(mid_div > 10){
         mid_div /= 10;
         mul_res *= 10;
-    }
-    while(mid_div > 10){
-        mid_div /= 10;
-        mul_res /= 10;
     }
     uint64_t cal_res = cur_time - idle_time + priority * mul_res;
     /*
@@ -197,7 +193,7 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
     vt100_move_cursor(1,1);
     printk("priority calculation:\n");
     vt100_move_cursor(1,2);
-    printk("time argument: %lu, priority argument: %ld, cal_res:%lu\n",time,priority,cal_res);
+    printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, cal_res:%lu\n",cur_time,idle_time,priority,cal_res);
     pcb_move_cursor(cursor_x,cursor_y);
     */
     return cal_res;
@@ -225,6 +221,6 @@ pcb_t *choose_sched_task(list_head *queue){
             list_iterator = list_iterator->next;
         }
     }
-    max_one->sched_prior.last_sched_time = get_ticks();
+    max_one->sched_prior.last_sched_time = cur_time;
     return max_one;
 }
