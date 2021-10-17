@@ -32,6 +32,10 @@ extern int screen_cursor_y;
 
 void vt100_move_cursor(int, int);
 
+void pcb_move_cursor(int x,int y);
+
+void kernel_move_cursor(int x,int y);
+
 /* configuring screen properties */
 void init_screen(void);
 

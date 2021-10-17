@@ -14,7 +14,7 @@
 #define TASK_5
 
 
-// #define USE_CLOCK_INT
+#define USE_CLOCK_INT
 // #define BLOCK_CLOCK_INT
 
 #endif

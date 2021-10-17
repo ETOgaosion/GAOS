@@ -17,13 +17,24 @@ int screen_cursor_y;
 char new_screen[SCREEN_HEIGHT * SCREEN_WIDTH] = {0};
 char old_screen[SCREEN_HEIGHT * SCREEN_WIDTH] = {0};
 
+
+void kernel_move_cursor(int x,int y){
+    // \033[y;xH
+    screen_cursor_x = x;
+    screen_cursor_y = y;
+}
+
+void pcb_move_cursor(int x,int y){
+    current_running->cursor_x = x;
+    current_running->cursor_y = y;
+}
+
 /* cursor position */
 void vt100_move_cursor(int x, int y)
 {
     // \033[y;xH
     printk("%c[%d;%dH", 27, y, x);
-    current_running->cursor_x = x;
-    current_running->cursor_y = y;
+    pcb_move_cursor(x,y);
 }
 
 /* clear screen */
@@ -55,8 +66,7 @@ static void screen_write_ch(char ch)
     {
         screen_cursor_x++;
     }
-    current_running->cursor_x = screen_cursor_x;
-    current_running->cursor_y = screen_cursor_y;
+    pcb_move_cursor(screen_cursor_x,screen_cursor_y);
 }
 
 void init_screen(void)
@@ -75,24 +85,19 @@ void screen_clear(void)
             new_screen[i * SCREEN_WIDTH + j] = ' ';
         }
     }
-    screen_cursor_x = 1;
-    screen_cursor_y = 1;
-    current_running->cursor_x = screen_cursor_y;
-    current_running->cursor_y = screen_cursor_y;
+    kernel_move_cursor(1,1);
+    pcb_move_cursor(1,1);
     screen_reflush();
 }
 
 void screen_move_cursor(int x, int y)
 {
-    screen_cursor_x = x;
-    screen_cursor_y = y;
-    current_running->cursor_x = screen_cursor_x;
-    current_running->cursor_y = screen_cursor_y;
+    kernel_move_cursor(x,y);
+    pcb_move_cursor(x,y);
 }
 
 void load_curpcb_cursor(){
-    screen_cursor_x = current_running->cursor_x;
-    screen_cursor_y = current_running->cursor_y;
+    kernel_move_cursor(current_running->cursor_x, current_running->cursor_y);
 }
 
 void screen_write(char *buff)

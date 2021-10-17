@@ -192,10 +192,15 @@ uint64_t cal_priority(uint64_t time, long priority){
         mul_res /= 10;
     }
     uint64_t cal_res = time + priority * mul_res;
+    /*
+    int cursor_x = current_running->cursor_x;
+    int cursor_y = current_running->cursor_y;
     vt100_move_cursor(1,1);
     printk("priority calculation:\n");
     vt100_move_cursor(1,2);
     printk("time argument: %lu, priority argument: %ld, cal_res:%lu\n",time,priority,cal_res);
+    pcb_move_cursor(cursor_x,cursor_y);
+    */
     return cal_res;
 }
 

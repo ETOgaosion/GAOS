@@ -7,8 +7,6 @@
 
 //#define MAX_INPUT_NUM 10
 
-static char blank[] = {"                                             "};
-
 #define clear(print_location) sys_move_cursor(1,print_location);\
         printf("%s",blank);
 
@@ -25,7 +23,6 @@ void fork_priority_task(void)
         sys_yield();
         #endif
         while((in_ch = (unsigned char)sys_read_ch()) == (unsigned char)-1 || in_ch < '0' || in_ch > '9'){
-            clear(print_location)
             sys_move_cursor(1,print_location);
             printf(">[TASK 5] This is father process(%d)\n",inc_num++);
             #ifndef USE_CLOCK_INT
@@ -47,7 +44,6 @@ void fork_priority_task(void)
             printf(">[TASK 5] priority is: (%d)\n",priority);
             sys_setpriority(priority);
             while(1){
-                clear(kid_print_location + 4)
                 sys_move_cursor(1,kid_print_location + 4);
                 printf(">[TASK 5] This is children process.(%d)\n",kid_inc_num++);
                 #ifndef USE_CLOCK_INT
