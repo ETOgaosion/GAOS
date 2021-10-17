@@ -156,7 +156,7 @@ long do_fork(void);
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
 void set_priority(long priority);
-uint64_t cal_priority(uint64_t time, long priority);
+uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority);
 
 pcb_t *choose_sched_task(list_head *queue);
 
