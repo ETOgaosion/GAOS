@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <tasks.h>
 
 pcb_t pcb[NUM_MAX_TASK];
 const ptr_t pid0_stack = INIT_KERNEL_STACK + PAGE_SIZE;
@@ -68,7 +69,12 @@ void do_scheduler()
     {
         check_timer();
     }
+    #ifdef INIT_WITH_PRIORITY
     pcb_t *next_pcb = dequeue(&ready_queue,2);
+    #endif
+    #ifndef INIT_WITH_PRIORITY
+    pcb_t *next_pcb = dequeue(&ready_queue,0);
+    #endif
     next_pcb->status = TASK_RUNNING;
     current_running = next_pcb;
     process_id = next_pcb->pid;

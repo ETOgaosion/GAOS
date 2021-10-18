@@ -15,6 +15,6 @@
 
 
 #define USE_CLOCK_INT
-// #define BLOCK_CLOCK_INT
+// #define INIT_WITH_PRIORITY
 
 #endif

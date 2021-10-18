@@ -32,7 +32,7 @@ void lock_task1(void)
                 sys_move_cursor(1, print_location);
                 printf("> [TASK] Applying for a lock.\n");
                 
-                #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                #if !defined (USE_CLOCK_INT)
                 sys_yield();
                 #endif
 
@@ -44,7 +44,7 @@ void lock_task1(void)
                 {
                         sys_move_cursor(1, print_location);
                         printf("> [TASK] Has acquired lock and running.(%d)\n", i);
-                        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                        #if !defined (USE_CLOCK_INT)
                         sys_yield();
                         #endif
                 }
@@ -59,7 +59,7 @@ void lock_task1(void)
                 mthread_mutex_unlock(&mutex_lock);
 #endif
                 
-                #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                #if !defined (USE_CLOCK_INT)
                 sys_yield();
                 #endif
         }
@@ -85,7 +85,7 @@ void lock_task2(void)
                 sys_move_cursor(1, print_location);
                 printf("> [TASK] Applying for a lock.\n");
                 
-                #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                #if !defined (USE_CLOCK_INT)
                 sys_yield();
                 #endif
 
@@ -97,7 +97,7 @@ void lock_task2(void)
                 {
                         sys_move_cursor(1, print_location);
                         printf("> [TASK] Has acquired lock and running.(%d)\n", i);
-                        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                        #if !defined (USE_CLOCK_INT)
                         sys_yield();
                         #endif
                 }
@@ -112,7 +112,7 @@ void lock_task2(void)
                 mthread_mutex_unlock(&mutex_lock);
 #endif
                 
-                #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+                #if !defined (USE_CLOCK_INT)
                 sys_yield();
                 #endif
         }

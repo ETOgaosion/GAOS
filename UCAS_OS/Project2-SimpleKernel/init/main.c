@@ -178,10 +178,10 @@ static void init_pcb()
         // use allocPage in mm.c, first time allocate 1 page only
         pcb[i].kernel_sp = allocPage(1);
         pcb[i].user_sp = allocPage(1);
-        #if !defined (TASK_4) && !defined (TASK_5) && !defined (USE_CLOCK_INT) // no preempt
+        #if !defined (USE_CLOCK_INT) // no preempt
         pcb[i].preempt_count = 1;
         #endif
-        #if defined (TASK_4) || defined (TASK_5) || defined (USE_CLOCK_INT) // enable preempt
+        #if defined (USE_CLOCK_INT) // enable preempt
         pcb[i].preempt_count = 0;
         #endif
         pcb[i].list.prev = NULL;
@@ -192,7 +192,12 @@ static void init_pcb()
         pcb[i].cursor_x = 0;
         pcb[i].cursor_y = 0;
         pcb[i].timer.initialized = 0;
+        #if defined (INIT_WITH_PRIORITY)
         pcb[i].sched_prior.priority = i;
+        #endif
+        #ifndef INIT_WITH_PRIORITY
+        pcb[i].sched_prior.priority = 0;
+        #endif
         pcb[i].sched_prior.last_sched_time = init_ticks;
         init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i]);
         list_add_tail(&(pcb[i].list),&ready_queue);
@@ -256,12 +261,12 @@ int main()
         // (QAQQQQQQQQQQQ)
         // If you do non-preemptive scheduling, you need to use it
         // to surrender control do_scheduler();
-        #if defined TASK_4 || defined (TASK_5) || defined (USE_CLOCK_INT)
+        #if defined (USE_CLOCK_INT)
         reset_irq_timer();
         enable_interrupt();
         __asm__ __volatile__("wfi\n\r":::);
         #endif
-        #if !defined (TASK_4) && !defined (TASK_5) && !defined (USE_CLOCK_INT)
+        #if !defined (USE_CLOCK_INT)
         do_scheduler();
         #endif
     };

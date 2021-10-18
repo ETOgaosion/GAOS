@@ -17,7 +17,7 @@ void print_task1(void)
     {
         sys_move_cursor(1, print_location);
         printf("> [TASK] This task is to test scheduler. (%d)", i);
-        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+        #if !defined (USE_CLOCK_INT)
         sys_yield();
         #endif
     }
@@ -32,7 +32,7 @@ void print_task2(void)
     {
         sys_move_cursor(1, print_location);
         printf("> [TASK] Gao Ziyuan. (%d)", i);
-        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+        #if !defined (USE_CLOCK_INT)
         sys_yield();
         #endif
     }
@@ -58,7 +58,7 @@ void drawing_task(void)
             sys_move_cursor(i, j + 3);
             printf("%s", plane4);
         }
-        #if !defined (TASK_4) || !defined (USE_CLOCK_INT)
+        #if !defined (USE_CLOCK_INT)
         sys_yield();
         #endif
 

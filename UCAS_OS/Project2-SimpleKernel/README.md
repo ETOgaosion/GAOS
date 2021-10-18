@@ -4,7 +4,7 @@ author: Gao Ziyuan   &nbsp;&nbsp;   Stu. Num:2019K8009929026
 
 ---
 
-TASK 1\~2 has been finisched
+TASK 1\~5 has been finisched
 
 ## How to run
 
@@ -20,33 +20,48 @@ Then input `loadboot`, and enter the only kernel `0`, and you can see three task
 
 ### DIY task
 
-You shall modify into `test/` file folder, head file, and `init/main.c`
+You shall modify into `test/` file folder, head files, and `include/tasks.h`
 
 - the head in original `init/main.c` (running 2 tasks) is like:
 
-```C
-// #define SCHEDULED_1
+```h
+#ifndef TASKS_H
+#define TASKS_H
+
+// #define TEST_SCHEDULE_1
 // #define TASK_1
-// #define LOCK
-#define TASK_2
+// #define TEST_LOCK
+// #define TASK_2
+// #define TEST_TIMER
+// #define TEST_SCHEDULE_2
+// #define TASK_3
+// #define TEST_LOCK_2
+// #define TEST_SCHEDULE_2
+// #define TASK_4
+#define TASK_5
+
+
+#define USE_CLOCK_INT
+// #define INIT_WITH_PRIORITY
+
+#endif
+
 ```
 
-- If only hope to see task 1, modify the head in `init/main.c`:
+you can delete the comment mark to run different tasks.
 
-```C
-#define SCHEDULED_1
-// #define TASK_1
-// #define LOCK
-// #define TASK_2
+and as you can see, there are other options:
+
+- use clock int, this will open clock interrupt to schedule tasks preemptly, as a normal mature kernel.
+
+```h
+#define USE_CLOCK_INT
 ```
 
-- or only task 2:
+- init tasks with priority, this will automatically initialize tasks with increasing priority, and you can see the results obviously.
 
-```C
-// #define SCHEDULED_1
-// #define TASK_1
-#define LOCK
-// #define TASK_2
+```h
+#define INIT_WITH_PRIORITY
 ```
 
 and back to terminal, run:
