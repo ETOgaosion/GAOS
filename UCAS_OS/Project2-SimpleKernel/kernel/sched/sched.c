@@ -194,7 +194,7 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
         mul_res *= 10;
     }
     uint64_t cal_res = cur_time - idle_time + priority * mul_res;
-    /*
+    #ifdef PRINT_PRIORITY
     if(priority == 0){
         int cursor_x = current_running->cursor_x;
         int cursor_y = current_running->cursor_y;
@@ -211,7 +211,7 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
         printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, mul_res:%lu, cal_res:%lu\n",cur_time,idle_time,priority,mul_res,cal_res);
         pcb_move_cursor(cursor_x,cursor_y);
     }
-    */
+    #endif
     return cal_res;
 }
 

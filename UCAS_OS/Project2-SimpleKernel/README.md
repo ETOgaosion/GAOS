@@ -72,7 +72,17 @@ and back to terminal, run:
 > make
 
 > ./run_qemu.sh
+
+> loadboot
+
+> 0
 ```
+
+### Task 5 run guide
+
+In task 5, you can add at most 15 children processes(set max number for security reason), after enter the program, you can press `0~9` to set priority of processes, you can view the kid process number, priority, and increasing number of each process in lines below.
+
+If you want to see the calculation results of each process and know the principle behind, please enter the `include/task.h`, uncomment the `// #define PRINT_PRIORITY`
 
 ## Report
 
