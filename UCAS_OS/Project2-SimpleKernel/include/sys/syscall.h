@@ -44,7 +44,8 @@ void sys_move_cursor(int, int);
 void sys_reflush();
 long sys_get_timebase();
 long sys_get_tick();
-void sys_sleep(uint32_t);
+long sys_get_wall_time(long *);
+void sys_sleep(long);
 
 
 #endif

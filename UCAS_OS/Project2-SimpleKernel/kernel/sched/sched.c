@@ -47,6 +47,7 @@ pcb_t *dequeue(list_head *queue, int field){
 
 void do_scheduler()
 {
+    assert_supervisor_mode();
     // TODO schedule
     // Modify the current_running pointer.
     pcb_t *curr = current_running;

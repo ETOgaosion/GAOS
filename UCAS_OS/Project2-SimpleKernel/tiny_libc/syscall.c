@@ -41,7 +41,8 @@ long sys_fork()
 void sys_setpriority(long priority)
 {
     if(MODE){
-        return syscall[SYSCALL_SET_PRIORITY](priority);
+        syscall[SYSCALL_SET_PRIORITY](priority);
+        return;
     }
     invoke_syscall(SYSCALL_SET_PRIORITY,priority,IGNORE,IGNORE);
 }
@@ -66,7 +67,8 @@ void sys_write(char *buff)
 {
     // TODO:
     if(MODE){
-        return syscall[SYSCALL_WRITE](buff);
+        syscall[SYSCALL_WRITE](buff);
+        return;
     }
     invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
 }
@@ -83,7 +85,8 @@ void sys_reflush()
 {
     // TODO:
     if(MODE){
-        return syscall[SYSCALL_REFLUSH]();
+        syscall[SYSCALL_REFLUSH]();
+        return;
     }
     invoke_syscall(SYSCALL_REFLUSH,IGNORE,IGNORE,IGNORE);
 }
@@ -92,7 +95,8 @@ void sys_move_cursor(int x, int y)
 {
     // TODO:
     if(MODE){
-        return syscall[SYSCALL_CURSOR](x,y);
+        syscall[SYSCALL_CURSOR](x,y);
+        return;
     }
     invoke_syscall(SYSCALL_CURSOR,x,y,IGNORE);
     //vt100_move_cursor(x,y);
@@ -116,11 +120,20 @@ long sys_get_tick()
     return invoke_syscall(SYSCALL_GET_TICK,IGNORE,IGNORE,IGNORE);
 }
 
-void sys_sleep(uint32_t time)
+long sys_get_wall_time(long *time_elapsed)
+{
+    if(MODE){
+        return syscall[SYSCALL_GET_WALL_TIME]();
+    }
+    return invoke_syscall(SYSCALL_GET_WALL_TIME,time_elapsed,IGNORE,IGNORE);
+}
+
+void sys_sleep(long time)
 {
     // TODO:
     if(MODE){
-        return syscall[SYSCALL_SLEEP](time);
+        syscall[SYSCALL_SLEEP](time);
+        return;
     }
     invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE);
 }

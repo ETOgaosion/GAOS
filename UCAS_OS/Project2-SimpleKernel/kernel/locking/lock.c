@@ -5,8 +5,14 @@ int first_time = 0;
 long global_lock_id = 1;
 mutex_lock_t *locks[LOCK_NUM];
 
+static inline void assert_supervisor_mode() 
+{ 
+   __asm__ __volatile__("csrr x0, sscratch\n"); 
+}
+
 long do_mutex_lock_init(int *key)
 {
+    assert_supervisor_mode();
     /* TODO */
     if(global_lock_id == LOCK_NUM){
         *key = 0;
@@ -35,6 +41,7 @@ long do_mutex_lock_init(int *key)
 }
 
 long do_mutex_lock_op(long key,int op){
+    assert_supervisor_mode();
     if(op == 0){
         return do_mutex_lock_acquire(key);
     }
@@ -45,6 +52,7 @@ long do_mutex_lock_op(long key,int op){
 
 long do_mutex_lock_acquire(long key)
 {
+    assert_supervisor_mode();
     /* TODO */
     if(!locks[key]->initialized){
         return -1;

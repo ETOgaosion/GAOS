@@ -225,6 +225,7 @@ static void init_syscall(void)
     syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
     syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
+    syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
     syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
 }
 

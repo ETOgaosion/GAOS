@@ -46,6 +46,12 @@
 #include <os/sched.h>
 #include <os/irq.h>
 
+
+static inline void assert_supervisor_mode() 
+{ 
+   __asm__ __volatile__("csrr x0, sscratch\n"); 
+}
+
 static unsigned int mini_strlen(const char *s)
 {
     unsigned int len = 0;
@@ -245,6 +251,7 @@ int vprintk(const char *fmt, va_list _va)
 
 int printk(const char *fmt, ...)
 {
+    assert_supervisor_mode();
     int ret = 0;
     va_list va;
 

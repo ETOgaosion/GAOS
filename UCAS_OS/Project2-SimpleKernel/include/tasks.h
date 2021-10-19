@@ -15,6 +15,12 @@
 
 
 #define USE_CLOCK_INT
-// #define INIT_WITH_PRIORITY
+#define INIT_WITH_PRIORITY
+
+static inline void assert_supervisor_mode() 
+{ 
+   __asm__ __volatile__("csrr x0, sscratch\n"); 
+} 
+
 
 #endif
