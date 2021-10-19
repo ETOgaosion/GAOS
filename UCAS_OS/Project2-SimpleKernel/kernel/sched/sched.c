@@ -70,10 +70,10 @@ void do_scheduler()
     {
         check_timer();
     }
-    #ifdef INIT_WITH_PRIORITY
+    #ifdef SCHED_WITH_PRIORITY
     pcb_t *next_pcb = dequeue(&ready_queue,2);
     #endif
-    #ifndef INIT_WITH_PRIORITY
+    #ifndef SCHED_WITH_PRIORITY
     pcb_t *next_pcb = dequeue(&ready_queue,0);
     #endif
     next_pcb->status = TASK_RUNNING;
@@ -188,20 +188,29 @@ void set_priority(long priority){
 }
 
 uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
-    uint64_t mid_div = cur_time/1000, mul_res = 1;
+    uint64_t mid_div = cur_time/100, mul_res = 1;
     while(mid_div > 10){
         mid_div /= 10;
         mul_res *= 10;
     }
     uint64_t cal_res = cur_time - idle_time + priority * mul_res;
     /*
-    int cursor_x = current_running->cursor_x;
-    int cursor_y = current_running->cursor_y;
-    vt100_move_cursor(1,1);
-    printk("priority calculation:\n");
-    vt100_move_cursor(1,2);
-    printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, cal_res:%lu\n",cur_time,idle_time,priority,cal_res);
-    pcb_move_cursor(cursor_x,cursor_y);
+    if(priority == 0){
+        int cursor_x = current_running->cursor_x;
+        int cursor_y = current_running->cursor_y;
+        vt100_move_cursor(1,1);
+        printk("priority calculation:\n");
+        vt100_move_cursor(1,2);
+        printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, mul_res:%lu, cal_res:%lu\n",cur_time,idle_time,priority,mul_res,cal_res);
+        pcb_move_cursor(cursor_x,cursor_y);
+    }
+    else{
+        int cursor_x = current_running->cursor_x;
+        int cursor_y = current_running->cursor_y;
+        vt100_move_cursor(1,priority+3);
+        printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, mul_res:%lu, cal_res:%lu\n",cur_time,idle_time,priority,mul_res,cal_res);
+        pcb_move_cursor(cursor_x,cursor_y);
+    }
     */
     return cal_res;
 }

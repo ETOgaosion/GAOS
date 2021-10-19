@@ -16,6 +16,7 @@
 
 #define USE_CLOCK_INT
 #define INIT_WITH_PRIORITY
+#define SCHED_WITH_PRIORITY
 
 static inline void assert_supervisor_mode() 
 { 

@@ -14,7 +14,7 @@ void fork_priority_task(void)
 {
     long pid = 0;
     register int kids_num = 0;
-    int print_location = 6;
+    int print_location = 10;
     long priority = 0;
     int inc_num = 0;
     unsigned char in_ch;
@@ -25,6 +25,8 @@ void fork_priority_task(void)
         while((in_ch = (unsigned char)sys_read_ch()) == (unsigned char)-1 || in_ch < '0' || in_ch > '9'){
             sys_move_cursor(1,print_location);
             printf(">[TASK 5] This is father process(%d)\n",inc_num++);
+            sys_move_cursor(1,print_location+1);
+            printf(">[TASK 5] father process priority(%d)\n",0);
             #ifndef USE_CLOCK_INT
             sys_yield();
             #endif

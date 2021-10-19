@@ -10,10 +10,10 @@ Disassembly of section .text:
     50200008:	6299                	lui	t0,0x6
     5020000a:	1002b073          	csrc	sstatus,t0
     5020000e:	00005197          	auipc	gp,0x5
-    50200012:	6d218193          	addi	gp,gp,1746 # 502056e0 <__global_pointer$>
-    50200016:	83818693          	addi	a3,gp,-1992 # 50204f18 <_edata>
+    50200012:	71a18193          	addi	gp,gp,1818 # 50205728 <__global_pointer$>
+    50200016:	83818693          	addi	a3,gp,-1992 # 50204f60 <_edata>
     5020001a:	00088717          	auipc	a4,0x88
-    5020001e:	ae670713          	addi	a4,a4,-1306 # 50287b00 <__BSS_END__>
+    5020001e:	b2e70713          	addi	a4,a4,-1234 # 50287b48 <__BSS_END__>
     50200022:	00e6d763          	bge	a3,a4,50200030 <clear_bss_done>
 
 0000000050200026 <clear_bss>:
@@ -23,12 +23,12 @@ Disassembly of section .text:
 
 0000000050200030 <clear_bss_done>:
     50200030:	00005217          	auipc	tp,0x5
-    50200034:	93820213          	addi	tp,tp,-1736 # 50204968 <pid0_pcb>
+    50200034:	98020213          	addi	tp,tp,-1664 # 502049b0 <pid0_pcb>
     50200038:	00005117          	auipc	sp,0x5
-    5020003c:	ea812103          	lw	sp,-344(sp) # 50204ee0 <pid0_stack>
+    5020003c:	ef012103          	lw	sp,-272(sp) # 50204f28 <pid0_stack>
     50200040:	14001073          	csrw	sscratch,zero
     50200044:	00007517          	auipc	a0,0x7
-    50200048:	ecc50513          	addi	a0,a0,-308 # 50206f10 <riscv_dtb>
+    50200048:	f1450513          	addi	a0,a0,-236 # 50206f58 <riscv_dtb>
     5020004c:	e10c                	sd	a1,0(a0)
     5020004e:	0db000ef          	jal	ra,50200928 <main>
 
@@ -49,7 +49,7 @@ Disassembly of section .text:
 
 0000000050200074 <enable_preempt>:
     50200074:	00087317          	auipc	t1,0x87
-    50200078:	f0433303          	ld	t1,-252(t1) # 50286f78 <current_running>
+    50200078:	f4c33303          	ld	t1,-180(t1) # 50286fc0 <current_running>
     5020007c:	01033283          	ld	t0,16(t1)
     50200080:	00028863          	beqz	t0,50200090 <do_enable>
     50200084:	12fd                	addi	t0,t0,-1
@@ -66,7 +66,7 @@ Disassembly of section .text:
 000000005020009c <disable_preempt>:
     5020009c:	10401073          	csrw	sie,zero
     502000a0:	00087317          	auipc	t1,0x87
-    502000a4:	ed833303          	ld	t1,-296(t1) # 50286f78 <current_running>
+    502000a4:	f2033303          	ld	t1,-224(t1) # 50286fc0 <current_running>
     502000a8:	01033283          	ld	t0,16(t1)
     502000ac:	0285                	addi	t0,t0,1
     502000ae:	00533823          	sd	t0,16(t1)
@@ -220,7 +220,7 @@ Disassembly of section .text:
     502001f0:	f23e                	sd	a5,288(sp)
     502001f2:	14001073          	csrw	sscratch,zero
     502001f6:	00005197          	auipc	gp,0x5
-    502001fa:	4ea18193          	addi	gp,gp,1258 # 502056e0 <__global_pointer$>
+    502001fa:	53218193          	addi	gp,gp,1330 # 50205728 <__global_pointer$>
     502001fe:	00000097          	auipc	ra,0x0
     50200202:	f1a08093          	addi	ra,ra,-230 # 50200118 <ret_from_exception>
     50200206:	850a                	mv	a0,sp
@@ -545,18 +545,18 @@ Disassembly of section .text:
     50200552:	e822                	sd	s0,16(sp)
     50200554:	1000                	addi	s0,sp,32
     50200556:	00004517          	auipc	a0,0x4
-    5020055a:	4aa50513          	addi	a0,a0,1194 # 50204a00 <ready_queue>
+    5020055a:	4f250513          	addi	a0,a0,1266 # 50204a48 <ready_queue>
     5020055e:	d4dff0ef          	jal	ra,502002aa <init_list_head>
     50200562:	00007797          	auipc	a5,0x7
-    50200566:	91e78793          	addi	a5,a5,-1762 # 50206e80 <tasks>
+    50200566:	96678793          	addi	a5,a5,-1690 # 50206ec8 <tasks>
     5020056a:	00005717          	auipc	a4,0x5
-    5020056e:	81670713          	addi	a4,a4,-2026 # 50204d80 <fork_prior_tasks>
+    5020056e:	85e70713          	addi	a4,a4,-1954 # 50204dc8 <fork_prior_tasks>
     50200572:	e398                	sd	a4,0(a5)
-    50200574:	83418793          	addi	a5,gp,-1996 # 50204f14 <num_fork_prior_tasks>
+    50200574:	83418793          	addi	a5,gp,-1996 # 50204f5c <num_fork_prior_tasks>
     50200578:	439c                	lw	a5,0(a5)
     5020057a:	873e                	mv	a4,a5
     5020057c:	00007797          	auipc	a5,0x7
-    50200580:	90c78793          	addi	a5,a5,-1780 # 50206e88 <tasks_num>
+    50200580:	95478793          	addi	a5,a5,-1708 # 50206ed0 <tasks_num>
     50200584:	e398                	sd	a4,0(a5)
     50200586:	2a9010ef          	jal	ra,5020202e <get_ticks>
     5020058a:	87aa                	mv	a5,a0
@@ -567,7 +567,7 @@ Disassembly of section .text:
     50200598:	4dd010ef          	jal	ra,50202274 <allocPage>
     5020059c:	862a                	mv	a2,a0
     5020059e:	00087717          	auipc	a4,0x87
-    502005a2:	9e270713          	addi	a4,a4,-1566 # 50286f80 <pcb>
+    502005a2:	a2a70713          	addi	a4,a4,-1494 # 50286fc8 <pcb>
     502005a6:	fec42683          	lw	a3,-20(s0)
     502005aa:	09800793          	li	a5,152
     502005ae:	02f687b3          	mul	a5,a3,a5
@@ -577,28 +577,28 @@ Disassembly of section .text:
     502005b8:	4bd010ef          	jal	ra,50202274 <allocPage>
     502005bc:	862a                	mv	a2,a0
     502005be:	00087717          	auipc	a4,0x87
-    502005c2:	9c270713          	addi	a4,a4,-1598 # 50286f80 <pcb>
+    502005c2:	a0a70713          	addi	a4,a4,-1526 # 50286fc8 <pcb>
     502005c6:	fec42683          	lw	a3,-20(s0)
     502005ca:	09800793          	li	a5,152
     502005ce:	02f687b3          	mul	a5,a3,a5
     502005d2:	97ba                	add	a5,a5,a4
     502005d4:	e790                	sd	a2,8(a5)
     502005d6:	00087717          	auipc	a4,0x87
-    502005da:	9aa70713          	addi	a4,a4,-1622 # 50286f80 <pcb>
+    502005da:	9f270713          	addi	a4,a4,-1550 # 50286fc8 <pcb>
     502005de:	fec42683          	lw	a3,-20(s0)
     502005e2:	09800793          	li	a5,152
     502005e6:	02f687b3          	mul	a5,a3,a5
     502005ea:	97ba                	add	a5,a5,a4
     502005ec:	0007b823          	sd	zero,16(a5)
     502005f0:	00087717          	auipc	a4,0x87
-    502005f4:	99070713          	addi	a4,a4,-1648 # 50286f80 <pcb>
+    502005f4:	9d870713          	addi	a4,a4,-1576 # 50286fc8 <pcb>
     502005f8:	fec42683          	lw	a3,-20(s0)
     502005fc:	09800793          	li	a5,152
     50200600:	02f687b3          	mul	a5,a3,a5
     50200604:	97ba                	add	a5,a5,a4
     50200606:	0207b023          	sd	zero,32(a5)
     5020060a:	00087717          	auipc	a4,0x87
-    5020060e:	97670713          	addi	a4,a4,-1674 # 50286f80 <pcb>
+    5020060e:	9be70713          	addi	a4,a4,-1602 # 50286fc8 <pcb>
     50200612:	fec42683          	lw	a3,-20(s0)
     50200616:	09800793          	li	a5,152
     5020061a:	02f687b3          	mul	a5,a3,a5
@@ -608,14 +608,14 @@ Disassembly of section .text:
     50200628:	2785                	addiw	a5,a5,1
     5020062a:	0007871b          	sext.w	a4,a5
     5020062e:	00087697          	auipc	a3,0x87
-    50200632:	95268693          	addi	a3,a3,-1710 # 50286f80 <pcb>
+    50200632:	99a68693          	addi	a3,a3,-1638 # 50286fc8 <pcb>
     50200636:	fec42603          	lw	a2,-20(s0)
     5020063a:	09800793          	li	a5,152
     5020063e:	02f607b3          	mul	a5,a2,a5
     50200642:	97b6                	add	a5,a5,a3
     50200644:	d798                	sw	a4,40(a5)
     50200646:	00007797          	auipc	a5,0x7
-    5020064a:	83a78793          	addi	a5,a5,-1990 # 50206e80 <tasks>
+    5020064a:	88278793          	addi	a5,a5,-1918 # 50206ec8 <tasks>
     5020064e:	6398                	ld	a4,0(a5)
     50200650:	fec42783          	lw	a5,-20(s0)
     50200654:	078e                	slli	a5,a5,0x3
@@ -623,14 +623,14 @@ Disassembly of section .text:
     50200658:	639c                	ld	a5,0(a5)
     5020065a:	4798                	lw	a4,8(a5)
     5020065c:	00087697          	auipc	a3,0x87
-    50200660:	92468693          	addi	a3,a3,-1756 # 50286f80 <pcb>
+    50200660:	96c68693          	addi	a3,a3,-1684 # 50286fc8 <pcb>
     50200664:	fec42603          	lw	a2,-20(s0)
     50200668:	09800793          	li	a5,152
     5020066c:	02f607b3          	mul	a5,a2,a5
     50200670:	97b6                	add	a5,a5,a3
     50200672:	d7d8                	sw	a4,44(a5)
     50200674:	00087717          	auipc	a4,0x87
-    50200678:	90c70713          	addi	a4,a4,-1780 # 50286f80 <pcb>
+    50200678:	95470713          	addi	a4,a4,-1708 # 50286fc8 <pcb>
     5020067c:	fec42683          	lw	a3,-20(s0)
     50200680:	09800793          	li	a5,152
     50200684:	02f687b3          	mul	a5,a3,a5
@@ -638,21 +638,21 @@ Disassembly of section .text:
     5020068a:	4709                	li	a4,2
     5020068c:	db98                	sw	a4,48(a5)
     5020068e:	00087717          	auipc	a4,0x87
-    50200692:	8f270713          	addi	a4,a4,-1806 # 50286f80 <pcb>
+    50200692:	93a70713          	addi	a4,a4,-1734 # 50286fc8 <pcb>
     50200696:	fec42683          	lw	a3,-20(s0)
     5020069a:	09800793          	li	a5,152
     5020069e:	02f687b3          	mul	a5,a3,a5
     502006a2:	97ba                	add	a5,a5,a4
     502006a4:	0207aa23          	sw	zero,52(a5)
     502006a8:	00087717          	auipc	a4,0x87
-    502006ac:	8d870713          	addi	a4,a4,-1832 # 50286f80 <pcb>
+    502006ac:	92070713          	addi	a4,a4,-1760 # 50286fc8 <pcb>
     502006b0:	fec42683          	lw	a3,-20(s0)
     502006b4:	09800793          	li	a5,152
     502006b8:	02f687b3          	mul	a5,a3,a5
     502006bc:	97ba                	add	a5,a5,a4
     502006be:	0207ac23          	sw	zero,56(a5)
     502006c2:	00087717          	auipc	a4,0x87
-    502006c6:	8be70713          	addi	a4,a4,-1858 # 50286f80 <pcb>
+    502006c6:	90670713          	addi	a4,a4,-1786 # 50286fc8 <pcb>
     502006ca:	fec42683          	lw	a3,-20(s0)
     502006ce:	09800793          	li	a5,152
     502006d2:	02f687b3          	mul	a5,a3,a5
@@ -660,7 +660,7 @@ Disassembly of section .text:
     502006d8:	0407a823          	sw	zero,80(a5)
     502006dc:	fec42703          	lw	a4,-20(s0)
     502006e0:	00087697          	auipc	a3,0x87
-    502006e4:	8a068693          	addi	a3,a3,-1888 # 50286f80 <pcb>
+    502006e4:	8e868693          	addi	a3,a3,-1816 # 50286fc8 <pcb>
     502006e8:	fec42603          	lw	a2,-20(s0)
     502006ec:	09800793          	li	a5,152
     502006f0:	02f607b3          	mul	a5,a2,a5
@@ -668,28 +668,28 @@ Disassembly of section .text:
     502006f6:	e7d8                	sd	a4,136(a5)
     502006f8:	fe842703          	lw	a4,-24(s0)
     502006fc:	00087697          	auipc	a3,0x87
-    50200700:	88468693          	addi	a3,a3,-1916 # 50286f80 <pcb>
+    50200700:	8cc68693          	addi	a3,a3,-1844 # 50286fc8 <pcb>
     50200704:	fec42603          	lw	a2,-20(s0)
     50200708:	09800793          	li	a5,152
     5020070c:	02f607b3          	mul	a5,a2,a5
     50200710:	97b6                	add	a5,a5,a3
     50200712:	ebd8                	sd	a4,144(a5)
     50200714:	00087717          	auipc	a4,0x87
-    50200718:	86c70713          	addi	a4,a4,-1940 # 50286f80 <pcb>
+    50200718:	8b470713          	addi	a4,a4,-1868 # 50286fc8 <pcb>
     5020071c:	fec42683          	lw	a3,-20(s0)
     50200720:	09800793          	li	a5,152
     50200724:	02f687b3          	mul	a5,a3,a5
     50200728:	97ba                	add	a5,a5,a4
     5020072a:	6388                	ld	a0,0(a5)
     5020072c:	00087717          	auipc	a4,0x87
-    50200730:	85470713          	addi	a4,a4,-1964 # 50286f80 <pcb>
+    50200730:	89c70713          	addi	a4,a4,-1892 # 50286fc8 <pcb>
     50200734:	fec42683          	lw	a3,-20(s0)
     50200738:	09800793          	li	a5,152
     5020073c:	02f687b3          	mul	a5,a3,a5
     50200740:	97ba                	add	a5,a5,a4
     50200742:	678c                	ld	a1,8(a5)
     50200744:	00006797          	auipc	a5,0x6
-    50200748:	73c78793          	addi	a5,a5,1852 # 50206e80 <tasks>
+    50200748:	78478793          	addi	a5,a5,1924 # 50206ec8 <tasks>
     5020074c:	6398                	ld	a4,0(a5)
     5020074e:	fec42783          	lw	a5,-20(s0)
     50200752:	078e                	slli	a5,a5,0x3
@@ -700,7 +700,7 @@ Disassembly of section .text:
     5020075e:	09800793          	li	a5,152
     50200762:	02f70733          	mul	a4,a4,a5
     50200766:	00087797          	auipc	a5,0x87
-    5020076a:	81a78793          	addi	a5,a5,-2022 # 50286f80 <pcb>
+    5020076a:	86278793          	addi	a5,a5,-1950 # 50286fc8 <pcb>
     5020076e:	97ba                	add	a5,a5,a4
     50200770:	86be                	mv	a3,a5
     50200772:	c15ff0ef          	jal	ra,50200386 <init_pcb_stack>
@@ -708,12 +708,12 @@ Disassembly of section .text:
     5020077a:	09800793          	li	a5,152
     5020077e:	02f707b3          	mul	a5,a4,a5
     50200782:	01078713          	addi	a4,a5,16
-    50200786:	00086797          	auipc	a5,0x86
-    5020078a:	7fa78793          	addi	a5,a5,2042 # 50286f80 <pcb>
+    50200786:	00087797          	auipc	a5,0x87
+    5020078a:	84278793          	addi	a5,a5,-1982 # 50286fc8 <pcb>
     5020078e:	97ba                	add	a5,a5,a4
     50200790:	07a1                	addi	a5,a5,8
     50200792:	00004597          	auipc	a1,0x4
-    50200796:	26e58593          	addi	a1,a1,622 # 50204a00 <ready_queue>
+    50200796:	2b658593          	addi	a1,a1,694 # 50204a48 <ready_queue>
     5020079a:	853e                	mv	a0,a5
     5020079c:	b77ff0ef          	jal	ra,50200312 <list_add_tail>
     502007a0:	fec42783          	lw	a5,-20(s0)
@@ -721,22 +721,22 @@ Disassembly of section .text:
     502007a6:	fef42623          	sw	a5,-20(s0)
     502007aa:	fec42703          	lw	a4,-20(s0)
     502007ae:	00006797          	auipc	a5,0x6
-    502007b2:	6da78793          	addi	a5,a5,1754 # 50206e88 <tasks_num>
+    502007b2:	72278793          	addi	a5,a5,1826 # 50206ed0 <tasks_num>
     502007b6:	639c                	ld	a5,0(a5)
     502007b8:	dcf74fe3          	blt	a4,a5,50200596 <init_pcb+0x48>
     502007bc:	00004797          	auipc	a5,0x4
-    502007c0:	1ac78793          	addi	a5,a5,428 # 50204968 <pid0_pcb>
+    502007c0:	1f478793          	addi	a5,a5,500 # 502049b0 <pid0_pcb>
     502007c4:	639c                	ld	a5,0(a5)
     502007c6:	fef43023          	sd	a5,-32(s0)
     502007ca:	00004797          	auipc	a5,0x4
-    502007ce:	19e78793          	addi	a5,a5,414 # 50204968 <pid0_pcb>
+    502007ce:	1e678793          	addi	a5,a5,486 # 502049b0 <pid0_pcb>
     502007d2:	6398                	ld	a4,0(a5)
     502007d4:	fe043783          	ld	a5,-32(s0)
     502007d8:	e798                	sd	a4,8(a5)
     502007da:	00086797          	auipc	a5,0x86
-    502007de:	79e78793          	addi	a5,a5,1950 # 50286f78 <current_running>
+    502007de:	7e678793          	addi	a5,a5,2022 # 50286fc0 <current_running>
     502007e2:	00004717          	auipc	a4,0x4
-    502007e6:	18670713          	addi	a4,a4,390 # 50204968 <pid0_pcb>
+    502007e6:	1ce70713          	addi	a4,a4,462 # 502049b0 <pid0_pcb>
     502007ea:	e398                	sd	a4,0(a5)
     502007ec:	0001                	nop
     502007ee:	60e2                	ld	ra,24(sp)
@@ -751,7 +751,7 @@ Disassembly of section .text:
     502007fc:	fe042623          	sw	zero,-20(s0)
     50200800:	a01d                	j	50200826 <init_syscall+0x30>
     50200802:	00087717          	auipc	a4,0x87
-    50200806:	0fe70713          	addi	a4,a4,254 # 50287900 <syscall>
+    50200806:	14670713          	addi	a4,a4,326 # 50287948 <syscall>
     5020080a:	fec42783          	lw	a5,-20(s0)
     5020080e:	078e                	slli	a5,a5,0x3
     50200810:	97ba                	add	a5,a5,a4
@@ -766,67 +766,67 @@ Disassembly of section .text:
     5020082e:	03f00793          	li	a5,63
     50200832:	fce7d8e3          	bge	a5,a4,50200802 <init_syscall+0xc>
     50200836:	00087797          	auipc	a5,0x87
-    5020083a:	0ca78793          	addi	a5,a5,202 # 50287900 <syscall>
+    5020083a:	11278793          	addi	a5,a5,274 # 50287948 <syscall>
     5020083e:	00001717          	auipc	a4,0x1
     50200842:	02470713          	addi	a4,a4,36 # 50201862 <do_scheduler>
     50200846:	e798                	sd	a4,8(a5)
     50200848:	00087797          	auipc	a5,0x87
-    5020084c:	0b878793          	addi	a5,a5,184 # 50287900 <syscall>
+    5020084c:	10078793          	addi	a5,a5,256 # 50287948 <syscall>
     50200850:	00001717          	auipc	a4,0x1
     50200854:	23c70713          	addi	a4,a4,572 # 50201a8c <do_fork>
     50200858:	eb98                	sd	a4,16(a5)
     5020085a:	00087797          	auipc	a5,0x87
-    5020085e:	0a678793          	addi	a5,a5,166 # 50287900 <syscall>
+    5020085e:	0ee78793          	addi	a5,a5,238 # 50287948 <syscall>
     50200862:	00001717          	auipc	a4,0x1
     50200866:	54e70713          	addi	a4,a4,1358 # 50201db0 <set_priority>
     5020086a:	ef98                	sd	a4,24(a5)
     5020086c:	00087797          	auipc	a5,0x87
-    50200870:	09478793          	addi	a5,a5,148 # 50287900 <syscall>
+    50200870:	0dc78793          	addi	a5,a5,220 # 50287948 <syscall>
     50200874:	00001717          	auipc	a4,0x1
     50200878:	9e870713          	addi	a4,a4,-1560 # 5020125c <do_mutex_lock_init>
     5020087c:	f398                	sd	a4,32(a5)
     5020087e:	00087797          	auipc	a5,0x87
-    50200882:	08278793          	addi	a5,a5,130 # 50287900 <syscall>
+    50200882:	0ca78793          	addi	a5,a5,202 # 50287948 <syscall>
     50200886:	00001717          	auipc	a4,0x1
     5020088a:	b4c70713          	addi	a4,a4,-1204 # 502013d2 <do_mutex_lock_op>
     5020088e:	f798                	sd	a4,40(a5)
     50200890:	00087797          	auipc	a5,0x87
-    50200894:	07078793          	addi	a5,a5,112 # 50287900 <syscall>
+    50200894:	0b878793          	addi	a5,a5,184 # 50287948 <syscall>
     50200898:	00000717          	auipc	a4,0x0
     5020089c:	76670713          	addi	a4,a4,1894 # 50200ffe <screen_write>
     502008a0:	fb98                	sd	a4,48(a5)
     502008a2:	00087797          	auipc	a5,0x87
-    502008a6:	05e78793          	addi	a5,a5,94 # 50287900 <syscall>
+    502008a6:	0a678793          	addi	a5,a5,166 # 50287948 <syscall>
     502008aa:	00000717          	auipc	a4,0x0
     502008ae:	a9670713          	addi	a4,a4,-1386 # 50200340 <sbi_console_getchar>
     502008b2:	ff98                	sd	a4,56(a5)
     502008b4:	00087797          	auipc	a5,0x87
-    502008b8:	04c78793          	addi	a5,a5,76 # 50287900 <syscall>
+    502008b8:	09478793          	addi	a5,a5,148 # 50287948 <syscall>
     502008bc:	00000717          	auipc	a4,0x0
     502008c0:	6d070713          	addi	a4,a4,1744 # 50200f8c <screen_move_cursor>
     502008c4:	e3b8                	sd	a4,64(a5)
     502008c6:	00087797          	auipc	a5,0x87
-    502008ca:	03a78793          	addi	a5,a5,58 # 50287900 <syscall>
+    502008ca:	08278793          	addi	a5,a5,130 # 50287948 <syscall>
     502008ce:	00000717          	auipc	a4,0x0
     502008d2:	79470713          	addi	a4,a4,1940 # 50201062 <screen_reflush>
     502008d6:	e7b8                	sd	a4,72(a5)
     502008d8:	00087797          	auipc	a5,0x87
-    502008dc:	02878793          	addi	a5,a5,40 # 50287900 <syscall>
+    502008dc:	07078793          	addi	a5,a5,112 # 50287948 <syscall>
     502008e0:	00001717          	auipc	a4,0x1
     502008e4:	76c70713          	addi	a4,a4,1900 # 5020204c <get_timer>
     502008e8:	ebb8                	sd	a4,80(a5)
     502008ea:	00087797          	auipc	a5,0x87
-    502008ee:	01678793          	addi	a5,a5,22 # 50287900 <syscall>
+    502008ee:	05e78793          	addi	a5,a5,94 # 50287948 <syscall>
     502008f2:	00001717          	auipc	a4,0x1
     502008f6:	73c70713          	addi	a4,a4,1852 # 5020202e <get_ticks>
     502008fa:	efb8                	sd	a4,88(a5)
     502008fc:	00087797          	auipc	a5,0x87
-    50200900:	00478793          	addi	a5,a5,4 # 50287900 <syscall>
+    50200900:	04c78793          	addi	a5,a5,76 # 50287948 <syscall>
     50200904:	00001717          	auipc	a4,0x1
     50200908:	78670713          	addi	a4,a4,1926 # 5020208a <get_wall_time>
     5020090c:	f3b8                	sd	a4,96(a5)
     5020090e:	00087797          	auipc	a5,0x87
-    50200912:	ff278793          	addi	a5,a5,-14 # 50287900 <syscall>
+    50200912:	03a78793          	addi	a5,a5,58 # 50287948 <syscall>
     50200916:	00001717          	auipc	a4,0x1
     5020091a:	05e70713          	addi	a4,a4,94 # 50201974 <do_sleep>
     5020091e:	f7b8                	sd	a4,104(a5)
@@ -842,31 +842,31 @@ Disassembly of section .text:
     5020092e:	0800                	addi	s0,sp,16
     50200930:	c1fff0ef          	jal	ra,5020054e <init_pcb>
     50200934:	00004517          	auipc	a0,0x4
-    50200938:	88c50513          	addi	a0,a0,-1908 # 502041c0 <fork_priority_task+0x156>
+    50200938:	8ac50513          	addi	a0,a0,-1876 # 502041e0 <fork_priority_task+0x176>
     5020093c:	3ea020ef          	jal	ra,50202d26 <printk>
     50200940:	17c000ef          	jal	ra,50200abc <init_exception>
     50200944:	00004517          	auipc	a0,0x4
-    50200948:	8ac50513          	addi	a0,a0,-1876 # 502041f0 <fork_priority_task+0x186>
+    50200948:	8cc50513          	addi	a0,a0,-1844 # 50204210 <fork_priority_task+0x1a6>
     5020094c:	3da020ef          	jal	ra,50202d26 <printk>
     50200950:	ea7ff0ef          	jal	ra,502007f6 <init_syscall>
     50200954:	00004517          	auipc	a0,0x4
-    50200958:	8dc50513          	addi	a0,a0,-1828 # 50204230 <fork_priority_task+0x1c6>
+    50200958:	8fc50513          	addi	a0,a0,-1796 # 50204250 <fork_priority_task+0x1e6>
     5020095c:	3ca020ef          	jal	ra,50202d26 <printk>
     50200960:	580000ef          	jal	ra,50200ee0 <init_screen>
     50200964:	00004517          	auipc	a0,0x4
-    50200968:	90450513          	addi	a0,a0,-1788 # 50204268 <fork_priority_task+0x1fe>
+    50200968:	92450513          	addi	a0,a0,-1756 # 50204288 <fork_priority_task+0x21e>
     5020096c:	3ba020ef          	jal	ra,50202d26 <printk>
     50200970:	4501                	li	a0,0
     50200972:	9edff0ef          	jal	ra,5020035e <sbi_read_fdt>
     50200976:	87aa                	mv	a5,a0
     50200978:	0007871b          	sext.w	a4,a5
-    5020097c:	84818793          	addi	a5,gp,-1976 # 50204f28 <time_base>
+    5020097c:	84818793          	addi	a5,gp,-1976 # 50204f70 <time_base>
     50200980:	c398                	sw	a4,0(a5)
-    50200982:	84818793          	addi	a5,gp,-1976 # 50204f28 <time_base>
+    50200982:	84818793          	addi	a5,gp,-1976 # 50204f70 <time_base>
     50200986:	439c                	lw	a5,0(a5)
     50200988:	85be                	mv	a1,a5
     5020098a:	00004517          	auipc	a0,0x4
-    5020098e:	90e50513          	addi	a0,a0,-1778 # 50204298 <fork_priority_task+0x22e>
+    5020098e:	92e50513          	addi	a0,a0,-1746 # 502042b8 <fork_priority_task+0x24e>
     50200992:	394020ef          	jal	ra,50202d26 <printk>
     50200996:	060000ef          	jal	ra,502009f6 <reset_irq_timer>
     5020099a:	f1aff0ef          	jal	ra,502000b4 <enable_interrupt>
@@ -887,7 +887,7 @@ Disassembly of section .text:
     502009c0:	fe843603          	ld	a2,-24(s0)
     502009c4:	fd843583          	ld	a1,-40(s0)
     502009c8:	00004517          	auipc	a0,0x4
-    502009cc:	9e050513          	addi	a0,a0,-1568 # 502043a8 <fork_priority_task+0x33e>
+    502009cc:	a0050513          	addi	a0,a0,-1536 # 502043c8 <fork_priority_task+0x35e>
     502009d0:	356020ef          	jal	ra,50202d26 <printk>
     502009d4:	a001                	j	502009d4 <_panic+0x30>
 
@@ -942,10 +942,10 @@ Disassembly of section .text:
     50200a48:	fc843783          	ld	a5,-56(s0)
     50200a4c:	0007d763          	bgez	a5,50200a5a <interrupt_helper+0x26>
     50200a50:	00006797          	auipc	a5,0x6
-    50200a54:	4c878793          	addi	a5,a5,1224 # 50206f18 <irq_table>
+    50200a54:	51078793          	addi	a5,a5,1296 # 50206f60 <irq_table>
     50200a58:	a029                	j	50200a62 <interrupt_helper+0x2e>
     50200a5a:	00006797          	auipc	a5,0x6
-    50200a5e:	43678793          	addi	a5,a5,1078 # 50206e90 <exc_table>
+    50200a5e:	47e78793          	addi	a5,a5,1150 # 50206ed8 <exc_table>
     50200a62:	fef43423          	sd	a5,-24(s0)
     50200a66:	fc843703          	ld	a4,-56(s0)
     50200a6a:	57fd                	li	a5,-1
@@ -990,7 +990,7 @@ Disassembly of section .text:
     50200ac4:	fe042623          	sw	zero,-20(s0)
     50200ac8:	a01d                	j	50200aee <init_exception+0x32>
     50200aca:	00006717          	auipc	a4,0x6
-    50200ace:	44e70713          	addi	a4,a4,1102 # 50206f18 <irq_table>
+    50200ace:	49670713          	addi	a4,a4,1174 # 50206f60 <irq_table>
     50200ad2:	fec42783          	lw	a5,-20(s0)
     50200ad6:	078e                	slli	a5,a5,0x3
     50200ad8:	97ba                	add	a5,a5,a4
@@ -1007,7 +1007,7 @@ Disassembly of section .text:
     50200afc:	fe042623          	sw	zero,-20(s0)
     50200b00:	a01d                	j	50200b26 <init_exception+0x6a>
     50200b02:	00006717          	auipc	a4,0x6
-    50200b06:	38e70713          	addi	a4,a4,910 # 50206e90 <exc_table>
+    50200b06:	3d670713          	addi	a4,a4,982 # 50206ed8 <exc_table>
     50200b0a:	fec42783          	lw	a5,-20(s0)
     50200b0e:	078e                	slli	a5,a5,0x3
     50200b10:	97ba                	add	a5,a5,a4
@@ -1022,7 +1022,7 @@ Disassembly of section .text:
     50200b2e:	47bd                	li	a5,15
     50200b30:	fce7d9e3          	bge	a5,a4,50200b02 <init_exception+0x46>
     50200b34:	00006797          	auipc	a5,0x6
-    50200b38:	35c78793          	addi	a5,a5,860 # 50206e90 <exc_table>
+    50200b38:	3a478793          	addi	a5,a5,932 # 50206ed8 <exc_table>
     50200b3c:	00001717          	auipc	a4,0x1
     50200b40:	7b270713          	addi	a4,a4,1970 # 502022ee <handle_syscall>
     50200b44:	e3b8                	sd	a4,64(a5)
@@ -1042,7 +1042,7 @@ Disassembly of section .text:
     50200b60:	ecb43823          	sd	a1,-304(s0)
     50200b64:	ecc43423          	sd	a2,-312(s0)
     50200b68:	00004717          	auipc	a4,0x4
-    50200b6c:	92870713          	addi	a4,a4,-1752 # 50204490 <fork_priority_task+0x426>
+    50200b6c:	94870713          	addi	a4,a4,-1720 # 502044b0 <fork_priority_task+0x446>
     50200b70:	ee840793          	addi	a5,s0,-280
     50200b74:	86ba                	mv	a3,a4
     50200b76:	10000713          	li	a4,256
@@ -1073,7 +1073,7 @@ Disassembly of section .text:
     50200bbe:	863e                	mv	a2,a5
     50200bc0:	85b6                	mv	a1,a3
     50200bc2:	00004517          	auipc	a0,0x4
-    50200bc6:	80e50513          	addi	a0,a0,-2034 # 502043d0 <fork_priority_task+0x366>
+    50200bc6:	82e50513          	addi	a0,a0,-2002 # 502043f0 <fork_priority_task+0x386>
     50200bca:	15c020ef          	jal	ra,50202d26 <printk>
     50200bce:	fe842783          	lw	a5,-24(s0)
     50200bd2:	2785                	addiw	a5,a5,1
@@ -1089,8 +1089,8 @@ Disassembly of section .text:
     50200bf2:	873e                	mv	a4,a5
     50200bf4:	47fd                	li	a5,31
     50200bf6:	f8e7dde3          	bge	a5,a4,50200b90 <handle_other+0x3c>
-    50200bfa:	00003517          	auipc	a0,0x3
-    50200bfe:	7e650513          	addi	a0,a0,2022 # 502043e0 <fork_priority_task+0x376>
+    50200bfa:	00004517          	auipc	a0,0x4
+    50200bfe:	80650513          	addi	a0,a0,-2042 # 50204400 <fork_priority_task+0x396>
     50200c02:	124020ef          	jal	ra,50202d26 <printk>
     50200c06:	fec42783          	lw	a5,-20(s0)
     50200c0a:	278d                	addiw	a5,a5,3
@@ -1100,20 +1100,20 @@ Disassembly of section .text:
     50200c18:	47fd                	li	a5,31
     50200c1a:	f6e7d8e3          	bge	a5,a4,50200b8a <handle_other+0x36>
     50200c1e:	00086797          	auipc	a5,0x86
-    50200c22:	35a78793          	addi	a5,a5,858 # 50286f78 <current_running>
+    50200c22:	3a278793          	addi	a5,a5,930 # 50286fc0 <current_running>
     50200c26:	639c                	ld	a5,0(a5)
     50200c28:	579c                	lw	a5,40(a5)
     50200c2a:	85be                	mv	a1,a5
     50200c2c:	00003517          	auipc	a0,0x3
-    50200c30:	7bc50513          	addi	a0,a0,1980 # 502043e8 <fork_priority_task+0x37e>
+    50200c30:	7dc50513          	addi	a0,a0,2012 # 50204408 <fork_priority_task+0x39e>
     50200c34:	0f2020ef          	jal	ra,50202d26 <printk>
     50200c38:	00086797          	auipc	a5,0x86
-    50200c3c:	34078793          	addi	a5,a5,832 # 50286f78 <current_running>
+    50200c3c:	38878793          	addi	a5,a5,904 # 50286fc0 <current_running>
     50200c40:	639c                	ld	a5,0(a5)
     50200c42:	6b9c                	ld	a5,16(a5)
     50200c44:	85be                	mv	a1,a5
     50200c46:	00003517          	auipc	a0,0x3
-    50200c4a:	7ba50513          	addi	a0,a0,1978 # 50204400 <fork_priority_task+0x396>
+    50200c4a:	7da50513          	addi	a0,a0,2010 # 50204420 <fork_priority_task+0x3b6>
     50200c4e:	0d8020ef          	jal	ra,50202d26 <printk>
     50200c52:	ed843783          	ld	a5,-296(s0)
     50200c56:	1007b703          	ld	a4,256(a5)
@@ -1124,25 +1124,25 @@ Disassembly of section .text:
     50200c6a:	86be                	mv	a3,a5
     50200c6c:	85ba                	mv	a1,a4
     50200c6e:	00003517          	auipc	a0,0x3
-    50200c72:	7ba50513          	addi	a0,a0,1978 # 50204428 <fork_priority_task+0x3be>
+    50200c72:	7da50513          	addi	a0,a0,2010 # 50204448 <fork_priority_task+0x3de>
     50200c76:	0b0020ef          	jal	ra,50202d26 <printk>
     50200c7a:	ed843783          	ld	a5,-296(s0)
     50200c7e:	1087b783          	ld	a5,264(a5)
     50200c82:	85be                	mv	a1,a5
     50200c84:	00003517          	auipc	a0,0x3
-    50200c88:	7d450513          	addi	a0,a0,2004 # 50204458 <fork_priority_task+0x3ee>
+    50200c88:	7f450513          	addi	a0,a0,2036 # 50204478 <fork_priority_task+0x40e>
     50200c8c:	09a020ef          	jal	ra,50202d26 <printk>
     50200c90:	ed843783          	ld	a5,-296(s0)
     50200c94:	1207b783          	ld	a5,288(a5)
     50200c98:	85be                	mv	a1,a5
     50200c9a:	00003517          	auipc	a0,0x3
-    50200c9e:	7ce50513          	addi	a0,a0,1998 # 50204468 <fork_priority_task+0x3fe>
+    50200c9e:	7ee50513          	addi	a0,a0,2030 # 50204488 <fork_priority_task+0x41e>
     50200ca2:	084020ef          	jal	ra,50202d26 <printk>
     50200ca6:	00004617          	auipc	a2,0x4
-    50200caa:	92a60613          	addi	a2,a2,-1750 # 502045d0 <__FUNCTION__.1453>
+    50200caa:	94a60613          	addi	a2,a2,-1718 # 502045f0 <__FUNCTION__.1453>
     50200cae:	05300593          	li	a1,83
     50200cb2:	00003517          	auipc	a0,0x3
-    50200cb6:	7c650513          	addi	a0,a0,1990 # 50204478 <fork_priority_task+0x40e>
+    50200cb6:	7e650513          	addi	a0,a0,2022 # 50204498 <fork_priority_task+0x42e>
     50200cba:	cebff0ef          	jal	ra,502009a4 <_panic>
     50200cbe:	0001                	nop
     50200cc0:	70f2                	ld	ra,312(sp)
@@ -1162,7 +1162,7 @@ Disassembly of section .text:
     50200ce0:	67dc                	ld	a5,136(a5)
     50200ce2:	85be                	mv	a1,a5
     50200ce4:	00004517          	auipc	a0,0x4
-    50200ce8:	8ac50513          	addi	a0,a0,-1876 # 50204590 <fork_priority_task+0x526>
+    50200ce8:	8cc50513          	addi	a0,a0,-1844 # 502045b0 <fork_priority_task+0x546>
     50200cec:	03a020ef          	jal	ra,50202d26 <printk>
     50200cf0:	fd843603          	ld	a2,-40(s0)
     50200cf4:	fe043583          	ld	a1,-32(s0)
@@ -1184,11 +1184,11 @@ Disassembly of section .text:
     50200d18:	87ba                	mv	a5,a4
     50200d1a:	fef42423          	sw	a5,-24(s0)
     50200d1e:	00006797          	auipc	a5,0x6
-    50200d22:	25a78793          	addi	a5,a5,602 # 50206f78 <screen_cursor_x>
+    50200d22:	2a278793          	addi	a5,a5,674 # 50206fc0 <screen_cursor_x>
     50200d26:	fec42703          	lw	a4,-20(s0)
     50200d2a:	c398                	sw	a4,0(a5)
     50200d2c:	00006797          	auipc	a5,0x6
-    50200d30:	25078793          	addi	a5,a5,592 # 50206f7c <screen_cursor_y>
+    50200d30:	29878793          	addi	a5,a5,664 # 50206fc4 <screen_cursor_y>
     50200d34:	fe842703          	lw	a4,-24(s0)
     50200d38:	c398                	sw	a4,0(a5)
     50200d3a:	0001                	nop
@@ -1206,12 +1206,12 @@ Disassembly of section .text:
     50200d50:	87ba                	mv	a5,a4
     50200d52:	fef42423          	sw	a5,-24(s0)
     50200d56:	00086797          	auipc	a5,0x86
-    50200d5a:	22278793          	addi	a5,a5,546 # 50286f78 <current_running>
+    50200d5a:	26a78793          	addi	a5,a5,618 # 50286fc0 <current_running>
     50200d5e:	639c                	ld	a5,0(a5)
     50200d60:	fec42703          	lw	a4,-20(s0)
     50200d64:	dbd8                	sw	a4,52(a5)
     50200d66:	00086797          	auipc	a5,0x86
-    50200d6a:	21278793          	addi	a5,a5,530 # 50286f78 <current_running>
+    50200d6a:	25a78793          	addi	a5,a5,602 # 50286fc0 <current_running>
     50200d6e:	639c                	ld	a5,0(a5)
     50200d70:	fe842703          	lw	a4,-24(s0)
     50200d74:	df98                	sw	a4,56(a5)
@@ -1236,7 +1236,7 @@ Disassembly of section .text:
     50200d9e:	863e                	mv	a2,a5
     50200da0:	45ed                	li	a1,27
     50200da2:	00004517          	auipc	a0,0x4
-    50200da6:	83e50513          	addi	a0,a0,-1986 # 502045e0 <__FUNCTION__.1453+0x10>
+    50200da6:	85e50513          	addi	a0,a0,-1954 # 50204600 <__FUNCTION__.1453+0x10>
     50200daa:	77d010ef          	jal	ra,50202d26 <printk>
     50200dae:	fe842703          	lw	a4,-24(s0)
     50200db2:	fec42783          	lw	a5,-20(s0)
@@ -1256,7 +1256,7 @@ Disassembly of section .text:
     50200dce:	0800                	addi	s0,sp,16
     50200dd0:	45ed                	li	a1,27
     50200dd2:	00004517          	auipc	a0,0x4
-    50200dd6:	81e50513          	addi	a0,a0,-2018 # 502045f0 <__FUNCTION__.1453+0x20>
+    50200dd6:	83e50513          	addi	a0,a0,-1986 # 50204610 <__FUNCTION__.1453+0x20>
     50200dda:	74d010ef          	jal	ra,50202d26 <printk>
     50200dde:	0001                	nop
     50200de0:	60a2                	ld	ra,8(sp)
@@ -1271,7 +1271,7 @@ Disassembly of section .text:
     50200dee:	0800                	addi	s0,sp,16
     50200df0:	45ed                	li	a1,27
     50200df2:	00004517          	auipc	a0,0x4
-    50200df6:	80650513          	addi	a0,a0,-2042 # 502045f8 <__FUNCTION__.1453+0x28>
+    50200df6:	82650513          	addi	a0,a0,-2010 # 50204618 <__FUNCTION__.1453+0x28>
     50200dfa:	72d010ef          	jal	ra,50202d26 <printk>
     50200dfe:	0001                	nop
     50200e00:	60a2                	ld	ra,8(sp)
@@ -1287,7 +1287,7 @@ Disassembly of section .text:
     50200e10:	87aa                	mv	a5,a0
     50200e12:	fef407a3          	sb	a5,-17(s0)
     50200e16:	00006797          	auipc	a5,0x6
-    50200e1a:	16678793          	addi	a5,a5,358 # 50206f7c <screen_cursor_y>
+    50200e1a:	1ae78793          	addi	a5,a5,430 # 50206fc4 <screen_cursor_y>
     50200e1e:	439c                	lw	a5,0(a5)
     50200e20:	37fd                	addiw	a5,a5,-1
     50200e22:	2781                	sext.w	a5,a5
@@ -1298,14 +1298,14 @@ Disassembly of section .text:
     50200e2e:	0047979b          	slliw	a5,a5,0x4
     50200e32:	0007871b          	sext.w	a4,a5
     50200e36:	00006797          	auipc	a5,0x6
-    50200e3a:	14278793          	addi	a5,a5,322 # 50206f78 <screen_cursor_x>
+    50200e3a:	18a78793          	addi	a5,a5,394 # 50206fc0 <screen_cursor_x>
     50200e3e:	439c                	lw	a5,0(a5)
     50200e40:	37fd                	addiw	a5,a5,-1
     50200e42:	2781                	sext.w	a5,a5
     50200e44:	9fb9                	addw	a5,a5,a4
     50200e46:	2781                	sext.w	a5,a5
     50200e48:	00004717          	auipc	a4,0x4
-    50200e4c:	0e870713          	addi	a4,a4,232 # 50204f30 <new_screen>
+    50200e4c:	13070713          	addi	a4,a4,304 # 50204f78 <new_screen>
     50200e50:	97ba                	add	a5,a5,a4
     50200e52:	fef44703          	lbu	a4,-17(s0)
     50200e56:	00e78023          	sb	a4,0(a5)
@@ -1314,12 +1314,12 @@ Disassembly of section .text:
     50200e62:	47a9                	li	a5,10
     50200e64:	02f71063          	bne	a4,a5,50200e84 <screen_write_ch+0x7c>
     50200e68:	00006797          	auipc	a5,0x6
-    50200e6c:	11478793          	addi	a5,a5,276 # 50206f7c <screen_cursor_y>
+    50200e6c:	15c78793          	addi	a5,a5,348 # 50206fc4 <screen_cursor_y>
     50200e70:	439c                	lw	a5,0(a5)
     50200e72:	2785                	addiw	a5,a5,1
     50200e74:	0007871b          	sext.w	a4,a5
     50200e78:	00006797          	auipc	a5,0x6
-    50200e7c:	10478793          	addi	a5,a5,260 # 50206f7c <screen_cursor_y>
+    50200e7c:	14c78793          	addi	a5,a5,332 # 50206fc4 <screen_cursor_y>
     50200e80:	c398                	sw	a4,0(a5)
     50200e82:	a825                	j	50200eba <screen_write_ch+0xb2>
     50200e84:	fef44783          	lbu	a5,-17(s0)
@@ -1327,23 +1327,23 @@ Disassembly of section .text:
     50200e8c:	47b5                	li	a5,13
     50200e8e:	00f71963          	bne	a4,a5,50200ea0 <screen_write_ch+0x98>
     50200e92:	00006797          	auipc	a5,0x6
-    50200e96:	0e678793          	addi	a5,a5,230 # 50206f78 <screen_cursor_x>
+    50200e96:	12e78793          	addi	a5,a5,302 # 50206fc0 <screen_cursor_x>
     50200e9a:	4705                	li	a4,1
     50200e9c:	c398                	sw	a4,0(a5)
     50200e9e:	a831                	j	50200eba <screen_write_ch+0xb2>
     50200ea0:	00006797          	auipc	a5,0x6
-    50200ea4:	0d878793          	addi	a5,a5,216 # 50206f78 <screen_cursor_x>
+    50200ea4:	12078793          	addi	a5,a5,288 # 50206fc0 <screen_cursor_x>
     50200ea8:	439c                	lw	a5,0(a5)
     50200eaa:	2785                	addiw	a5,a5,1
     50200eac:	0007871b          	sext.w	a4,a5
     50200eb0:	00006797          	auipc	a5,0x6
-    50200eb4:	0c878793          	addi	a5,a5,200 # 50206f78 <screen_cursor_x>
+    50200eb4:	11078793          	addi	a5,a5,272 # 50206fc0 <screen_cursor_x>
     50200eb8:	c398                	sw	a4,0(a5)
     50200eba:	00006797          	auipc	a5,0x6
-    50200ebe:	0be78793          	addi	a5,a5,190 # 50206f78 <screen_cursor_x>
+    50200ebe:	10678793          	addi	a5,a5,262 # 50206fc0 <screen_cursor_x>
     50200ec2:	4398                	lw	a4,0(a5)
     50200ec4:	00006797          	auipc	a5,0x6
-    50200ec8:	0b878793          	addi	a5,a5,184 # 50206f7c <screen_cursor_y>
+    50200ec8:	10078793          	addi	a5,a5,256 # 50206fc4 <screen_cursor_y>
     50200ecc:	439c                	lw	a5,0(a5)
     50200ece:	85be                	mv	a1,a5
     50200ed0:	853a                	mv	a0,a4
@@ -1386,7 +1386,7 @@ Disassembly of section .text:
     50200f24:	9fb9                	addw	a5,a5,a4
     50200f26:	2781                	sext.w	a5,a5
     50200f28:	00004717          	auipc	a4,0x4
-    50200f2c:	00870713          	addi	a4,a4,8 # 50204f30 <new_screen>
+    50200f2c:	05070713          	addi	a4,a4,80 # 50204f78 <new_screen>
     50200f30:	97ba                	add	a5,a5,a4
     50200f32:	02000713          	li	a4,32
     50200f36:	00e78023          	sb	a4,0(a5)
@@ -1449,11 +1449,11 @@ Disassembly of section .text:
     50200fd0:	e022                	sd	s0,0(sp)
     50200fd2:	0800                	addi	s0,sp,16
     50200fd4:	00086797          	auipc	a5,0x86
-    50200fd8:	fa478793          	addi	a5,a5,-92 # 50286f78 <current_running>
+    50200fd8:	fec78793          	addi	a5,a5,-20 # 50286fc0 <current_running>
     50200fdc:	639c                	ld	a5,0(a5)
     50200fde:	5bd8                	lw	a4,52(a5)
     50200fe0:	00086797          	auipc	a5,0x86
-    50200fe4:	f9878793          	addi	a5,a5,-104 # 50286f78 <current_running>
+    50200fe4:	fe078793          	addi	a5,a5,-32 # 50286fc0 <current_running>
     50200fe8:	639c                	ld	a5,0(a5)
     50200fea:	5f9c                	lw	a5,56(a5)
     50200fec:	85be                	mv	a1,a5
@@ -1519,7 +1519,7 @@ Disassembly of section .text:
     5020108c:	9fb9                	addw	a5,a5,a4
     5020108e:	2781                	sext.w	a5,a5
     50201090:	00004717          	auipc	a4,0x4
-    50201094:	ea070713          	addi	a4,a4,-352 # 50204f30 <new_screen>
+    50201094:	ee870713          	addi	a4,a4,-280 # 50204f78 <new_screen>
     50201098:	97ba                	add	a5,a5,a4
     5020109a:	0007c683          	lbu	a3,0(a5)
     5020109e:	fec42703          	lw	a4,-20(s0)
@@ -1532,7 +1532,7 @@ Disassembly of section .text:
     502010b4:	9fb9                	addw	a5,a5,a4
     502010b6:	2781                	sext.w	a5,a5
     502010b8:	00005717          	auipc	a4,0x5
-    502010bc:	e1870713          	addi	a4,a4,-488 # 50205ed0 <old_screen>
+    502010bc:	e6070713          	addi	a4,a4,-416 # 50205f18 <old_screen>
     502010c0:	97ba                	add	a5,a5,a4
     502010c2:	0007c783          	lbu	a5,0(a5)
     502010c6:	8736                	mv	a4,a3
@@ -1556,7 +1556,7 @@ Disassembly of section .text:
     502010fc:	9fb9                	addw	a5,a5,a4
     502010fe:	2781                	sext.w	a5,a5
     50201100:	00004717          	auipc	a4,0x4
-    50201104:	e3070713          	addi	a4,a4,-464 # 50204f30 <new_screen>
+    50201104:	e7870713          	addi	a4,a4,-392 # 50204f78 <new_screen>
     50201108:	97ba                	add	a5,a5,a4
     5020110a:	0007c783          	lbu	a5,0(a5)
     5020110e:	853e                	mv	a0,a5
@@ -1580,11 +1580,11 @@ Disassembly of section .text:
     50201146:	9fb9                	addw	a5,a5,a4
     50201148:	2781                	sext.w	a5,a5
     5020114a:	00004717          	auipc	a4,0x4
-    5020114e:	de670713          	addi	a4,a4,-538 # 50204f30 <new_screen>
+    5020114e:	e2e70713          	addi	a4,a4,-466 # 50204f78 <new_screen>
     50201152:	9736                	add	a4,a4,a3
     50201154:	00074703          	lbu	a4,0(a4)
     50201158:	00005697          	auipc	a3,0x5
-    5020115c:	d7868693          	addi	a3,a3,-648 # 50205ed0 <old_screen>
+    5020115c:	dc068693          	addi	a3,a3,-576 # 50205f18 <old_screen>
     50201160:	97b6                	add	a5,a5,a3
     50201162:	00e78023          	sb	a4,0(a5)
     50201166:	fe842783          	lw	a5,-24(s0)
@@ -1602,10 +1602,10 @@ Disassembly of section .text:
     50201192:	03100793          	li	a5,49
     50201196:	ece7dde3          	bge	a5,a4,50201070 <screen_reflush+0xe>
     5020119a:	00006797          	auipc	a5,0x6
-    5020119e:	dde78793          	addi	a5,a5,-546 # 50206f78 <screen_cursor_x>
+    5020119e:	e2678793          	addi	a5,a5,-474 # 50206fc0 <screen_cursor_x>
     502011a2:	4398                	lw	a4,0(a5)
     502011a4:	00006797          	auipc	a5,0x6
-    502011a8:	dd878793          	addi	a5,a5,-552 # 50206f7c <screen_cursor_y>
+    502011a8:	e2078793          	addi	a5,a5,-480 # 50206fc4 <screen_cursor_y>
     502011ac:	439c                	lw	a5,0(a5)
     502011ae:	85be                	mv	a1,a5
     502011b0:	853a                	mv	a0,a4
@@ -1688,7 +1688,7 @@ Disassembly of section .text:
     50201264:	fca43c23          	sd	a0,-40(s0)
     50201268:	fe3ff0ef          	jal	ra,5020124a <assert_supervisor_mode>
     5020126c:	00004797          	auipc	a5,0x4
-    50201270:	c7c78793          	addi	a5,a5,-900 # 50204ee8 <global_lock_id>
+    50201270:	cc478793          	addi	a5,a5,-828 # 50204f30 <global_lock_id>
     50201274:	6398                	ld	a4,0(a5)
     50201276:	67c1                	lui	a5,0x10
     50201278:	17fd                	addi	a5,a5,-1
@@ -1697,7 +1697,7 @@ Disassembly of section .text:
     50201282:	0007a023          	sw	zero,0(a5) # 10000 <_start-0x501f0000>
     50201286:	57fd                	li	a5,-1
     50201288:	a281                	j	502013c8 <do_mutex_lock_init+0x16c>
-    5020128a:	83818793          	addi	a5,gp,-1992 # 50204f18 <_edata>
+    5020128a:	83818793          	addi	a5,gp,-1992 # 50204f60 <_edata>
     5020128e:	439c                	lw	a5,0(a5)
     50201290:	efb1                	bnez	a5,502012ec <do_mutex_lock_init+0x90>
     50201292:	fe042623          	sw	zero,-20(s0)
@@ -1706,13 +1706,13 @@ Disassembly of section .text:
     5020129c:	01e010ef          	jal	ra,502022ba <kmalloc>
     502012a0:	86aa                	mv	a3,a0
     502012a2:	00006717          	auipc	a4,0x6
-    502012a6:	cde70713          	addi	a4,a4,-802 # 50206f80 <locks>
+    502012a6:	d2670713          	addi	a4,a4,-730 # 50206fc8 <locks>
     502012aa:	fec42783          	lw	a5,-20(s0)
     502012ae:	078e                	slli	a5,a5,0x3
     502012b0:	97ba                	add	a5,a5,a4
     502012b2:	e394                	sd	a3,0(a5)
     502012b4:	00006717          	auipc	a4,0x6
-    502012b8:	ccc70713          	addi	a4,a4,-820 # 50206f80 <locks>
+    502012b8:	d1470713          	addi	a4,a4,-748 # 50206fc8 <locks>
     502012bc:	fec42783          	lw	a5,-20(s0)
     502012c0:	078e                	slli	a5,a5,0x3
     502012c2:	97ba                	add	a5,a5,a4
@@ -1726,7 +1726,7 @@ Disassembly of section .text:
     502012dc:	67c1                	lui	a5,0x10
     502012de:	17f9                	addi	a5,a5,-2
     502012e0:	fae7dce3          	bge	a5,a4,50201298 <do_mutex_lock_init+0x3c>
-    502012e4:	83818793          	addi	a5,gp,-1992 # 50204f18 <_edata>
+    502012e4:	83818793          	addi	a5,gp,-1992 # 50204f60 <_edata>
     502012e8:	4705                	li	a4,1
     502012ea:	c398                	sw	a4,0(a5)
     502012ec:	fd843783          	ld	a5,-40(s0)
@@ -1740,51 +1740,51 @@ Disassembly of section .text:
     50201304:	57f5                	li	a5,-3
     50201306:	a0c9                	j	502013c8 <do_mutex_lock_init+0x16c>
     50201308:	00004797          	auipc	a5,0x4
-    5020130c:	be078793          	addi	a5,a5,-1056 # 50204ee8 <global_lock_id>
+    5020130c:	c2878793          	addi	a5,a5,-984 # 50204f30 <global_lock_id>
     50201310:	6394                	ld	a3,0(a5)
     50201312:	00004797          	auipc	a5,0x4
-    50201316:	bd678793          	addi	a5,a5,-1066 # 50204ee8 <global_lock_id>
+    50201316:	c1e78793          	addi	a5,a5,-994 # 50204f30 <global_lock_id>
     5020131a:	639c                	ld	a5,0(a5)
     5020131c:	00006717          	auipc	a4,0x6
-    50201320:	c6470713          	addi	a4,a4,-924 # 50206f80 <locks>
+    50201320:	cac70713          	addi	a4,a4,-852 # 50206fc8 <locks>
     50201324:	078e                	slli	a5,a5,0x3
     50201326:	97ba                	add	a5,a5,a4
     50201328:	639c                	ld	a5,0(a5)
     5020132a:	0006871b          	sext.w	a4,a3
     5020132e:	c398                	sw	a4,0(a5)
     50201330:	00004797          	auipc	a5,0x4
-    50201334:	bb878793          	addi	a5,a5,-1096 # 50204ee8 <global_lock_id>
+    50201334:	c0078793          	addi	a5,a5,-1024 # 50204f30 <global_lock_id>
     50201338:	639c                	ld	a5,0(a5)
     5020133a:	00006717          	auipc	a4,0x6
-    5020133e:	c4670713          	addi	a4,a4,-954 # 50206f80 <locks>
+    5020133e:	c8e70713          	addi	a4,a4,-882 # 50206fc8 <locks>
     50201342:	078e                	slli	a5,a5,0x3
     50201344:	97ba                	add	a5,a5,a4
     50201346:	639c                	ld	a5,0(a5)
     50201348:	4705                	li	a4,1
     5020134a:	c3d8                	sw	a4,4(a5)
     5020134c:	00004797          	auipc	a5,0x4
-    50201350:	b9c78793          	addi	a5,a5,-1124 # 50204ee8 <global_lock_id>
+    50201350:	be478793          	addi	a5,a5,-1052 # 50204f30 <global_lock_id>
     50201354:	639c                	ld	a5,0(a5)
     50201356:	00006717          	auipc	a4,0x6
-    5020135a:	c2a70713          	addi	a4,a4,-982 # 50206f80 <locks>
+    5020135a:	c7270713          	addi	a4,a4,-910 # 50206fc8 <locks>
     5020135e:	078e                	slli	a5,a5,0x3
     50201360:	97ba                	add	a5,a5,a4
     50201362:	639c                	ld	a5,0(a5)
     50201364:	0007a423          	sw	zero,8(a5)
     50201368:	00004797          	auipc	a5,0x4
-    5020136c:	b8078793          	addi	a5,a5,-1152 # 50204ee8 <global_lock_id>
+    5020136c:	bc878793          	addi	a5,a5,-1080 # 50204f30 <global_lock_id>
     50201370:	639c                	ld	a5,0(a5)
     50201372:	00006717          	auipc	a4,0x6
-    50201376:	c0e70713          	addi	a4,a4,-1010 # 50206f80 <locks>
+    50201376:	c5670713          	addi	a4,a4,-938 # 50206fc8 <locks>
     5020137a:	078e                	slli	a5,a5,0x3
     5020137c:	97ba                	add	a5,a5,a4
     5020137e:	639c                	ld	a5,0(a5)
     50201380:	0007a623          	sw	zero,12(a5)
     50201384:	00004797          	auipc	a5,0x4
-    50201388:	b6478793          	addi	a5,a5,-1180 # 50204ee8 <global_lock_id>
+    50201388:	bac78793          	addi	a5,a5,-1108 # 50204f30 <global_lock_id>
     5020138c:	639c                	ld	a5,0(a5)
     5020138e:	00006717          	auipc	a4,0x6
-    50201392:	bf270713          	addi	a4,a4,-1038 # 50206f80 <locks>
+    50201392:	c3a70713          	addi	a4,a4,-966 # 50206fc8 <locks>
     50201396:	078e                	slli	a5,a5,0x3
     50201398:	97ba                	add	a5,a5,a4
     5020139a:	639c                	ld	a5,0(a5)
@@ -1792,11 +1792,11 @@ Disassembly of section .text:
     5020139e:	853e                	mv	a0,a5
     502013a0:	e21ff0ef          	jal	ra,502011c0 <init_list_head>
     502013a4:	00004797          	auipc	a5,0x4
-    502013a8:	b4478793          	addi	a5,a5,-1212 # 50204ee8 <global_lock_id>
+    502013a8:	b8c78793          	addi	a5,a5,-1140 # 50204f30 <global_lock_id>
     502013ac:	639c                	ld	a5,0(a5)
     502013ae:	00178693          	addi	a3,a5,1
     502013b2:	00004717          	auipc	a4,0x4
-    502013b6:	b3670713          	addi	a4,a4,-1226 # 50204ee8 <global_lock_id>
+    502013b6:	b7e70713          	addi	a4,a4,-1154 # 50204f30 <global_lock_id>
     502013ba:	e314                	sd	a3,0(a4)
     502013bc:	0007871b          	sext.w	a4,a5
     502013c0:	fd843783          	ld	a5,-40(s0)
@@ -1841,7 +1841,7 @@ Disassembly of section .text:
     50201418:	fea43423          	sd	a0,-24(s0)
     5020141c:	e2fff0ef          	jal	ra,5020124a <assert_supervisor_mode>
     50201420:	00006717          	auipc	a4,0x6
-    50201424:	b6070713          	addi	a4,a4,-1184 # 50206f80 <locks>
+    50201424:	ba870713          	addi	a4,a4,-1112 # 50206fc8 <locks>
     50201428:	fe843783          	ld	a5,-24(s0)
     5020142c:	078e                	slli	a5,a5,0x3
     5020142e:	97ba                	add	a5,a5,a4
@@ -1852,7 +1852,7 @@ Disassembly of section .text:
     50201438:	a0e9                	j	50201502 <do_mutex_lock_acquire+0xf2>
     5020143a:	0001                	nop
     5020143c:	00006717          	auipc	a4,0x6
-    50201440:	b4470713          	addi	a4,a4,-1212 # 50206f80 <locks>
+    50201440:	b8c70713          	addi	a4,a4,-1140 # 50206fc8 <locks>
     50201444:	fe843783          	ld	a5,-24(s0)
     50201448:	078e                	slli	a5,a5,0x3
     5020144a:	97ba                	add	a5,a5,a4
@@ -1866,7 +1866,7 @@ Disassembly of section .text:
     5020145c:	4785                	li	a5,1
     5020145e:	fcf70fe3          	beq	a4,a5,5020143c <do_mutex_lock_acquire+0x2c>
     50201462:	00006717          	auipc	a4,0x6
-    50201466:	b1e70713          	addi	a4,a4,-1250 # 50206f80 <locks>
+    50201466:	b6670713          	addi	a4,a4,-1178 # 50206fc8 <locks>
     5020146a:	fe843783          	ld	a5,-24(s0)
     5020146e:	078e                	slli	a5,a5,0x3
     50201470:	97ba                	add	a5,a5,a4
@@ -1875,7 +1875,7 @@ Disassembly of section .text:
     50201476:	2781                	sext.w	a5,a5
     50201478:	e3b1                	bnez	a5,502014bc <do_mutex_lock_acquire+0xac>
     5020147a:	00006717          	auipc	a4,0x6
-    5020147e:	b0670713          	addi	a4,a4,-1274 # 50206f80 <locks>
+    5020147e:	b4e70713          	addi	a4,a4,-1202 # 50206fc8 <locks>
     50201482:	fe843783          	ld	a5,-24(s0)
     50201486:	078e                	slli	a5,a5,0x3
     50201488:	97ba                	add	a5,a5,a4
@@ -1883,14 +1883,14 @@ Disassembly of section .text:
     5020148c:	4705                	li	a4,1
     5020148e:	c798                	sw	a4,8(a5)
     50201490:	00006717          	auipc	a4,0x6
-    50201494:	af070713          	addi	a4,a4,-1296 # 50206f80 <locks>
+    50201494:	b3870713          	addi	a4,a4,-1224 # 50206fc8 <locks>
     50201498:	fe843783          	ld	a5,-24(s0)
     5020149c:	078e                	slli	a5,a5,0x3
     5020149e:	97ba                	add	a5,a5,a4
     502014a0:	639c                	ld	a5,0(a5)
     502014a2:	0007a623          	sw	zero,12(a5)
     502014a6:	00006717          	auipc	a4,0x6
-    502014aa:	ada70713          	addi	a4,a4,-1318 # 50206f80 <locks>
+    502014aa:	b2270713          	addi	a4,a4,-1246 # 50206fc8 <locks>
     502014ae:	fe843783          	ld	a5,-24(s0)
     502014b2:	078e                	slli	a5,a5,0x3
     502014b4:	97ba                	add	a5,a5,a4
@@ -1898,11 +1898,11 @@ Disassembly of section .text:
     502014b8:	439c                	lw	a5,0(a5)
     502014ba:	a0a1                	j	50201502 <do_mutex_lock_acquire+0xf2>
     502014bc:	00086797          	auipc	a5,0x86
-    502014c0:	abc78793          	addi	a5,a5,-1348 # 50286f78 <current_running>
+    502014c0:	b0478793          	addi	a5,a5,-1276 # 50286fc0 <current_running>
     502014c4:	639c                	ld	a5,0(a5)
     502014c6:	01878693          	addi	a3,a5,24
     502014ca:	00006717          	auipc	a4,0x6
-    502014ce:	ab670713          	addi	a4,a4,-1354 # 50206f80 <locks>
+    502014ce:	afe70713          	addi	a4,a4,-1282 # 50206fc8 <locks>
     502014d2:	fe843783          	ld	a5,-24(s0)
     502014d6:	078e                	slli	a5,a5,0x3
     502014d8:	97ba                	add	a5,a5,a4
@@ -1912,7 +1912,7 @@ Disassembly of section .text:
     502014e0:	8536                	mv	a0,a3
     502014e2:	50c000ef          	jal	ra,502019ee <do_block>
     502014e6:	00006717          	auipc	a4,0x6
-    502014ea:	a9a70713          	addi	a4,a4,-1382 # 50206f80 <locks>
+    502014ea:	ae270713          	addi	a4,a4,-1310 # 50206fc8 <locks>
     502014ee:	fe843783          	ld	a5,-24(s0)
     502014f2:	078e                	slli	a5,a5,0x3
     502014f4:	97ba                	add	a5,a5,a4
@@ -1933,7 +1933,7 @@ Disassembly of section .text:
     50201512:	1800                	addi	s0,sp,48
     50201514:	fca43c23          	sd	a0,-40(s0)
     50201518:	00006717          	auipc	a4,0x6
-    5020151c:	a6870713          	addi	a4,a4,-1432 # 50206f80 <locks>
+    5020151c:	ab070713          	addi	a4,a4,-1360 # 50206fc8 <locks>
     50201520:	fd843783          	ld	a5,-40(s0)
     50201524:	078e                	slli	a5,a5,0x3
     50201526:	97ba                	add	a5,a5,a4
@@ -1944,7 +1944,7 @@ Disassembly of section .text:
     50201530:	a0c1                	j	502015f0 <do_mutex_lock_release+0xe4>
     50201532:	0001                	nop
     50201534:	00006717          	auipc	a4,0x6
-    50201538:	a4c70713          	addi	a4,a4,-1460 # 50206f80 <locks>
+    50201538:	a9470713          	addi	a4,a4,-1388 # 50206fc8 <locks>
     5020153c:	fd843783          	ld	a5,-40(s0)
     50201540:	078e                	slli	a5,a5,0x3
     50201542:	97ba                	add	a5,a5,a4
@@ -1958,7 +1958,7 @@ Disassembly of section .text:
     50201554:	4785                	li	a5,1
     50201556:	fcf70fe3          	beq	a4,a5,50201534 <do_mutex_lock_release+0x28>
     5020155a:	00006717          	auipc	a4,0x6
-    5020155e:	a2670713          	addi	a4,a4,-1498 # 50206f80 <locks>
+    5020155e:	a6e70713          	addi	a4,a4,-1426 # 50206fc8 <locks>
     50201562:	fd843783          	ld	a5,-40(s0)
     50201566:	078e                	slli	a5,a5,0x3
     50201568:	97ba                	add	a5,a5,a4
@@ -1969,7 +1969,7 @@ Disassembly of section .text:
     50201574:	87aa                	mv	a5,a0
     50201576:	cf89                	beqz	a5,50201590 <do_mutex_lock_release+0x84>
     50201578:	00006717          	auipc	a4,0x6
-    5020157c:	a0870713          	addi	a4,a4,-1528 # 50206f80 <locks>
+    5020157c:	a5070713          	addi	a4,a4,-1456 # 50206fc8 <locks>
     50201580:	fd843783          	ld	a5,-40(s0)
     50201584:	078e                	slli	a5,a5,0x3
     50201586:	97ba                	add	a5,a5,a4
@@ -1980,7 +1980,7 @@ Disassembly of section .text:
     50201592:	529000ef          	jal	ra,502022ba <kmalloc>
     50201596:	fea43423          	sd	a0,-24(s0)
     5020159a:	00006717          	auipc	a4,0x6
-    5020159e:	9e670713          	addi	a4,a4,-1562 # 50206f80 <locks>
+    5020159e:	a2e70713          	addi	a4,a4,-1490 # 50206fc8 <locks>
     502015a2:	fd843783          	ld	a5,-40(s0)
     502015a6:	078e                	slli	a5,a5,0x3
     502015a8:	97ba                	add	a5,a5,a4
@@ -1993,14 +1993,14 @@ Disassembly of section .text:
     502015be:	fe843503          	ld	a0,-24(s0)
     502015c2:	460000ef          	jal	ra,50201a22 <do_unblock>
     502015c6:	00006717          	auipc	a4,0x6
-    502015ca:	9ba70713          	addi	a4,a4,-1606 # 50206f80 <locks>
+    502015ca:	a0270713          	addi	a4,a4,-1534 # 50206fc8 <locks>
     502015ce:	fd843783          	ld	a5,-40(s0)
     502015d2:	078e                	slli	a5,a5,0x3
     502015d4:	97ba                	add	a5,a5,a4
     502015d6:	639c                	ld	a5,0(a5)
     502015d8:	0007a623          	sw	zero,12(a5)
     502015dc:	00006717          	auipc	a4,0x6
-    502015e0:	9a470713          	addi	a4,a4,-1628 # 50206f80 <locks>
+    502015e0:	9ec70713          	addi	a4,a4,-1556 # 50206fc8 <locks>
     502015e4:	fd843783          	ld	a5,-40(s0)
     502015e8:	078e                	slli	a5,a5,0x3
     502015ea:	97ba                	add	a5,a5,a4
@@ -2255,7 +2255,7 @@ Disassembly of section .text:
     50201868:	1800                	addi	s0,sp,48
     5020186a:	f43ff0ef          	jal	ra,502017ac <assert_supervisor_mode>
     5020186e:	00085797          	auipc	a5,0x85
-    50201872:	70a78793          	addi	a5,a5,1802 # 50286f78 <current_running>
+    50201872:	75278793          	addi	a5,a5,1874 # 50286fc0 <current_running>
     50201876:	639c                	ld	a5,0(a5)
     50201878:	fef43423          	sd	a5,-24(s0)
     5020187c:	fe843783          	ld	a5,-24(s0)
@@ -2267,7 +2267,7 @@ Disassembly of section .text:
     5020188e:	579c                	lw	a5,40(a5)
     50201890:	c3a5                	beqz	a5,502018f0 <do_scheduler+0x8e>
     50201892:	00003517          	auipc	a0,0x3
-    50201896:	16e50513          	addi	a0,a0,366 # 50204a00 <ready_queue>
+    50201896:	1b650513          	addi	a0,a0,438 # 50204a48 <ready_queue>
     5020189a:	e81ff0ef          	jal	ra,5020171a <list_empty>
     5020189e:	87aa                	mv	a5,a0
     502018a0:	e789                	bnez	a5,502018aa <do_scheduler+0x48>
@@ -2277,7 +2277,7 @@ Disassembly of section .text:
     502018aa:	fe843783          	ld	a5,-24(s0)
     502018ae:	07e1                	addi	a5,a5,24
     502018b0:	00003597          	auipc	a1,0x3
-    502018b4:	15058593          	addi	a1,a1,336 # 50204a00 <ready_queue>
+    502018b4:	19858593          	addi	a1,a1,408 # 50204a48 <ready_queue>
     502018b8:	853e                	mv	a0,a5
     502018ba:	db1ff0ef          	jal	ra,5020166a <list_add_tail>
     502018be:	a02d                	j	502018e8 <do_scheduler+0x86>
@@ -2285,7 +2285,7 @@ Disassembly of section .text:
     502018c4:	67dc                	ld	a5,136(a5)
     502018c6:	85be                	mv	a1,a5
     502018c8:	00003517          	auipc	a0,0x3
-    502018cc:	13850513          	addi	a0,a0,312 # 50204a00 <ready_queue>
+    502018cc:	18050513          	addi	a0,a0,384 # 50204a48 <ready_queue>
     502018d0:	e75ff0ef          	jal	ra,50201744 <list_fetch>
     502018d4:	fea43023          	sd	a0,-32(s0)
     502018d8:	fe843783          	ld	a5,-24(s0)
@@ -2297,36 +2297,36 @@ Disassembly of section .text:
     502018ec:	4709                	li	a4,2
     502018ee:	db98                	sw	a4,48(a5)
     502018f0:	00003517          	auipc	a0,0x3
-    502018f4:	11050513          	addi	a0,a0,272 # 50204a00 <ready_queue>
+    502018f4:	15850513          	addi	a0,a0,344 # 50204a48 <ready_queue>
     502018f8:	e23ff0ef          	jal	ra,5020171a <list_empty>
     502018fc:	87aa                	mv	a5,a0
     502018fe:	cb81                	beqz	a5,5020190e <do_scheduler+0xac>
     50201900:	00003517          	auipc	a0,0x3
-    50201904:	d0050513          	addi	a0,a0,-768 # 50204600 <__FUNCTION__.1453+0x30>
+    50201904:	d2050513          	addi	a0,a0,-736 # 50204620 <__FUNCTION__.1453+0x30>
     50201908:	41e010ef          	jal	ra,50202d26 <printk>
     5020190c:	a001                	j	5020190c <do_scheduler+0xaa>
     5020190e:	00003517          	auipc	a0,0x3
-    50201912:	10250513          	addi	a0,a0,258 # 50204a10 <blocked_queue>
+    50201912:	14a50513          	addi	a0,a0,330 # 50204a58 <blocked_queue>
     50201916:	e05ff0ef          	jal	ra,5020171a <list_empty>
     5020191a:	87aa                	mv	a5,a0
     5020191c:	e399                	bnez	a5,50201922 <do_scheduler+0xc0>
     5020191e:	0c3000ef          	jal	ra,502021e0 <check_timer>
     50201922:	4589                	li	a1,2
     50201924:	00003517          	auipc	a0,0x3
-    50201928:	0dc50513          	addi	a0,a0,220 # 50204a00 <ready_queue>
+    50201928:	12450513          	addi	a0,a0,292 # 50204a48 <ready_queue>
     5020192c:	e93ff0ef          	jal	ra,502017be <dequeue>
     50201930:	fca43c23          	sd	a0,-40(s0)
     50201934:	fd843783          	ld	a5,-40(s0)
     50201938:	4705                	li	a4,1
     5020193a:	db98                	sw	a4,48(a5)
     5020193c:	00085797          	auipc	a5,0x85
-    50201940:	63c78793          	addi	a5,a5,1596 # 50286f78 <current_running>
+    50201940:	68478793          	addi	a5,a5,1668 # 50286fc0 <current_running>
     50201944:	fd843703          	ld	a4,-40(s0)
     50201948:	e398                	sd	a4,0(a5)
     5020194a:	fd843783          	ld	a5,-40(s0)
     5020194e:	5798                	lw	a4,40(a5)
     50201950:	00003797          	auipc	a5,0x3
-    50201954:	5a078793          	addi	a5,a5,1440 # 50204ef0 <process_id>
+    50201954:	5e878793          	addi	a5,a5,1512 # 50204f38 <process_id>
     50201958:	c398                	sw	a4,0(a5)
     5020195a:	e72ff0ef          	jal	ra,50200fcc <load_curpcb_cursor>
     5020195e:	fd843583          	ld	a1,-40(s0)
@@ -2347,11 +2347,11 @@ Disassembly of section .text:
     5020197e:	87aa                	mv	a5,a0
     50201980:	fcf42623          	sw	a5,-52(s0)
     50201984:	00085797          	auipc	a5,0x85
-    50201988:	5f478793          	addi	a5,a5,1524 # 50286f78 <current_running>
+    50201988:	63c78793          	addi	a5,a5,1596 # 50286fc0 <current_running>
     5020198c:	639c                	ld	a5,0(a5)
     5020198e:	07e1                	addi	a5,a5,24
     50201990:	00003597          	auipc	a1,0x3
-    50201994:	08058593          	addi	a1,a1,128 # 50204a10 <blocked_queue>
+    50201994:	0c858593          	addi	a1,a1,200 # 50204a58 <blocked_queue>
     50201998:	853e                	mv	a0,a5
     5020199a:	054000ef          	jal	ra,502019ee <do_block>
     5020199e:	4541                	li	a0,16
@@ -2359,7 +2359,7 @@ Disassembly of section .text:
     502019a4:	fca43c23          	sd	a0,-40(s0)
     502019a8:	fd843783          	ld	a5,-40(s0)
     502019ac:	00003717          	auipc	a4,0x3
-    502019b0:	06470713          	addi	a4,a4,100 # 50204a10 <blocked_queue>
+    502019b0:	0ac70713          	addi	a4,a4,172 # 50204a58 <blocked_queue>
     502019b4:	e398                	sd	a4,0(a5)
     502019b6:	fd843783          	ld	a5,-40(s0)
     502019ba:	4705                	li	a4,1
@@ -2392,7 +2392,7 @@ Disassembly of section .text:
     50201a02:	fe843503          	ld	a0,-24(s0)
     50201a06:	c65ff0ef          	jal	ra,5020166a <list_add_tail>
     50201a0a:	00085797          	auipc	a5,0x85
-    50201a0e:	56e78793          	addi	a5,a5,1390 # 50286f78 <current_running>
+    50201a0e:	5b678793          	addi	a5,a5,1462 # 50286fc0 <current_running>
     50201a12:	639c                	ld	a5,0(a5)
     50201a14:	0207a823          	sw	zero,48(a5)
     50201a18:	0001                	nop
@@ -2424,14 +2424,14 @@ Disassembly of section .text:
     50201a58:	fe043783          	ld	a5,-32(s0)
     50201a5c:	07e1                	addi	a5,a5,24
     50201a5e:	00003597          	auipc	a1,0x3
-    50201a62:	fa258593          	addi	a1,a1,-94 # 50204a00 <ready_queue>
+    50201a62:	fea58593          	addi	a1,a1,-22 # 50204a48 <ready_queue>
     50201a66:	853e                	mv	a0,a5
     50201a68:	c03ff0ef          	jal	ra,5020166a <list_add_tail>
     50201a6c:	a819                	j	50201a82 <do_unblock+0x60>
     50201a6e:	fe043783          	ld	a5,-32(s0)
     50201a72:	07e1                	addi	a5,a5,24
     50201a74:	00003597          	auipc	a1,0x3
-    50201a78:	f8c58593          	addi	a1,a1,-116 # 50204a00 <ready_queue>
+    50201a78:	fd458593          	addi	a1,a1,-44 # 50204a48 <ready_queue>
     50201a7c:	853e                	mv	a0,a5
     50201a7e:	bedff0ef          	jal	ra,5020166a <list_add_tail>
     50201a82:	0001                	nop
@@ -2446,23 +2446,23 @@ Disassembly of section .text:
     50201a90:	e822                	sd	s0,16(sp)
     50201a92:	1000                	addi	s0,sp,32
     50201a94:	00005797          	auipc	a5,0x5
-    50201a98:	3f478793          	addi	a5,a5,1012 # 50206e88 <tasks_num>
+    50201a98:	43c78793          	addi	a5,a5,1084 # 50206ed0 <tasks_num>
     50201a9c:	6398                	ld	a4,0(a5)
     50201a9e:	47c1                	li	a5,16
     50201aa0:	00f71463          	bne	a4,a5,50201aa8 <do_fork+0x1c>
     50201aa4:	57fd                	li	a5,-1
     50201aa6:	a205                	j	50201bc6 <do_fork+0x13a>
     50201aa8:	00085797          	auipc	a5,0x85
-    50201aac:	4d078793          	addi	a5,a5,1232 # 50286f78 <current_running>
+    50201aac:	51878793          	addi	a5,a5,1304 # 50286fc0 <current_running>
     50201ab0:	639c                	ld	a5,0(a5)
     50201ab2:	fef43423          	sd	a5,-24(s0)
     50201ab6:	00005797          	auipc	a5,0x5
-    50201aba:	3d278793          	addi	a5,a5,978 # 50206e88 <tasks_num>
+    50201aba:	41a78793          	addi	a5,a5,1050 # 50206ed0 <tasks_num>
     50201abe:	6398                	ld	a4,0(a5)
     50201ac0:	09800793          	li	a5,152
     50201ac4:	02f70733          	mul	a4,a4,a5
     50201ac8:	00085797          	auipc	a5,0x85
-    50201acc:	4b878793          	addi	a5,a5,1208 # 50286f80 <pcb>
+    50201acc:	50078793          	addi	a5,a5,1280 # 50286fc8 <pcb>
     50201ad0:	97ba                	add	a5,a5,a4
     50201ad2:	fef43023          	sd	a5,-32(s0)
     50201ad6:	4505                	li	a0,1
@@ -2484,14 +2484,14 @@ Disassembly of section .text:
     50201b06:	fe043783          	ld	a5,-32(s0)
     50201b0a:	0007bc23          	sd	zero,24(a5)
     50201b0e:	00005797          	auipc	a5,0x5
-    50201b12:	37a78793          	addi	a5,a5,890 # 50206e88 <tasks_num>
+    50201b12:	3c278793          	addi	a5,a5,962 # 50206ed0 <tasks_num>
     50201b16:	639c                	ld	a5,0(a5)
     50201b18:	00178713          	addi	a4,a5,1
     50201b1c:	00005797          	auipc	a5,0x5
-    50201b20:	36c78793          	addi	a5,a5,876 # 50206e88 <tasks_num>
+    50201b20:	3b478793          	addi	a5,a5,948 # 50206ed0 <tasks_num>
     50201b24:	e398                	sd	a4,0(a5)
     50201b26:	00005797          	auipc	a5,0x5
-    50201b2a:	36278793          	addi	a5,a5,866 # 50206e88 <tasks_num>
+    50201b2a:	3aa78793          	addi	a5,a5,938 # 50206ed0 <tasks_num>
     50201b2e:	639c                	ld	a5,0(a5)
     50201b30:	0007871b          	sext.w	a4,a5
     50201b34:	fe043783          	ld	a5,-32(s0)
@@ -2535,7 +2535,7 @@ Disassembly of section .text:
     50201bac:	fe043783          	ld	a5,-32(s0)
     50201bb0:	07e1                	addi	a5,a5,24
     50201bb2:	00003597          	auipc	a1,0x3
-    50201bb6:	e4e58593          	addi	a1,a1,-434 # 50204a00 <ready_queue>
+    50201bb6:	e9658593          	addi	a1,a1,-362 # 50204a48 <ready_queue>
     50201bba:	853e                	mv	a0,a5
     50201bbc:	aafff0ef          	jal	ra,5020166a <list_add_tail>
     50201bc0:	fe043783          	ld	a5,-32(s0)
@@ -2713,7 +2713,7 @@ Disassembly of section .text:
     50201db4:	1000                	addi	s0,sp,32
     50201db6:	fea43423          	sd	a0,-24(s0)
     50201dba:	00085797          	auipc	a5,0x85
-    50201dbe:	1be78793          	addi	a5,a5,446 # 50286f78 <current_running>
+    50201dbe:	20678793          	addi	a5,a5,518 # 50286fc0 <current_running>
     50201dc2:	639c                	ld	a5,0(a5)
     50201dc4:	fe843703          	ld	a4,-24(s0)
     50201dc8:	e7d8                	sd	a4,136(a5)
@@ -2730,7 +2730,7 @@ Disassembly of section .text:
     50201ddc:	fcb43023          	sd	a1,-64(s0)
     50201de0:	fac43c23          	sd	a2,-72(s0)
     50201de4:	fc843703          	ld	a4,-56(s0)
-    50201de8:	3e800793          	li	a5,1000
+    50201de8:	06400793          	li	a5,100
     50201dec:	02f757b3          	divu	a5,a4,a5
     50201df0:	fef43423          	sd	a5,-24(s0)
     50201df4:	4785                	li	a5,1
@@ -2944,9 +2944,9 @@ Disassembly of section .text:
     50202030:	e422                	sd	s0,8(sp)
     50202032:	0800                	addi	s0,sp,16
     50202034:	c0102773          	rdtime	a4
-    50202038:	84018793          	addi	a5,gp,-1984 # 50204f20 <time_elapsed>
+    50202038:	84018793          	addi	a5,gp,-1984 # 50204f68 <time_elapsed>
     5020203c:	e398                	sd	a4,0(a5)
-    5020203e:	84018793          	addi	a5,gp,-1984 # 50204f20 <time_elapsed>
+    5020203e:	84018793          	addi	a5,gp,-1984 # 50204f68 <time_elapsed>
     50202042:	639c                	ld	a5,0(a5)
     50202044:	853e                	mv	a0,a5
     50202046:	6422                	ld	s0,8(sp)
@@ -2960,7 +2960,7 @@ Disassembly of section .text:
     50202052:	0800                	addi	s0,sp,16
     50202054:	fdbff0ef          	jal	ra,5020202e <get_ticks>
     50202058:	872a                	mv	a4,a0
-    5020205a:	84818793          	addi	a5,gp,-1976 # 50204f28 <time_base>
+    5020205a:	84818793          	addi	a5,gp,-1976 # 50204f70 <time_base>
     5020205e:	439c                	lw	a5,0(a5)
     50202060:	1782                	slli	a5,a5,0x20
     50202062:	9381                	srli	a5,a5,0x20
@@ -2975,7 +2975,7 @@ Disassembly of section .text:
     50202072:	1141                	addi	sp,sp,-16
     50202074:	e422                	sd	s0,8(sp)
     50202076:	0800                	addi	s0,sp,16
-    50202078:	84818793          	addi	a5,gp,-1976 # 50204f28 <time_base>
+    50202078:	84818793          	addi	a5,gp,-1976 # 50204f70 <time_base>
     5020207c:	439c                	lw	a5,0(a5)
     5020207e:	1782                	slli	a5,a5,0x20
     50202080:	9381                	srli	a5,a5,0x20
@@ -3033,38 +3033,38 @@ Disassembly of section .text:
     502020f6:	fab43823          	sd	a1,-80(s0)
     502020fa:	fac43423          	sd	a2,-88(s0)
     502020fe:	00085797          	auipc	a5,0x85
-    50202102:	e7a78793          	addi	a5,a5,-390 # 50286f78 <current_running>
+    50202102:	ec278793          	addi	a5,a5,-318 # 50286fc0 <current_running>
     50202106:	639c                	ld	a5,0(a5)
     50202108:	4705                	li	a4,1
     5020210a:	cbb8                	sw	a4,80(a5)
     5020210c:	00085797          	auipc	a5,0x85
-    50202110:	e6c78793          	addi	a5,a5,-404 # 50286f78 <current_running>
+    50202110:	eb478793          	addi	a5,a5,-332 # 50286fc0 <current_running>
     50202114:	6384                	ld	s1,0(a5)
     50202116:	f19ff0ef          	jal	ra,5020202e <get_ticks>
     5020211a:	87aa                	mv	a5,a0
     5020211c:	ecbc                	sd	a5,88(s1)
     5020211e:	00085797          	auipc	a5,0x85
-    50202122:	e5a78793          	addi	a5,a5,-422 # 50286f78 <current_running>
+    50202122:	ea278793          	addi	a5,a5,-350 # 50286fc0 <current_running>
     50202126:	639c                	ld	a5,0(a5)
     50202128:	6fb4                	ld	a3,88(a5)
     5020212a:	00085797          	auipc	a5,0x85
-    5020212e:	e4e78793          	addi	a5,a5,-434 # 50286f78 <current_running>
+    5020212e:	e9678793          	addi	a5,a5,-362 # 50286fc0 <current_running>
     50202132:	639c                	ld	a5,0(a5)
     50202134:	fb843703          	ld	a4,-72(s0)
     50202138:	9736                	add	a4,a4,a3
     5020213a:	f3b8                	sd	a4,96(a5)
     5020213c:	00085797          	auipc	a5,0x85
-    50202140:	e3c78793          	addi	a5,a5,-452 # 50286f78 <current_running>
+    50202140:	e8478793          	addi	a5,a5,-380 # 50286fc0 <current_running>
     50202144:	639c                	ld	a5,0(a5)
     50202146:	fb043703          	ld	a4,-80(s0)
     5020214a:	f7b8                	sd	a4,104(a5)
     5020214c:	00085797          	auipc	a5,0x85
-    50202150:	e2c78793          	addi	a5,a5,-468 # 50286f78 <current_running>
+    50202150:	e7478793          	addi	a5,a5,-396 # 50286fc0 <current_running>
     50202154:	639c                	ld	a5,0(a5)
     50202156:	fa843703          	ld	a4,-88(s0)
     5020215a:	fbb8                	sd	a4,112(a5)
     5020215c:	00003797          	auipc	a5,0x3
-    50202160:	8c478793          	addi	a5,a5,-1852 # 50204a20 <timers>
+    50202160:	90c78793          	addi	a5,a5,-1780 # 50204a68 <timers>
     50202164:	639c                	ld	a5,0(a5)
     50202166:	fcf43c23          	sd	a5,-40(s0)
     5020216a:	fc043823          	sd	zero,-48(s0)
@@ -3077,7 +3077,7 @@ Disassembly of section .text:
     50202184:	fd043783          	ld	a5,-48(s0)
     50202188:	73b8                	ld	a4,96(a5)
     5020218a:	00085797          	auipc	a5,0x85
-    5020218e:	dee78793          	addi	a5,a5,-530 # 50286f78 <current_running>
+    5020218e:	e3678793          	addi	a5,a5,-458 # 50286fc0 <current_running>
     50202192:	639c                	ld	a5,0(a5)
     50202194:	73bc                	ld	a5,96(a5)
     50202196:	02e7e063          	bltu	a5,a4,502021b6 <create_timer+0xce>
@@ -3086,12 +3086,12 @@ Disassembly of section .text:
     502021a0:	fcf43c23          	sd	a5,-40(s0)
     502021a4:	fd843703          	ld	a4,-40(s0)
     502021a8:	00003797          	auipc	a5,0x3
-    502021ac:	87878793          	addi	a5,a5,-1928 # 50204a20 <timers>
+    502021ac:	8c078793          	addi	a5,a5,-1856 # 50204a68 <timers>
     502021b0:	fcf710e3          	bne	a4,a5,50202170 <create_timer+0x88>
     502021b4:	a011                	j	502021b8 <create_timer+0xd0>
     502021b6:	0001                	nop
     502021b8:	00085797          	auipc	a5,0x85
-    502021bc:	dc078793          	addi	a5,a5,-576 # 50286f78 <current_running>
+    502021bc:	e0878793          	addi	a5,a5,-504 # 50286fc0 <current_running>
     502021c0:	639c                	ld	a5,0(a5)
     502021c2:	04078713          	addi	a4,a5,64
     502021c6:	fd843783          	ld	a5,-40(s0)
@@ -3113,7 +3113,7 @@ Disassembly of section .text:
     502021e6:	1800                	addi	s0,sp,48
     502021e8:	fe043023          	sd	zero,-32(s0)
     502021ec:	00003797          	auipc	a5,0x3
-    502021f0:	83478793          	addi	a5,a5,-1996 # 50204a20 <timers>
+    502021f0:	87c78793          	addi	a5,a5,-1924 # 50204a68 <timers>
     502021f4:	639c                	ld	a5,0(a5)
     502021f6:	fef43423          	sd	a5,-24(s0)
     502021fa:	a0b1                	j	50202246 <check_timer+0x66>
@@ -3140,14 +3140,14 @@ Disassembly of section .text:
     50202240:	7bbc                	ld	a5,112(a5)
     50202242:	853e                	mv	a0,a5
     50202244:	9702                	jalr	a4
-    50202246:	00002517          	auipc	a0,0x2
-    5020224a:	7da50513          	addi	a0,a0,2010 # 50204a20 <timers>
+    50202246:	00003517          	auipc	a0,0x3
+    5020224a:	82250513          	addi	a0,a0,-2014 # 50204a68 <timers>
     5020224e:	db7ff0ef          	jal	ra,50202004 <list_empty>
     50202252:	87aa                	mv	a5,a0
     50202254:	eb99                	bnez	a5,5020226a <check_timer+0x8a>
     50202256:	fe843703          	ld	a4,-24(s0)
-    5020225a:	00002797          	auipc	a5,0x2
-    5020225e:	7c678793          	addi	a5,a5,1990 # 50204a20 <timers>
+    5020225a:	00003797          	auipc	a5,0x3
+    5020225e:	80e78793          	addi	a5,a5,-2034 # 50204a68 <timers>
     50202262:	f8f71de3          	bne	a4,a5,502021fc <check_timer+0x1c>
     50202266:	a011                	j	5020226a <check_timer+0x8a>
     50202268:	0001                	nop
@@ -3163,7 +3163,7 @@ Disassembly of section .text:
     50202278:	1800                	addi	s0,sp,48
     5020227a:	87aa                	mv	a5,a0
     5020227c:	fcf42e23          	sw	a5,-36(s0)
-    50202280:	81818793          	addi	a5,gp,-2024 # 50204ef8 <memCurr>
+    50202280:	81818793          	addi	a5,gp,-2024 # 50204f40 <memCurr>
     50202284:	6398                	ld	a4,0(a5)
     50202286:	6785                	lui	a5,0x1
     50202288:	17fd                	addi	a5,a5,-1
@@ -3177,9 +3177,9 @@ Disassembly of section .text:
     5020229e:	873e                	mv	a4,a5
     502022a0:	fe843783          	ld	a5,-24(s0)
     502022a4:	973e                	add	a4,a4,a5
-    502022a6:	81818793          	addi	a5,gp,-2024 # 50204ef8 <memCurr>
+    502022a6:	81818793          	addi	a5,gp,-2024 # 50204f40 <memCurr>
     502022aa:	e398                	sd	a4,0(a5)
-    502022ac:	81818793          	addi	a5,gp,-2024 # 50204ef8 <memCurr>
+    502022ac:	81818793          	addi	a5,gp,-2024 # 50204f40 <memCurr>
     502022b0:	639c                	ld	a5,0(a5)
     502022b2:	853e                	mv	a0,a5
     502022b4:	7422                	ld	s0,40(sp)
@@ -3191,7 +3191,7 @@ Disassembly of section .text:
     502022bc:	f422                	sd	s0,40(sp)
     502022be:	1800                	addi	s0,sp,48
     502022c0:	fca43c23          	sd	a0,-40(s0)
-    502022c4:	81818793          	addi	a5,gp,-2024 # 50204ef8 <memCurr>
+    502022c4:	81818793          	addi	a5,gp,-2024 # 50204f40 <memCurr>
     502022c8:	639c                	ld	a5,0(a5)
     502022ca:	078d                	addi	a5,a5,3
     502022cc:	9bf1                	andi	a5,a5,-4
@@ -3199,7 +3199,7 @@ Disassembly of section .text:
     502022d2:	fe843703          	ld	a4,-24(s0)
     502022d6:	fd843783          	ld	a5,-40(s0)
     502022da:	973e                	add	a4,a4,a5
-    502022dc:	81818793          	addi	a5,gp,-2024 # 50204ef8 <memCurr>
+    502022dc:	81818793          	addi	a5,gp,-2024 # 50204f40 <memCurr>
     502022e0:	e398                	sd	a4,0(a5)
     502022e2:	fe843783          	ld	a5,-24(s0)
     502022e6:	853e                	mv	a0,a5
@@ -3216,14 +3216,14 @@ Disassembly of section .text:
     502022fa:	feb43023          	sd	a1,-32(s0)
     502022fe:	fcc43c23          	sd	a2,-40(s0)
     50202302:	fe843783          	ld	a5,-24(s0)
-    50202306:	1087b783          	ld	a5,264(a5) # fffffffffffff108 <__BSS_END__+0xffffffffafd77608>
+    50202306:	1087b783          	ld	a5,264(a5) # fffffffffffff108 <__BSS_END__+0xffffffffafd775c0>
     5020230a:	00478713          	addi	a4,a5,4
     5020230e:	fe843783          	ld	a5,-24(s0)
     50202312:	10e7b423          	sd	a4,264(a5)
     50202316:	fe843783          	ld	a5,-24(s0)
     5020231a:	67dc                	ld	a5,136(a5)
     5020231c:	00085717          	auipc	a4,0x85
-    50202320:	5e470713          	addi	a4,a4,1508 # 50287900 <syscall>
+    50202320:	62c70713          	addi	a4,a4,1580 # 50287948 <syscall>
     50202324:	078e                	slli	a5,a5,0x3
     50202326:	97ba                	add	a5,a5,a4
     50202328:	0007b803          	ld	a6,0(a5)
@@ -3842,12 +3842,12 @@ Disassembly of section .text:
     50202a78:	9381                	srli	a5,a5,0x20
     50202a7a:	00279713          	slli	a4,a5,0x2
     50202a7e:	00002797          	auipc	a5,0x2
-    50202a82:	b9a78793          	addi	a5,a5,-1126 # 50204618 <__FUNCTION__.1453+0x48>
+    50202a82:	bba78793          	addi	a5,a5,-1094 # 50204638 <__FUNCTION__.1453+0x48>
     50202a86:	97ba                	add	a5,a5,a4
     50202a88:	439c                	lw	a5,0(a5)
     50202a8a:	0007871b          	sext.w	a4,a5
     50202a8e:	00002797          	auipc	a5,0x2
-    50202a92:	b8a78793          	addi	a5,a5,-1142 # 50204618 <__FUNCTION__.1453+0x48>
+    50202a92:	baa78793          	addi	a5,a5,-1110 # 50204638 <__FUNCTION__.1453+0x48>
     50202a96:	97ba                	add	a5,a5,a4
     50202a98:	8782                	jr	a5
     50202a9a:	4785                	li	a5,1
@@ -4023,7 +4023,7 @@ Disassembly of section .text:
     50202cac:	47a9                	li	a5,10
     50202cae:	00f71c63          	bne	a4,a5,50202cc6 <vprintk+0x7e>
     50202cb2:	00084797          	auipc	a5,0x84
-    50202cb6:	2c678793          	addi	a5,a5,710 # 50286f78 <current_running>
+    50202cb6:	30e78793          	addi	a5,a5,782 # 50286fc0 <current_running>
     50202cba:	639c                	ld	a5,0(a5)
     50202cbc:	5f98                	lw	a4,56(a5)
     50202cbe:	2705                	addiw	a4,a4,1
@@ -4038,13 +4038,13 @@ Disassembly of section .text:
     50202cd6:	47b5                	li	a5,13
     50202cd8:	00f71a63          	bne	a4,a5,50202cec <vprintk+0xa4>
     50202cdc:	00084797          	auipc	a5,0x84
-    50202ce0:	29c78793          	addi	a5,a5,668 # 50286f78 <current_running>
+    50202ce0:	2e478793          	addi	a5,a5,740 # 50286fc0 <current_running>
     50202ce4:	639c                	ld	a5,0(a5)
     50202ce6:	4705                	li	a4,1
     50202ce8:	dbd8                	sw	a4,52(a5)
     50202cea:	a811                	j	50202cfe <vprintk+0xb6>
     50202cec:	00084797          	auipc	a5,0x84
-    50202cf0:	28c78793          	addi	a5,a5,652 # 50286f78 <current_running>
+    50202cf0:	2d478793          	addi	a5,a5,724 # 50286fc0 <current_running>
     50202cf4:	639c                	ld	a5,0(a5)
     50202cf6:	5bd8                	lw	a4,52(a5)
     50202cf8:	2705                	addiw	a4,a4,1
@@ -4454,12 +4454,12 @@ Disassembly of section .text:
     50203202:	9381                	srli	a5,a5,0x20
     50203204:	00279713          	slli	a4,a5,0x2
     50203208:	00001797          	auipc	a5,0x1
-    5020320c:	49478793          	addi	a5,a5,1172 # 5020469c <__FUNCTION__.1453+0xcc>
+    5020320c:	4b478793          	addi	a5,a5,1204 # 502046bc <__FUNCTION__.1453+0xcc>
     50203210:	97ba                	add	a5,a5,a4
     50203212:	439c                	lw	a5,0(a5)
     50203214:	0007871b          	sext.w	a4,a5
     50203218:	00001797          	auipc	a5,0x1
-    5020321c:	48478793          	addi	a5,a5,1156 # 5020469c <__FUNCTION__.1453+0xcc>
+    5020321c:	4a478793          	addi	a5,a5,1188 # 502046bc <__FUNCTION__.1453+0xcc>
     50203220:	97ba                	add	a5,a5,a4
     50203222:	8782                	jr	a5
     50203224:	4785                	li	a5,1
@@ -5250,7 +5250,7 @@ Disassembly of section .text:
     50203a00:	fec42783          	lw	a5,-20(s0)
     50203a04:	85be                	mv	a1,a5
     50203a06:	00001517          	auipc	a0,0x1
-    50203a0a:	d1a50513          	addi	a0,a0,-742 # 50204720 <__FUNCTION__.1453+0x150>
+    50203a0a:	d3a50513          	addi	a0,a0,-710 # 50204740 <__FUNCTION__.1453+0x150>
     50203a0e:	a21ff0ef          	jal	ra,5020342e <printf>
     50203a12:	fec42783          	lw	a5,-20(s0)
     50203a16:	2785                	addiw	a5,a5,1
@@ -5272,7 +5272,7 @@ Disassembly of section .text:
     50203a3c:	fec42783          	lw	a5,-20(s0)
     50203a40:	85be                	mv	a1,a5
     50203a42:	00001517          	auipc	a0,0x1
-    50203a46:	d0e50513          	addi	a0,a0,-754 # 50204750 <__FUNCTION__.1453+0x180>
+    50203a46:	d2e50513          	addi	a0,a0,-722 # 50204770 <__FUNCTION__.1453+0x180>
     50203a4a:	9e5ff0ef          	jal	ra,5020342e <printf>
     50203a4e:	fec42783          	lw	a5,-20(s0)
     50203a52:	2785                	addiw	a5,a5,1
@@ -5295,9 +5295,9 @@ Disassembly of section .text:
     50203a7c:	853e                	mv	a0,a5
     50203a7e:	e75ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203a82:	00001597          	auipc	a1,0x1
-    50203a86:	39658593          	addi	a1,a1,918 # 50204e18 <plane1>
+    50203a86:	3de58593          	addi	a1,a1,990 # 50204e60 <plane1>
     50203a8a:	00001517          	auipc	a0,0x1
-    50203a8e:	ce650513          	addi	a0,a0,-794 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203a8e:	d0650513          	addi	a0,a0,-762 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203a92:	99dff0ef          	jal	ra,5020342e <printf>
     50203a96:	fe842783          	lw	a5,-24(s0)
     50203a9a:	2785                	addiw	a5,a5,1
@@ -5307,9 +5307,9 @@ Disassembly of section .text:
     50203aa6:	853e                	mv	a0,a5
     50203aa8:	e4bff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203aac:	00001597          	auipc	a1,0x1
-    50203ab0:	38458593          	addi	a1,a1,900 # 50204e30 <plane2>
+    50203ab0:	3cc58593          	addi	a1,a1,972 # 50204e78 <plane2>
     50203ab4:	00001517          	auipc	a0,0x1
-    50203ab8:	cbc50513          	addi	a0,a0,-836 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203ab8:	cdc50513          	addi	a0,a0,-804 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203abc:	973ff0ef          	jal	ra,5020342e <printf>
     50203ac0:	fe842783          	lw	a5,-24(s0)
     50203ac4:	2789                	addiw	a5,a5,2
@@ -5319,9 +5319,9 @@ Disassembly of section .text:
     50203ad0:	853e                	mv	a0,a5
     50203ad2:	e21ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203ad6:	00001597          	auipc	a1,0x1
-    50203ada:	37258593          	addi	a1,a1,882 # 50204e48 <plane3>
+    50203ada:	3ba58593          	addi	a1,a1,954 # 50204e90 <plane3>
     50203ade:	00001517          	auipc	a0,0x1
-    50203ae2:	c9250513          	addi	a0,a0,-878 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203ae2:	cb250513          	addi	a0,a0,-846 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203ae6:	949ff0ef          	jal	ra,5020342e <printf>
     50203aea:	fe842783          	lw	a5,-24(s0)
     50203aee:	278d                	addiw	a5,a5,3
@@ -5331,9 +5331,9 @@ Disassembly of section .text:
     50203afa:	853e                	mv	a0,a5
     50203afc:	df7ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203b00:	00001597          	auipc	a1,0x1
-    50203b04:	36058593          	addi	a1,a1,864 # 50204e60 <plane4>
+    50203b04:	3a858593          	addi	a1,a1,936 # 50204ea8 <plane4>
     50203b08:	00001517          	auipc	a0,0x1
-    50203b0c:	c6850513          	addi	a0,a0,-920 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203b0c:	c8850513          	addi	a0,a0,-888 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203b10:	91fff0ef          	jal	ra,5020342e <printf>
     50203b14:	fec42783          	lw	a5,-20(s0)
     50203b18:	37fd                	addiw	a5,a5,-1
@@ -5346,9 +5346,9 @@ Disassembly of section .text:
     50203b2e:	4505                	li	a0,1
     50203b30:	dc3ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203b34:	00001597          	auipc	a1,0x1
-    50203b38:	2cc58593          	addi	a1,a1,716 # 50204e00 <blank>
+    50203b38:	31458593          	addi	a1,a1,788 # 50204e48 <blank>
     50203b3c:	00001517          	auipc	a0,0x1
-    50203b40:	c3450513          	addi	a0,a0,-972 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203b40:	c5450513          	addi	a0,a0,-940 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203b44:	8ebff0ef          	jal	ra,5020342e <printf>
     50203b48:	fe842783          	lw	a5,-24(s0)
     50203b4c:	2785                	addiw	a5,a5,1
@@ -5357,9 +5357,9 @@ Disassembly of section .text:
     50203b52:	4505                	li	a0,1
     50203b54:	d9fff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203b58:	00001597          	auipc	a1,0x1
-    50203b5c:	2a858593          	addi	a1,a1,680 # 50204e00 <blank>
+    50203b5c:	2f058593          	addi	a1,a1,752 # 50204e48 <blank>
     50203b60:	00001517          	auipc	a0,0x1
-    50203b64:	c1050513          	addi	a0,a0,-1008 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203b64:	c3050513          	addi	a0,a0,-976 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203b68:	8c7ff0ef          	jal	ra,5020342e <printf>
     50203b6c:	fe842783          	lw	a5,-24(s0)
     50203b70:	2789                	addiw	a5,a5,2
@@ -5368,9 +5368,9 @@ Disassembly of section .text:
     50203b76:	4505                	li	a0,1
     50203b78:	d7bff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203b7c:	00001597          	auipc	a1,0x1
-    50203b80:	28458593          	addi	a1,a1,644 # 50204e00 <blank>
+    50203b80:	2cc58593          	addi	a1,a1,716 # 50204e48 <blank>
     50203b84:	00001517          	auipc	a0,0x1
-    50203b88:	bec50513          	addi	a0,a0,-1044 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203b88:	c0c50513          	addi	a0,a0,-1012 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203b8c:	8a3ff0ef          	jal	ra,5020342e <printf>
     50203b90:	fe842783          	lw	a5,-24(s0)
     50203b94:	278d                	addiw	a5,a5,3
@@ -5379,9 +5379,9 @@ Disassembly of section .text:
     50203b9a:	4505                	li	a0,1
     50203b9c:	d57ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203ba0:	00001597          	auipc	a1,0x1
-    50203ba4:	26058593          	addi	a1,a1,608 # 50204e00 <blank>
+    50203ba4:	2a858593          	addi	a1,a1,680 # 50204e48 <blank>
     50203ba8:	00001517          	auipc	a0,0x1
-    50203bac:	bc850513          	addi	a0,a0,-1080 # 50204770 <__FUNCTION__.1453+0x1a0>
+    50203bac:	be850513          	addi	a0,a0,-1048 # 50204790 <__FUNCTION__.1453+0x1a0>
     50203bb0:	87fff0ef          	jal	ra,5020342e <printf>
     50203bb4:	bd55                	j	50203a68 <drawing_task+0xe>
 
@@ -5403,7 +5403,7 @@ Disassembly of section .text:
     50203bdc:	fec42783          	lw	a5,-20(s0)
     50203be0:	85be                	mv	a1,a5
     50203be2:	00001517          	auipc	a0,0x1
-    50203be6:	b9650513          	addi	a0,a0,-1130 # 50204778 <__FUNCTION__.1453+0x1a8>
+    50203be6:	bb650513          	addi	a0,a0,-1098 # 50204798 <__FUNCTION__.1453+0x1a8>
     50203bea:	845ff0ef          	jal	ra,5020342e <printf>
     50203bee:	4505                	li	a0,1
     50203bf0:	d9dff0ef          	jal	ra,5020398c <sys_sleep>
@@ -5421,7 +5421,7 @@ Disassembly of section .text:
     50203c18:	fe442783          	lw	a5,-28(s0)
     50203c1c:	85be                	mv	a1,a5
     50203c1e:	00001517          	auipc	a0,0x1
-    50203c22:	b8a50513          	addi	a0,a0,-1142 # 502047a8 <__FUNCTION__.1453+0x1d8>
+    50203c22:	baa50513          	addi	a0,a0,-1110 # 502047c8 <__FUNCTION__.1453+0x1d8>
     50203c26:	809ff0ef          	jal	ra,5020342e <printf>
     50203c2a:	fe442783          	lw	a5,-28(s0)
     50203c2e:	853e                	mv	a0,a5
@@ -5431,9 +5431,9 @@ Disassembly of section .text:
     50203c3a:	4505                	li	a0,1
     50203c3c:	cb7ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203c40:	00001597          	auipc	a1,0x1
-    50203c44:	23858593          	addi	a1,a1,568 # 50204e78 <blank>
+    50203c44:	28058593          	addi	a1,a1,640 # 50204ec0 <blank>
     50203c48:	00001517          	auipc	a0,0x1
-    50203c4c:	b9850513          	addi	a0,a0,-1128 # 502047e0 <__FUNCTION__.1453+0x210>
+    50203c4c:	bb850513          	addi	a0,a0,-1096 # 50204800 <__FUNCTION__.1453+0x210>
     50203c50:	fdeff0ef          	jal	ra,5020342e <printf>
     50203c54:	bf9d                	j	50203bca <sleep_task+0x14>
 
@@ -5462,7 +5462,7 @@ Disassembly of section .text:
     50203c96:	863a                	mv	a2,a4
     50203c98:	85be                	mv	a1,a5
     50203c9a:	00001517          	auipc	a0,0x1
-    50203c9e:	b4e50513          	addi	a0,a0,-1202 # 502047e8 <__FUNCTION__.1453+0x218>
+    50203c9e:	b6e50513          	addi	a0,a0,-1170 # 50204808 <__FUNCTION__.1453+0x218>
     50203ca2:	f8cff0ef          	jal	ra,5020342e <printf>
     50203ca6:	b53ff0ef          	jal	ra,502037f8 <sys_yield>
     50203caa:	bf75                	j	50203c66 <timer_task+0x10>
@@ -5475,37 +5475,37 @@ Disassembly of section .text:
     50203cb4:	478d                	li	a5,3
     50203cb6:	fef42423          	sw	a5,-24(s0)
     50203cba:	00003797          	auipc	a5,0x3
-    50203cbe:	1b678793          	addi	a5,a5,438 # 50206e70 <is_init>
+    50203cbe:	1fe78793          	addi	a5,a5,510 # 50206eb8 <is_init>
     50203cc2:	439c                	lw	a5,0(a5)
     50203cc4:	e39d                	bnez	a5,50203cea <lock_task1+0x3e>
     50203cc6:	00003517          	auipc	a0,0x3
-    50203cca:	1b250513          	addi	a0,a0,434 # 50206e78 <mutex_lock>
+    50203cca:	1fa50513          	addi	a0,a0,506 # 50206ec0 <mutex_lock>
     50203cce:	ac7ff0ef          	jal	ra,50203794 <mthread_mutex_init>
     50203cd2:	87aa                	mv	a5,a0
     50203cd4:	0017b793          	seqz	a5,a5
     50203cd8:	0ff7f793          	andi	a5,a5,255
     50203cdc:	0007871b          	sext.w	a4,a5
     50203ce0:	00003797          	auipc	a5,0x3
-    50203ce4:	19078793          	addi	a5,a5,400 # 50206e70 <is_init>
+    50203ce4:	1d878793          	addi	a5,a5,472 # 50206eb8 <is_init>
     50203ce8:	c398                	sw	a4,0(a5)
     50203cea:	fe842783          	lw	a5,-24(s0)
     50203cee:	85be                	mv	a1,a5
     50203cf0:	4505                	li	a0,1
     50203cf2:	c01ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203cf6:	00001597          	auipc	a1,0x1
-    50203cfa:	1ba58593          	addi	a1,a1,442 # 50204eb0 <blank>
+    50203cfa:	20258593          	addi	a1,a1,514 # 50204ef8 <blank>
     50203cfe:	00001517          	auipc	a0,0x1
-    50203d02:	b2250513          	addi	a0,a0,-1246 # 50204820 <__FUNCTION__.1453+0x250>
+    50203d02:	b4250513          	addi	a0,a0,-1214 # 50204840 <__FUNCTION__.1453+0x250>
     50203d06:	f28ff0ef          	jal	ra,5020342e <printf>
     50203d0a:	fe842783          	lw	a5,-24(s0)
     50203d0e:	85be                	mv	a1,a5
     50203d10:	4505                	li	a0,1
     50203d12:	be1ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203d16:	00001517          	auipc	a0,0x1
-    50203d1a:	b1250513          	addi	a0,a0,-1262 # 50204828 <__FUNCTION__.1453+0x258>
+    50203d1a:	b3250513          	addi	a0,a0,-1230 # 50204848 <__FUNCTION__.1453+0x258>
     50203d1e:	f10ff0ef          	jal	ra,5020342e <printf>
     50203d22:	00003517          	auipc	a0,0x3
-    50203d26:	15650513          	addi	a0,a0,342 # 50206e78 <mutex_lock>
+    50203d26:	19e50513          	addi	a0,a0,414 # 50206ec0 <mutex_lock>
     50203d2a:	a8bff0ef          	jal	ra,502037b4 <mthread_mutex_lock>
     50203d2e:	fe042623          	sw	zero,-20(s0)
     50203d32:	a02d                	j	50203d5c <lock_task1+0xb0>
@@ -5516,7 +5516,7 @@ Disassembly of section .text:
     50203d40:	fec42783          	lw	a5,-20(s0)
     50203d44:	85be                	mv	a1,a5
     50203d46:	00001517          	auipc	a0,0x1
-    50203d4a:	b0250513          	addi	a0,a0,-1278 # 50204848 <__FUNCTION__.1453+0x278>
+    50203d4a:	b2250513          	addi	a0,a0,-1246 # 50204868 <__FUNCTION__.1453+0x278>
     50203d4e:	ee0ff0ef          	jal	ra,5020342e <printf>
     50203d52:	fec42783          	lw	a5,-20(s0)
     50203d56:	2785                	addiw	a5,a5,1
@@ -5530,19 +5530,19 @@ Disassembly of section .text:
     50203d70:	4505                	li	a0,1
     50203d72:	b81ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203d76:	00001597          	auipc	a1,0x1
-    50203d7a:	13a58593          	addi	a1,a1,314 # 50204eb0 <blank>
+    50203d7a:	18258593          	addi	a1,a1,386 # 50204ef8 <blank>
     50203d7e:	00001517          	auipc	a0,0x1
-    50203d82:	aa250513          	addi	a0,a0,-1374 # 50204820 <__FUNCTION__.1453+0x250>
+    50203d82:	ac250513          	addi	a0,a0,-1342 # 50204840 <__FUNCTION__.1453+0x250>
     50203d86:	ea8ff0ef          	jal	ra,5020342e <printf>
     50203d8a:	fe842783          	lw	a5,-24(s0)
     50203d8e:	85be                	mv	a1,a5
     50203d90:	4505                	li	a0,1
     50203d92:	b61ff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203d96:	00001517          	auipc	a0,0x1
-    50203d9a:	ae250513          	addi	a0,a0,-1310 # 50204878 <__FUNCTION__.1453+0x2a8>
+    50203d9a:	b0250513          	addi	a0,a0,-1278 # 50204898 <__FUNCTION__.1453+0x2a8>
     50203d9e:	e90ff0ef          	jal	ra,5020342e <printf>
     50203da2:	00003517          	auipc	a0,0x3
-    50203da6:	0d650513          	addi	a0,a0,214 # 50206e78 <mutex_lock>
+    50203da6:	11e50513          	addi	a0,a0,286 # 50206ec0 <mutex_lock>
     50203daa:	a2dff0ef          	jal	ra,502037d6 <mthread_mutex_unlock>
     50203dae:	b731                	j	50203cba <lock_task1+0xe>
 
@@ -5554,37 +5554,37 @@ Disassembly of section .text:
     50203db8:	4791                	li	a5,4
     50203dba:	fef42423          	sw	a5,-24(s0)
     50203dbe:	00003797          	auipc	a5,0x3
-    50203dc2:	0b278793          	addi	a5,a5,178 # 50206e70 <is_init>
+    50203dc2:	0fa78793          	addi	a5,a5,250 # 50206eb8 <is_init>
     50203dc6:	439c                	lw	a5,0(a5)
     50203dc8:	e39d                	bnez	a5,50203dee <lock_task2+0x3e>
     50203dca:	00003517          	auipc	a0,0x3
-    50203dce:	0ae50513          	addi	a0,a0,174 # 50206e78 <mutex_lock>
+    50203dce:	0f650513          	addi	a0,a0,246 # 50206ec0 <mutex_lock>
     50203dd2:	9c3ff0ef          	jal	ra,50203794 <mthread_mutex_init>
     50203dd6:	87aa                	mv	a5,a0
     50203dd8:	0017b793          	seqz	a5,a5
     50203ddc:	0ff7f793          	andi	a5,a5,255
     50203de0:	0007871b          	sext.w	a4,a5
     50203de4:	00003797          	auipc	a5,0x3
-    50203de8:	08c78793          	addi	a5,a5,140 # 50206e70 <is_init>
+    50203de8:	0d478793          	addi	a5,a5,212 # 50206eb8 <is_init>
     50203dec:	c398                	sw	a4,0(a5)
     50203dee:	fe842783          	lw	a5,-24(s0)
     50203df2:	85be                	mv	a1,a5
     50203df4:	4505                	li	a0,1
     50203df6:	afdff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203dfa:	00001597          	auipc	a1,0x1
-    50203dfe:	0b658593          	addi	a1,a1,182 # 50204eb0 <blank>
+    50203dfe:	0fe58593          	addi	a1,a1,254 # 50204ef8 <blank>
     50203e02:	00001517          	auipc	a0,0x1
-    50203e06:	a1e50513          	addi	a0,a0,-1506 # 50204820 <__FUNCTION__.1453+0x250>
+    50203e06:	a3e50513          	addi	a0,a0,-1474 # 50204840 <__FUNCTION__.1453+0x250>
     50203e0a:	e24ff0ef          	jal	ra,5020342e <printf>
     50203e0e:	fe842783          	lw	a5,-24(s0)
     50203e12:	85be                	mv	a1,a5
     50203e14:	4505                	li	a0,1
     50203e16:	addff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203e1a:	00001517          	auipc	a0,0x1
-    50203e1e:	a0e50513          	addi	a0,a0,-1522 # 50204828 <__FUNCTION__.1453+0x258>
+    50203e1e:	a2e50513          	addi	a0,a0,-1490 # 50204848 <__FUNCTION__.1453+0x258>
     50203e22:	e0cff0ef          	jal	ra,5020342e <printf>
     50203e26:	00003517          	auipc	a0,0x3
-    50203e2a:	05250513          	addi	a0,a0,82 # 50206e78 <mutex_lock>
+    50203e2a:	09a50513          	addi	a0,a0,154 # 50206ec0 <mutex_lock>
     50203e2e:	987ff0ef          	jal	ra,502037b4 <mthread_mutex_lock>
     50203e32:	fe042623          	sw	zero,-20(s0)
     50203e36:	a02d                	j	50203e60 <lock_task2+0xb0>
@@ -5595,7 +5595,7 @@ Disassembly of section .text:
     50203e44:	fec42783          	lw	a5,-20(s0)
     50203e48:	85be                	mv	a1,a5
     50203e4a:	00001517          	auipc	a0,0x1
-    50203e4e:	9fe50513          	addi	a0,a0,-1538 # 50204848 <__FUNCTION__.1453+0x278>
+    50203e4e:	a1e50513          	addi	a0,a0,-1506 # 50204868 <__FUNCTION__.1453+0x278>
     50203e52:	ddcff0ef          	jal	ra,5020342e <printf>
     50203e56:	fec42783          	lw	a5,-20(s0)
     50203e5a:	2785                	addiw	a5,a5,1
@@ -5609,19 +5609,19 @@ Disassembly of section .text:
     50203e74:	4505                	li	a0,1
     50203e76:	a7dff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203e7a:	00001597          	auipc	a1,0x1
-    50203e7e:	03658593          	addi	a1,a1,54 # 50204eb0 <blank>
+    50203e7e:	07e58593          	addi	a1,a1,126 # 50204ef8 <blank>
     50203e82:	00001517          	auipc	a0,0x1
-    50203e86:	99e50513          	addi	a0,a0,-1634 # 50204820 <__FUNCTION__.1453+0x250>
+    50203e86:	9be50513          	addi	a0,a0,-1602 # 50204840 <__FUNCTION__.1453+0x250>
     50203e8a:	da4ff0ef          	jal	ra,5020342e <printf>
     50203e8e:	fe842783          	lw	a5,-24(s0)
     50203e92:	85be                	mv	a1,a5
     50203e94:	4505                	li	a0,1
     50203e96:	a5dff0ef          	jal	ra,502038f2 <sys_move_cursor>
     50203e9a:	00001517          	auipc	a0,0x1
-    50203e9e:	9de50513          	addi	a0,a0,-1570 # 50204878 <__FUNCTION__.1453+0x2a8>
+    50203e9e:	9fe50513          	addi	a0,a0,-1538 # 50204898 <__FUNCTION__.1453+0x2a8>
     50203ea2:	d8cff0ef          	jal	ra,5020342e <printf>
     50203ea6:	00003517          	auipc	a0,0x3
-    50203eaa:	fd250513          	addi	a0,a0,-46 # 50206e78 <mutex_lock>
+    50203eaa:	01a50513          	addi	a0,a0,26 # 50206ec0 <mutex_lock>
     50203eae:	929ff0ef          	jal	ra,502037d6 <mthread_mutex_unlock>
     50203eb2:	b731                	j	50203dbe <lock_task2+0xe>
 
@@ -5785,11 +5785,11 @@ Disassembly of section .text:
     50204076:	1080                	addi	s0,sp,96
     50204078:	fc043023          	sd	zero,-64(s0)
     5020407c:	4901                	li	s2,0
-    5020407e:	4799                	li	a5,6
+    5020407e:	47a9                	li	a5,10
     50204080:	faf42e23          	sw	a5,-68(s0)
     50204084:	fa043823          	sd	zero,-80(s0)
     50204088:	fc042623          	sw	zero,-52(s0)
-    5020408c:	a025                	j	502040b4 <fork_priority_task+0x4a>
+    5020408c:	a099                	j	502040d2 <fork_priority_task+0x68>
     5020408e:	fbc42783          	lw	a5,-68(s0)
     50204092:	85be                	mv	a1,a5
     50204094:	4505                	li	a0,1
@@ -5798,85 +5798,95 @@ Disassembly of section .text:
     5020409e:	0017871b          	addiw	a4,a5,1
     502040a2:	fce42623          	sw	a4,-52(s0)
     502040a6:	85be                	mv	a1,a5
-    502040a8:	00000517          	auipc	a0,0x0
-    502040ac:	7f850513          	addi	a0,a0,2040 # 502048a0 <__FUNCTION__.1453+0x2d0>
+    502040a8:	00001517          	auipc	a0,0x1
+    502040ac:	81850513          	addi	a0,a0,-2024 # 502048c0 <__FUNCTION__.1453+0x2d0>
     502040b0:	b7eff0ef          	jal	ra,5020342e <printf>
-    502040b4:	ffeff0ef          	jal	ra,502038b2 <sys_read_ch>
-    502040b8:	87aa                	mv	a5,a0
-    502040ba:	faf407a3          	sb	a5,-81(s0)
-    502040be:	faf44783          	lbu	a5,-81(s0)
-    502040c2:	0ff7f713          	andi	a4,a5,255
-    502040c6:	0ff00793          	li	a5,255
-    502040ca:	fcf702e3          	beq	a4,a5,5020408e <fork_priority_task+0x24>
-    502040ce:	faf44783          	lbu	a5,-81(s0)
-    502040d2:	0ff7f713          	andi	a4,a5,255
-    502040d6:	02f00793          	li	a5,47
-    502040da:	fae7fae3          	bgeu	a5,a4,5020408e <fork_priority_task+0x24>
-    502040de:	faf44783          	lbu	a5,-81(s0)
-    502040e2:	0ff7f713          	andi	a4,a5,255
-    502040e6:	03900793          	li	a5,57
-    502040ea:	fae7e2e3          	bltu	a5,a4,5020408e <fork_priority_task+0x24>
-    502040ee:	0019079b          	addiw	a5,s2,1
-    502040f2:	0007891b          	sext.w	s2,a5
-    502040f6:	faf44783          	lbu	a5,-81(s0)
-    502040fa:	2781                	sext.w	a5,a5
-    502040fc:	fd07879b          	addiw	a5,a5,-48
-    50204100:	2781                	sext.w	a5,a5
-    50204102:	faf43823          	sd	a5,-80(s0)
-    50204106:	8bbff0ef          	jal	ra,502039c0 <sys_fork>
-    5020410a:	fca43023          	sd	a0,-64(s0)
-    5020410e:	fc043783          	ld	a5,-64(s0)
-    50204112:	f3cd                	bnez	a5,502040b4 <fork_priority_task+0x4a>
-    50204114:	fcc42983          	lw	s3,-52(s0)
-    50204118:	fff9079b          	addiw	a5,s2,-1
-    5020411c:	2781                	sext.w	a5,a5
-    5020411e:	0027979b          	slliw	a5,a5,0x2
-    50204122:	2781                	sext.w	a5,a5
-    50204124:	fbc42703          	lw	a4,-68(s0)
-    50204128:	9fb9                	addw	a5,a5,a4
-    5020412a:	2781                	sext.w	a5,a5
-    5020412c:	2785                	addiw	a5,a5,1
-    5020412e:	0007849b          	sext.w	s1,a5
-    50204132:	0014879b          	addiw	a5,s1,1
-    50204136:	2781                	sext.w	a5,a5
-    50204138:	85be                	mv	a1,a5
-    5020413a:	4505                	li	a0,1
-    5020413c:	fb6ff0ef          	jal	ra,502038f2 <sys_move_cursor>
-    50204140:	85ca                	mv	a1,s2
-    50204142:	00000517          	auipc	a0,0x0
-    50204146:	78650513          	addi	a0,a0,1926 # 502048c8 <__FUNCTION__.1453+0x2f8>
-    5020414a:	ae4ff0ef          	jal	ra,5020342e <printf>
-    5020414e:	0024879b          	addiw	a5,s1,2
-    50204152:	2781                	sext.w	a5,a5
-    50204154:	85be                	mv	a1,a5
-    50204156:	4505                	li	a0,1
-    50204158:	f9aff0ef          	jal	ra,502038f2 <sys_move_cursor>
-    5020415c:	00000517          	auipc	a0,0x0
-    50204160:	78c50513          	addi	a0,a0,1932 # 502048e8 <__FUNCTION__.1453+0x318>
-    50204164:	acaff0ef          	jal	ra,5020342e <printf>
-    50204168:	fb043503          	ld	a0,-80(s0)
-    5020416c:	ea8ff0ef          	jal	ra,50203814 <sys_setpriority>
-    50204170:	0034879b          	addiw	a5,s1,3
-    50204174:	2781                	sext.w	a5,a5
-    50204176:	85be                	mv	a1,a5
-    50204178:	4505                	li	a0,1
-    5020417a:	f78ff0ef          	jal	ra,502038f2 <sys_move_cursor>
-    5020417e:	fb043583          	ld	a1,-80(s0)
-    50204182:	00000517          	auipc	a0,0x0
-    50204186:	79650513          	addi	a0,a0,1942 # 50204918 <__FUNCTION__.1453+0x348>
-    5020418a:	aa4ff0ef          	jal	ra,5020342e <printf>
-    5020418e:	fb043503          	ld	a0,-80(s0)
-    50204192:	e82ff0ef          	jal	ra,50203814 <sys_setpriority>
-    50204196:	0044879b          	addiw	a5,s1,4
-    5020419a:	2781                	sext.w	a5,a5
-    5020419c:	85be                	mv	a1,a5
-    5020419e:	4505                	li	a0,1
-    502041a0:	f52ff0ef          	jal	ra,502038f2 <sys_move_cursor>
-    502041a4:	87ce                	mv	a5,s3
-    502041a6:	0017871b          	addiw	a4,a5,1
-    502041aa:	0007099b          	sext.w	s3,a4
-    502041ae:	85be                	mv	a1,a5
-    502041b0:	00000517          	auipc	a0,0x0
-    502041b4:	78850513          	addi	a0,a0,1928 # 50204938 <__FUNCTION__.1453+0x368>
-    502041b8:	a76ff0ef          	jal	ra,5020342e <printf>
-    502041bc:	bfe9                	j	50204196 <fork_priority_task+0x12c>
+    502040b4:	fbc42783          	lw	a5,-68(s0)
+    502040b8:	2785                	addiw	a5,a5,1
+    502040ba:	2781                	sext.w	a5,a5
+    502040bc:	85be                	mv	a1,a5
+    502040be:	4505                	li	a0,1
+    502040c0:	833ff0ef          	jal	ra,502038f2 <sys_move_cursor>
+    502040c4:	4581                	li	a1,0
+    502040c6:	00001517          	auipc	a0,0x1
+    502040ca:	82250513          	addi	a0,a0,-2014 # 502048e8 <__FUNCTION__.1453+0x2f8>
+    502040ce:	b60ff0ef          	jal	ra,5020342e <printf>
+    502040d2:	fe0ff0ef          	jal	ra,502038b2 <sys_read_ch>
+    502040d6:	87aa                	mv	a5,a0
+    502040d8:	faf407a3          	sb	a5,-81(s0)
+    502040dc:	faf44783          	lbu	a5,-81(s0)
+    502040e0:	0ff7f713          	andi	a4,a5,255
+    502040e4:	0ff00793          	li	a5,255
+    502040e8:	faf703e3          	beq	a4,a5,5020408e <fork_priority_task+0x24>
+    502040ec:	faf44783          	lbu	a5,-81(s0)
+    502040f0:	0ff7f713          	andi	a4,a5,255
+    502040f4:	02f00793          	li	a5,47
+    502040f8:	f8e7fbe3          	bgeu	a5,a4,5020408e <fork_priority_task+0x24>
+    502040fc:	faf44783          	lbu	a5,-81(s0)
+    50204100:	0ff7f713          	andi	a4,a5,255
+    50204104:	03900793          	li	a5,57
+    50204108:	f8e7e3e3          	bltu	a5,a4,5020408e <fork_priority_task+0x24>
+    5020410c:	0019079b          	addiw	a5,s2,1
+    50204110:	0007891b          	sext.w	s2,a5
+    50204114:	faf44783          	lbu	a5,-81(s0)
+    50204118:	2781                	sext.w	a5,a5
+    5020411a:	fd07879b          	addiw	a5,a5,-48
+    5020411e:	2781                	sext.w	a5,a5
+    50204120:	faf43823          	sd	a5,-80(s0)
+    50204124:	89dff0ef          	jal	ra,502039c0 <sys_fork>
+    50204128:	fca43023          	sd	a0,-64(s0)
+    5020412c:	fc043783          	ld	a5,-64(s0)
+    50204130:	f3cd                	bnez	a5,502040d2 <fork_priority_task+0x68>
+    50204132:	fcc42983          	lw	s3,-52(s0)
+    50204136:	fff9079b          	addiw	a5,s2,-1
+    5020413a:	2781                	sext.w	a5,a5
+    5020413c:	0027979b          	slliw	a5,a5,0x2
+    50204140:	2781                	sext.w	a5,a5
+    50204142:	fbc42703          	lw	a4,-68(s0)
+    50204146:	9fb9                	addw	a5,a5,a4
+    50204148:	2781                	sext.w	a5,a5
+    5020414a:	2785                	addiw	a5,a5,1
+    5020414c:	0007849b          	sext.w	s1,a5
+    50204150:	0014879b          	addiw	a5,s1,1
+    50204154:	2781                	sext.w	a5,a5
+    50204156:	85be                	mv	a1,a5
+    50204158:	4505                	li	a0,1
+    5020415a:	f98ff0ef          	jal	ra,502038f2 <sys_move_cursor>
+    5020415e:	85ca                	mv	a1,s2
+    50204160:	00000517          	auipc	a0,0x0
+    50204164:	7b050513          	addi	a0,a0,1968 # 50204910 <__FUNCTION__.1453+0x320>
+    50204168:	ac6ff0ef          	jal	ra,5020342e <printf>
+    5020416c:	0024879b          	addiw	a5,s1,2
+    50204170:	2781                	sext.w	a5,a5
+    50204172:	85be                	mv	a1,a5
+    50204174:	4505                	li	a0,1
+    50204176:	f7cff0ef          	jal	ra,502038f2 <sys_move_cursor>
+    5020417a:	00000517          	auipc	a0,0x0
+    5020417e:	7b650513          	addi	a0,a0,1974 # 50204930 <__FUNCTION__.1453+0x340>
+    50204182:	aacff0ef          	jal	ra,5020342e <printf>
+    50204186:	fb043503          	ld	a0,-80(s0)
+    5020418a:	e8aff0ef          	jal	ra,50203814 <sys_setpriority>
+    5020418e:	0034879b          	addiw	a5,s1,3
+    50204192:	2781                	sext.w	a5,a5
+    50204194:	85be                	mv	a1,a5
+    50204196:	4505                	li	a0,1
+    50204198:	f5aff0ef          	jal	ra,502038f2 <sys_move_cursor>
+    5020419c:	fb043583          	ld	a1,-80(s0)
+    502041a0:	00000517          	auipc	a0,0x0
+    502041a4:	7c050513          	addi	a0,a0,1984 # 50204960 <__FUNCTION__.1453+0x370>
+    502041a8:	a86ff0ef          	jal	ra,5020342e <printf>
+    502041ac:	fb043503          	ld	a0,-80(s0)
+    502041b0:	e64ff0ef          	jal	ra,50203814 <sys_setpriority>
+    502041b4:	0044879b          	addiw	a5,s1,4
+    502041b8:	2781                	sext.w	a5,a5
+    502041ba:	85be                	mv	a1,a5
+    502041bc:	4505                	li	a0,1
+    502041be:	f34ff0ef          	jal	ra,502038f2 <sys_move_cursor>
+    502041c2:	87ce                	mv	a5,s3
+    502041c4:	0017871b          	addiw	a4,a5,1
+    502041c8:	0007099b          	sext.w	s3,a4
+    502041cc:	85be                	mv	a1,a5
+    502041ce:	00000517          	auipc	a0,0x0
+    502041d2:	7b250513          	addi	a0,a0,1970 # 50204980 <__FUNCTION__.1453+0x390>
+    502041d6:	a58ff0ef          	jal	ra,5020342e <printf>
+    502041da:	bfe9                	j	502041b4 <fork_priority_task+0x14a>
