@@ -57,7 +57,7 @@ long do_mutex_lock_acquire(long key)
     if(!locks[key]->initialized){
         return -1;
     }
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
+    while (atomic_cmpxchg_ll_sc(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
         ;
     }
@@ -80,7 +80,7 @@ long do_mutex_lock_release(long key)
     if(!locks[key]->initialized){
         return -1;
     }
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
+    while (atomic_cmpxchg_ll_sc(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
         ;
     }

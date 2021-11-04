@@ -1,0 +1,1207 @@
+riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
+riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50200000
+In file included from include/os/lock.h:32,
+                 from ./init/main.c:37:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+In file included from tiny_libc/include/string.h:4,
+                 from ./init/main.c:43:
+tiny_libc/include/stdint.h: At top level:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from arch/riscv/include/common.h:27,
+                 from ./init/main.c:27:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./init/main.c:43:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from arch/riscv/include/common.h:27,
+                 from ./init/main.c:27:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./init/main.c:43:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from arch/riscv/include/common.h:27,
+                 from ./init/main.c:27:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./init/main.c:43:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from arch/riscv/include/common.h:27,
+                 from ./init/main.c:27:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./init/main.c: In function 'init_pcb':
+./init/main.c:108:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+  108 |     kmemset(pcb,0,sizeof(pcb));
+      |     ^~~~~~~
+      |     memset
+In file included from tiny_libc/include/stddef.h:4,
+                 from tiny_libc/include/stdio.h:5,
+                 from ./kernel/irq/irq.c:5:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/irq.h:30,
+                 from ./kernel/irq/irq.c:1:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/stddef.h:4,
+                 from tiny_libc/include/stdio.h:5,
+                 from ./kernel/irq/irq.c:5:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/irq.h:30,
+                 from ./kernel/irq/irq.c:1:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/stddef.h:4,
+                 from tiny_libc/include/stdio.h:5,
+                 from ./kernel/irq/irq.c:5:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/irq.h:30,
+                 from ./kernel/irq/irq.c:1:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./kernel/irq/irq.c:5:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/irq.h:30,
+                 from ./kernel/irq/irq.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+In file included from ./kernel/irq/irq.c:6:
+include/assert.h: In function '_panic':
+include/assert.h:8:5: warning: implicit declaration of function 'prints'; did you mean 'printf'? [-Wimplicit-function-declaration]
+    8 |     prints("Assertion failed at %s in %s:%d\n\r",
+      |     ^~~~~~
+      |     printf
+./kernel/irq/irq.c: In function 'handle_other':
+./kernel/irq/irq.c:73:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
+   73 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
+      |             ^~~~~~
+      |             printf
+In file included from include/os/lock.h:32,
+                 from ./drivers/screen.c:5:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+In file included from include/os/lock.h:32,
+                 from ./kernel/locking/lock.c:1:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+./kernel/locking/lock.c: In function 'do_mutex_lock_op':
+./kernel/locking/lock.c:15:35: warning: passing argument 1 of 'do_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
+   15 |         return do_mutex_lock_init(key);
+      |                                   ^~~
+      |                                   |
+      |                                   long int *
+In file included from ./kernel/locking/lock.c:1:
+include/os/lock.h:70:30: note: expected 'int *' but argument is of type 'long int *'
+   70 | long do_mutex_lock_init(int *key);
+      |                         ~~~~~^~~
+./kernel/locking/lock.c:27:38: warning: passing argument 1 of 'do_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
+   27 |         return do_mutex_lock_trylock(key);
+      |                                      ^~~
+      |                                      |
+      |                                      long int *
+In file included from ./kernel/locking/lock.c:1:
+include/os/lock.h:74:33: note: expected 'int *' but argument is of type 'long int *'
+   74 | long do_mutex_lock_trylock(int *key);
+      |                            ~~~~~^~~
+./kernel/locking/lock.c: In function 'do_mutex_lock_destroy':
+./kernel/locking/lock.c:127:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
+  127 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
+      |     ^~~~~~~
+./kernel/locking/lock.c: In function 'find_lock':
+./kernel/locking/lock.c:43:1: warning: control reaches end of non-void function [-Wreturn-type]
+   43 | }
+      | ^
+In file included from include/os/lock.h:32,
+                 from include/os/comm.h:5,
+                 from ./kernel/comm/comm.c:1:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/comm/comm.c:3:
+tiny_libc/include/stdint.h: At top level:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/list.h:40,
+                 from include/os/comm.h:4,
+                 from ./kernel/comm/comm.c:1:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/comm/comm.c:3:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/list.h:40,
+                 from include/os/comm.h:4,
+                 from ./kernel/comm/comm.c:1:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/comm/comm.c:3:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/list.h:40,
+                 from include/os/comm.h:4,
+                 from ./kernel/comm/comm.c:1:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./kernel/comm/comm.c:3:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/list.h:40,
+                 from include/os/comm.h:4,
+                 from ./kernel/comm/comm.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./kernel/comm/comm.c: In function 'do_semaphore_destroy':
+./kernel/comm/comm.c:133:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+  133 |     kmemset(sem_list[*key - 1], 0, sizeof(sem_list[*key - 1]));
+      |     ^~~~~~~
+      |     memset
+./kernel/comm/comm.c: In function 'do_barrier_destroy':
+./kernel/comm/comm.c:256:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  256 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id);
+      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                           |
+      |                           int *
+In file included from include/os/comm.h:5,
+                 from ./kernel/comm/comm.c:1:
+include/os/lock.h:73:34: note: expected 'long int *' but argument is of type 'int *'
+   73 | long do_mutex_lock_destroy(long *key);
+      |                            ~~~~~~^~~
+./kernel/comm/comm.c: In function 'find_free':
+./kernel/comm/comm.c:48:1: warning: control reaches end of non-void function [-Wreturn-type]
+   48 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_commop':
+./kernel/comm/comm.c:78:1: warning: control reaches end of non-void function [-Wreturn-type]
+   78 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_semaphore_p':
+./kernel/comm/comm.c:114:1: warning: control reaches end of non-void function [-Wreturn-type]
+  114 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_semaphore_v':
+./kernel/comm/comm.c:127:1: warning: control reaches end of non-void function [-Wreturn-type]
+  127 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_cond_wait':
+./kernel/comm/comm.c:172:1: warning: control reaches end of non-void function [-Wreturn-type]
+  172 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_cond_signal':
+./kernel/comm/comm.c:185:1: warning: control reaches end of non-void function [-Wreturn-type]
+  185 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_cond_broadcast':
+./kernel/comm/comm.c:198:1: warning: control reaches end of non-void function [-Wreturn-type]
+  198 | }
+      | ^
+./kernel/comm/comm.c: In function 'do_barrier_wait':
+./kernel/comm/comm.c:250:1: warning: control reaches end of non-void function [-Wreturn-type]
+  250 | }
+      | ^
+In file included from include/os/lock.h:32,
+                 from ./kernel/sched/sched.c:2:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/sched.c:9:
+tiny_libc/include/stdint.h: At top level:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/sched/sched.c:1:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/sched.c:9:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/sched/sched.c:1:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/sched.c:9:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/sched/sched.c:1:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./kernel/sched/sched.c:9:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/sched/sched.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./kernel/sched/sched.c: In function 'dequeue':
+./kernel/sched/sched.c:64:9: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+   64 |         kmemset(&ret->timer,0,sizeof(ret->timer));
+      |         ^~~~~~~
+      |         memset
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/time.c:5:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/time.h:31,
+                 from ./kernel/sched/time.c:1:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/time.c:5:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/time.h:31,
+                 from ./kernel/sched/time.c:1:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/sched/time.c:5:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/time.h:31,
+                 from ./kernel/sched/time.c:1:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./kernel/sched/time.c:5:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/time.h:31,
+                 from ./kernel/sched/time.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./kernel/sched/time.c: In function 'check_timer':
+./kernel/sched/time.c:72:13: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+   72 |             kmemset((void *)&pcb_check->timer,0,sizeof(pcb_check->timer));
+      |             ^~~~~~~
+      |             memset
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/mm/mm.c:2:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/mm/mm.c:1:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/mm/mm.c:2:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/mm/mm.c:1:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./kernel/mm/mm.c:2:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/mm/mm.c:1:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./kernel/mm/mm.c:2:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/mm.h:30,
+                 from ./kernel/mm/mm.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./kernel/mm/mm.c: In function 'freePage':
+./kernel/mm/mm.c:30:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+   30 |     kmemset(memCurr[page],0,numPage * PAGE_SIZE);
+      |     ^~~~~~~
+      |     memset
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/printf.c:46:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/printf.c:45:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/printf.c:46:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/printf.c:45:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/printf.c:46:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/printf.c:45:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./tiny_libc/mthread.c:2:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/stdatomic.h:6,
+                 from ./tiny_libc/mthread.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./tiny_libc/mthread.c:2:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/stdatomic.h:6,
+                 from ./tiny_libc/mthread.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./tiny_libc/mthread.c:2:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/stdatomic.h:6,
+                 from ./tiny_libc/mthread.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/syscall.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from include/sys/syscall.h:31,
+                 from ./tiny_libc/syscall.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/syscall.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from include/sys/syscall.h:31,
+                 from ./tiny_libc/syscall.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/syscall.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from include/sys/syscall.h:31,
+                 from ./tiny_libc/syscall.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+./tiny_libc/syscall.c: In function 'sys_spawn':
+./tiny_libc/syscall.c:23:41: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+   23 |     return invoke_syscall(SYSCALL_SPAWN,info,arg,mode);
+      |                                         ^~~~
+      |                                         |
+      |                                         task_info_t * {aka struct task_info *}
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'task_info_t *' {aka 'struct task_info *'}
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+./tiny_libc/syscall.c:23:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+   23 |     return invoke_syscall(SYSCALL_SPAWN,info,arg,mode);
+      |                                              ^~~
+      |                                              |
+      |                                              void *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'void *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                        ^~~~
+./tiny_libc/syscall.c: In function 'sys_lockop':
+./tiny_libc/syscall.c:99:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+   99 |     return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE);
+      |                                          ^~~
+      |                                          |
+      |                                          int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+./tiny_libc/syscall.c: In function 'sys_commop':
+./tiny_libc/syscall.c:107:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  107 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
+      |                                          ^~~
+      |                                          |
+      |                                          int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+./tiny_libc/syscall.c:107:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  107 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
+      |                                              ^~~~
+      |                                              |
+      |                                              int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                        ^~~~
+./tiny_libc/syscall.c: In function 'sys_write':
+./tiny_libc/syscall.c:117:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  117 |     invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
+      |                                  ^~~~
+      |                                  |
+      |                                  char *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'char *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+./tiny_libc/syscall.c: In function 'sys_get_cursor':
+./tiny_libc/syscall.c:187:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  187 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
+      |                                  ^
+      |                                  |
+      |                                  int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+./tiny_libc/syscall.c:187:36: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  187 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
+      |                                    ^
+      |                                    |
+      |                                    int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                        ^~~~
+./tiny_libc/syscall.c: In function 'sys_get_wall_time':
+./tiny_libc/syscall.c:213:49: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  213 |     return invoke_syscall(SYSCALL_GET_WALL_TIME,time_elapsed,IGNORE,IGNORE);
+      |                                                 ^~~~~~~~~~~~
+      |                                                 |
+      |                                                 long int *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'long int *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./tiny_libc/time.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./tiny_libc/time.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./tiny_libc/time.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./tiny_libc/time.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./tiny_libc/time.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./tiny_libc/time.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+./tiny_libc/mailbox.c: In function 'mbox_open':
+./tiny_libc/mailbox.c:7:1: warning: control reaches end of non-void function [-Wreturn-type]
+    7 | }
+      | ^
+./tiny_libc/mailbox.c: In function 'mbox_send':
+./tiny_libc/mailbox.c:17:1: warning: control reaches end of non-void function [-Wreturn-type]
+   17 | }
+      | ^
+./tiny_libc/mailbox.c: In function 'mbox_recv':
+./tiny_libc/mailbox.c:22:1: warning: control reaches end of non-void function [-Wreturn-type]
+   22 | }
+      | ^
+In file included from tiny_libc/include/string.h:4,
+                 from ./test/test_project3/test_shell.c:30:
+tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from test/test.h:30,
+                 from ./test/test_project3/test_shell.c:28:
+include/type.h:58: note: this is the location of the previous definition
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./test/test_project3/test_shell.c:30:
+tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from test/test.h:30,
+                 from ./test/test_project3/test_shell.c:28:
+include/type.h:63: note: this is the location of the previous definition
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./test/test_project3/test_shell.c:30:
+tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from include/os/sched.h:32,
+                 from test/test.h:30,
+                 from ./test/test_project3/test_shell.c:28:
+include/type.h:69: note: this is the location of the previous definition
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:5,
+                 from ./test/test_project3/test_shell.c:30:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from test/test.h:30,
+                 from ./test/test_project3/test_shell.c:28:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_affinity.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_affinity.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_affinity.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_affinity.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_affinity.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_affinity.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_affinity.c:2:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_affinity.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./test/test_project3/test_affinity.c: In function 'test_affinity':
+./test/test_project3/test_affinity.c:19:9: warning: unused variable 'single_core_result' [-Wunused-variable]
+   19 |     int single_core_result = 0;
+      |         ^~~~~~~~~~~~~~~~~~
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_barrier.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_barrier.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_barrier.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_barrier.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_barrier.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_barrier.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_barrier.c:2:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_barrier.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_kill.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_kill.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_kill.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_kill.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_kill.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_kill.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_kill.c:4:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_kill.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./test/test_project3/test_kill.c: In function 'wait_exit_task':
+./test/test_project3/test_kill.c:56:11: warning: unused variable 'pid_task2' [-Wunused-variable]
+   56 |     pid_t pid_task2 = sys_spawn(&task2, (void*)&pid_task1,
+      |           ^~~~~~~~~
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_mailbox.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_mailbox.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_mailbox.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_mailbox.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_mailbox.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_mailbox.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from ./test/test_project3/test_mailbox.c:4:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_mailbox.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./test/test_project3/test_mailbox.c: In function 'strServer':
+./test/test_project3/test_mailbox.c:71:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+   71 |         uint32_t checksum = adler32(msgBuffer, header.length);
+      |                                     ^~~~~~~~~
+      |                                     |
+      |                                     char *
+./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'char *'
+   27 | uint32_t adler32(unsigned char *data, size_t len)
+      |                  ~~~~~~~~~~~~~~~^~~~
+./test/test_project3/test_mailbox.c: In function 'clientSendMsg':
+./test/test_project3/test_mailbox.c:98:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   98 |     header->checksum = adler32(content, length);
+      |                                ^~~~~~~
+./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'const char *'
+   27 | uint32_t adler32(unsigned char *data, size_t len)
+      |                  ~~~~~~~~~~~~~~~^~~~
+./test/test_project3/test_mailbox.c: In function 'strGenerator':
+./test/test_project3/test_mailbox.c:138:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
+  138 |         generateRandomString(strBuffer, len);
+      |                              ^~~~~~~~~
+      |                              |
+      |                              int *
+./test/test_project3/test_mailbox.c:107:33: note: expected 'char *' but argument is of type 'int *'
+  107 | void generateRandomString(char* buf, int len)
+      |                           ~~~~~~^~~
+./test/test_project3/test_mailbox.c:139:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
+  139 |         blocked += clientSendMsg(mq, strBuffer, len);
+      |                                      ^~~~~~~~~
+      |                                      |
+      |                                      int *
+./test/test_project3/test_mailbox.c:91:46: note: expected 'const char *' but argument is of type 'int *'
+   91 | int clientSendMsg(mailbox_t *mq, const char* content, int length)
+      |                                  ~~~~~~~~~~~~^~~~~~~
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_multicore.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_multicore.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_multicore.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_multicore.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_multicore.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_multicore.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_multicore.c:2:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_multicore.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_wait.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_wait.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_wait.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_wait.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_wait.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/time.h:4,
+                 from ./test/test_project3/test_wait.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_wait.c:3:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/time.h:5,
+                 from ./test/test_project3/test_wait.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./test/test_project3/test_semaphore.c:1:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/mthread.h:30,
+                 from ./test/test_project3/test_semaphore.c:1:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./test/test_project3/test_semaphore.c:1:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/mthread.h:30,
+                 from ./test/test_project3/test_semaphore.c:1:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./test/test_project3/test_semaphore.c:1:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/mthread.h:30,
+                 from ./test/test_project3/test_semaphore.c:1:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
+In file included from tiny_libc/include/stdio.h:5,
+                 from ./test/test_project3/test_semaphore.c:4:
+tiny_libc/include/stddef.h:10: warning: "NULL" redefined
+   10 | #define NULL ((void*)0)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from tiny_libc/include/mthread.h:32,
+                 from ./test/test_project3/test_semaphore.c:1:
+include/type.h:30: note: this is the location of the previous definition
+   30 | #define NULL  (void*)0
+      | 
+./createimage --extended bootblock main
+bootblock can open
+0x50200000: bootblock
+	segment 0
+		offset 0x1000		vaddr 0x50200000
+		filesz 0x143		memsz 0x143
+		writing 0x143 bytes
+		padding up to 0x200
+main can open
+0x50200000: main
+	segment 0
+		offset 0x1000		vaddr 0x50200000
+		filesz 0x8a88		memsz 0xf480
+		writing 0x8a88 bytes
+		padding up to 0xf800
+	segment 1
+		offset 0x0		vaddr 0x0
+		filesz 0x0		memsz 0x0
+kernel_size: 123 sector(s)
+there are 1 kernel(s) in image
+riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

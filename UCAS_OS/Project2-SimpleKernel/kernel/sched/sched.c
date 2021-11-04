@@ -151,18 +151,6 @@ long do_fork(void)
 
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src)
 {
-    regs_context_t *kid_pt_regs = (regs_context_t *)(kid_kernel_stack - sizeof(regs_context_t));
-    regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
-    for(int i=0;i<32;i++){
-        kid_pt_regs->regs[i]=src_pt_regs->regs[i];
-    }
-    kid_pt_regs->regs[10] = 0;
-    kid_pt_regs->sepc = src_pt_regs->sepc;
-    kid_pt_regs->scause = src_pt_regs->scause;
-    kid_pt_regs->sbadaddr = src_pt_regs->sbadaddr;
-    kid_pt_regs->sie = src_pt_regs->sie;
-    kid_pt_regs->sstatus = src_pt_regs->sstatus;
-
     // set sp to simulate return from switch_to
     /* TODO: you should prepare a stack, and push some values to
      * simulate a pcb context.
@@ -170,8 +158,16 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     kid->kernel_sp = kid_kernel_stack- sizeof(regs_context_t) - sizeof(switchto_context_t);
     switchto_context_t *kid_stored_switchto_k = (switchto_context_t *) kid->kernel_sp;
     switchto_context_t *src_stored_switchto_k = (switchto_context_t *) src->kernel_sp;
+    regs_context_t *kid_pt_regs = (regs_context_t *)(kid_kernel_stack - sizeof(regs_context_t));
+    regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
+    
+    kid->user_sp = kid->user_sp - src->user_sp + src_pt_regs->regs[8];
+    memcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
+    
     // kid's ra, after do scheduler of the last task, kid shall go to ret_from_exception
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
+    // kid's s0
+    kid_stored_switchto_k->regs[2] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[2] % PAGE_SIZE);
     // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
     memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
@@ -179,8 +175,18 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }
     // kid's usp, copy from src, but shall move to it's own page
-    kid->user_sp = kid_user_stack - (PAGE_SIZE - src->user_sp % PAGE_SIZE);
-    memcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
+    
+    for(int i=0;i<32;i++){
+        kid_pt_regs->regs[i]=src_pt_regs->regs[i];
+    }
+    // kid's s0
+    kid_pt_regs->regs[8] = kid->user_sp - src->user_sp + src_pt_regs->regs[8];
+    kid_pt_regs->regs[10] = 0;
+    kid_pt_regs->sepc = src_pt_regs->sepc;
+    kid_pt_regs->scause = src_pt_regs->scause;
+    kid_pt_regs->sbadaddr = src_pt_regs->sbadaddr;
+    kid_pt_regs->sie = src_pt_regs->sie;
+    kid_pt_regs->sstatus = src_pt_regs->sstatus;
 }
 
 void set_priority(long priority){

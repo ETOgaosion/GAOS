@@ -26,7 +26,7 @@ uint64_t get_time_base()
     return time_base;
 }
 
-uint32_t get_wall_time(uint32_t *time_elapsed){
+uint32_t get_wall_time(uint64_t *time_elapsed){
     time_elapsed = get_ticks();
     return get_time_base();
 }

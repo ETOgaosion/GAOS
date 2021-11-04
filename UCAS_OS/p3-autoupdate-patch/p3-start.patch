@@ -1,0 +1,537 @@
+diff -rupdEZbB arch/riscv/boot/bootblock.S arch/riscv/boot/bootblock.S
+--- arch/riscv/boot/bootblock.S	2021-09-29 17:20:26.967530118 +0800
++++ arch/riscv/boot/bootblock.S	2020-10-20 20:23:01.000000000 +0800
+@@ -1,2 +1,55 @@
+-// use your bootblock.S here
++#include <asm/sbidef.h>
++#include <asm/sbiasm.h>
++#include <csr.h>
++
++// 1. kernel address (move kernel to here ~)
++.equ kernel, 0x50201000
++
++// 2. kernel main address (jmp here to start kernel main!)
++.equ kernel_main, 0x50201000
++
++// 3. os size location (get the size of your OS here)
++.equ os_size_loc, 0x502001fc
++
++.text
++.global main
++
++main:
++	// fence on all memory and I/O
++	fence
++
++	// a0 is mhartid, a1 is the pointer of fdt
++	move s0,a0
++	move s1,a1
++
++	// output a \n
++	li a0, 10
++	SBI_CALL SBI_CONSOLE_PUTCHAR
+ 
++	// The core whose mhartid=0 is selected to boot the kernel.
++	// Other cores should wait until the kernel's initialization
++	// has been finished.
++ 	move a0, s0
++	bnez a0, secondary
++
++	// your code
++
++secondary:
++	/* TODO: 
++	 * 1. Mask all interrupts
++	 * 2. let stvec pointer to kernel_main
++	 * 3. enable software interrupt for ipi
++	 */
++
++wait_for_wakeup:
++	wfi
++	j wait_for_wakeup
++
++// while(1) --> stop here
++stop:
++	j stop
++	nop
++
++.data
++
++msg: .string "It's a bootloader...\n\r"
+diff -rupdEZbB arch/riscv/include/csr.h arch/riscv/include/csr.h
+--- arch/riscv/include/csr.h	2021-09-29 17:20:26.967530118 +0800
++++ arch/riscv/include/csr.h	2020-10-20 20:23:01.000000000 +0800
+@@ -76,4 +76,6 @@
+ #define CSR_TIMEH   0xc81
+ #define CSR_INSTRETH    0xc82
+ 
++#define CSR_MHARTID 0xf14
++
+ #endif /* CSR_H */
+diff -rupdEZbB include/assert.h include/assert.h
+--- include/assert.h	2021-09-29 17:20:26.968530112 +0800
++++ include/assert.h	2020-10-20 20:23:01.000000000 +0800
+@@ -1,7 +1,7 @@
+ #ifndef ASSERT_H
+ #define ASSERT_H
+ 
+-#include <stdio.h>
++#include <os/stdio.h>
+ 
+ static inline void _panic(const char* file_name,int lineno, const char* func_name)
+ {
+diff -rupdEZbB include/os/mm.h include/os/mm.h
+--- include/os/mm.h	2021-09-29 17:20:26.968530112 +0800
++++ include/os/mm.h	2020-10-20 20:23:01.000000000 +0800
+@@ -31,7 +31,7 @@
+ 
+ #define MEM_SIZE 32
+ #define PAGE_SIZE 4096 // 4K
+-#define INIT_KERNEL_STACK 0x50500000
++#define INIT_KERNEL_STACK 0x50500000lu
+ #define FREEMEM (INIT_KERNEL_STACK+PAGE_SIZE)
+ 
+ /* Rounding; only works for n = power of two */
+@@ -41,6 +41,7 @@
+ extern ptr_t memCurr;
+ 
+ extern ptr_t allocPage(int numPage);
++extern void freePage(ptr_t baseAddr, int numPage);
+ extern void* kmalloc(size_t size);
+ 
+ #endif /* MM_H */
+diff -rupdEZbB include/os/sched.h include/os/sched.h
+--- include/os/sched.h	2021-09-29 17:20:26.968530112 +0800
++++ include/os/sched.h	2021-10-14 20:48:40.124380618 +0800
+@@ -59,10 +59,16 @@ typedef enum {
+     TASK_BLOCKED,
+     TASK_RUNNING,
+     TASK_READY,
++    TASK_ZOMBIE,
+     TASK_EXITED,
+ } task_status_t;
+ 
+ typedef enum {
++    ENTER_ZOMBIE_ON_EXIT,
++    AUTO_CLEANUP_ON_EXIT,
++} spawn_mode_t;
++
++typedef enum {
+     KERNEL_PROCESS,
+     KERNEL_THREAD,
+     USER_PROCESS,
+@@ -81,8 +87,12 @@ typedef struct pcb
+     // enable_preempt enables CSR_SIE only when preempt_count == 0
+     reg_t preempt_count;
+ 
++    ptr_t kernel_stack_base;
++    ptr_t user_stack_base;
++
+     /* previous, next pointer */
+     list_node_t list;
++    list_head wait_list;
+ 
+     /* process id */
+     pid_t pid;
+@@ -90,8 +100,9 @@ typedef struct pcb
+     /* kernel/user thread/process */
+     task_type_t type;
+ 
+-    /* BLOCK | READY | RUNNING */
++    /* BLOCK | READY | RUNNING | ZOMBIE */
+     task_status_t status;
++    spawn_mode_t mode;
+ 
+     /* cursor position */
+     int cursor_x;
+@@ -110,8 +121,10 @@
+ 
+ /* current running task PCB */
+ extern pcb_t * volatile current_running;
++// extern pcb_t * volatile current_running[NR_CPUS];
+ extern pid_t process_id;
+ 
+ extern pcb_t pcb[NUM_MAX_TASK];
++// extern pcb_t kernel_pcb[NR_CPUS];
+ extern pcb_t pid0_pcb;
+ extern const ptr_t pid0_stack;
+@@ -125,3 +138,10 @@
+ void do_unblock(list_node_t *);
+ 
++extern pid_t do_spawn(task_info_t *task, void* arg, spawn_mode_t mode);
++extern void do_exit(void);
++extern int do_kill(pid_t pid);
++extern int do_waitpid(pid_t pid);
++extern void do_process_show();
++extern pid_t do_getpid();
++ 
+ #endif
+diff -rupdEZbB include/os/syscall_number.h include/os/syscall_number.h
+--- include/os/syscall_number.h	2021-09-29 17:20:26.968530112 +0800
++++ include/os/syscall_number.h	2020-10-20 20:23:01.000000000 +0800
+@@ -32,15 +32,29 @@
+ #define NUM_SYSCALLS 64
+ 
+ /* define */
++#define SYSCALL_SPAWN 0
++#define SYSCALL_EXIT 1
+ #define SYSCALL_SLEEP 2
++#define SYSCALL_KILL 3
++#define SYSCALL_WAITPID 4
++#define SYSCALL_PS 5
++#define SYSCALL_GETPID 6
+ #define SYSCALL_YIELD 7
+ 
++#define SYSCALL_FUTEX_WAIT 10
++#define SYSCALL_FUTEX_WAKEUP 11
++
+ #define SYSCALL_WRITE 20
+ #define SYSCALL_READ 21
+ #define SYSCALL_CURSOR 22
+ #define SYSCALL_REFLUSH 23
++#define SYSCALL_SERIAL_READ 24
++#define SYSCALL_SERIAL_WRITE 25
++#define SYSCALL_READ_SHELL_BUFF 26
++#define SYSCALL_SCREEN_CLEAR 27
+ 
+ #define SYSCALL_GET_TIMEBASE 30
+ #define SYSCALL_GET_TICK 31
++#define SYSCALL_GET_CHAR 32
+ 
+ #endif
+diff -rupdEZbB include/sys/syscall.h include/sys/syscall.h
+--- include/sys/syscall.h	2021-09-29 17:20:26.968530112 +0800
++++ include/sys/syscall.h	2020-10-20 20:23:01.000000000 +0800
+@@ -30,5 +30,6 @@
+ 
+ #include <os/syscall_number.h>
+ #include <stdint.h>
++#include <os.h>
+ 
+ extern long invoke_syscall(long, long, long, long);
+@@ -40,1 +50,10@
++pid_t sys_spawn(task_info_t *info, void* arg, spawn_mode_t mode);
++void sys_exit(void);
++int sys_kill(pid_t pid);
++int sys_waitpid(pid_t pid);
++void sys_process_show(void);
++void sys_screen_clear(void);
++pid_t sys_getpid();
++int sys_get_char();
++
+ #endif
+diff -rupdEZbB kernel/irq/irq.c kernel/irq/irq.c
+--- kernel/irq/irq.c	2021-09-29 17:20:26.968530112 +0800
++++ kernel/irq/irq.c	2020-10-20 20:23:01.000000000 +0800
+@@ -2,7 +2,7 @@
+ #include <os/time.h>
+ #include <os/sched.h>
+ #include <os/string.h>
+-#include <stdio.h>
++#include <os/stdio.h>
+ #include <assert.h>
+ #include <sbi.h>
+ #include <screen.h>
+@@ -58,8 +46,25 @@ void handle_other(regs_context_t *regs,
+         }
+         printk("\n\r");
+     }
+-    printk("sstatus: 0x%lx sbadaddr: 0x%lx scause: %lu\n\r",
++    printk("sstatus: 0x%lx sbadaddr: 0x%lx scause: %lx\n\r",
+            regs->sstatus, regs->sbadaddr, regs->scause);
++    printk("stval: 0x%lx cause: %lx\n\r",
++           stval, cause);
+     printk("sepc: 0x%lx\n\r", regs->sepc);
++    // printk("mhartid: 0x%lx\n\r", get_current_cpu_id());
++
++    uintptr_t fp = regs->regs[8], sp = regs->regs[2];
++    printk("[Backtrace]\n\r");
++    printk("  addr: %lx sp: %lx fp: %lx\n\r", regs->regs[1] - 4, sp, fp);
++    // while (fp < USER_STACK_ADDR && fp > USER_STACK_ADDR - PAGE_SIZE) {
++    while (fp > 0x10000) {
++        uintptr_t prev_ra = *(uintptr_t*)(fp-8);
++        uintptr_t prev_fp = *(uintptr_t*)(fp-16);
++
++        printk("  addr: %lx sp: %lx fp: %lx\n\r", prev_ra - 4, fp, prev_fp);
++
++        fp = prev_fp;
++    }
++
+     assert(0);
+ }
+diff -rupdEZbB libs/printk.c libs/printk.c
+--- libs/printk.c	2021-09-29 17:20:26.969530105 +0800
++++ libs/printk.c	2020-10-20 20:23:01.000000000 +0800
+@@ -44,6 +44,7 @@
+ #include <screen.h>
+ #include <stdarg.h>
+ #include <os/sched.h>
++#include <os/smp.h>
+ #include <os/irq.h>
+ 
+ static unsigned int mini_strlen(const char *s)
+@@ -71,12 +72,21 @@ static unsigned int mini_itoa(
+ 
+     /* This builds the string back to front ... */
+     do {
+-        int digit = value % radix;
++        int digit = 0;
++        if (unsig) {
++            digit = (unsigned long)value % (unsigned)radix;
++        } else {
++            digit = value % radix;
++        }
+         *(pbuffer++) =
+             (digit < 10 ? '0' + digit :
+                           (uppercase ? 'A' : 'a') + digit - 10);
++        if (unsig) {
++            value = (unsigned long) value / (unsigned) radix;
++        } else {
+         value /= radix;
+-    } while (value > 0);
++        }
++    } while (value != 0);
+ 
+     for (i = (pbuffer - buffer); i < zero_pad; i++)
+         *(pbuffer++) = '0';
+@@ -217,7 +227,8 @@ end:
+     return b.pbuffer - b.buffer;
+ }
+ 
+-int vprintk(const char *fmt, va_list _va)
++static int _vprint(const char* fmt, va_list _va,
++                   void (*output)(char*))
+ {
+     va_list va;
+     va_copy(va, _va);
+@@ -230,7 +241,7 @@ int vprintk(const char *fmt, va_list _va
+     buff[ret] = '\0';
+ 
+     disable_preempt();
+-    port_write(buff);
++    output(buff);
+     for (int i = 0; i < ret; ++i) {
+         if (buff[i] == '\n') {
+             current_running->cursor_y++;
+@@ -245,6 +256,11 @@ int vprintk(const char *fmt, va_list _va
+     return ret;
+ }
+ 
++int vprintk(const char *fmt, va_list _va)
++{
++    return _vprint(fmt, _va, port_write);
++}
++
+ int printk(const char *fmt, ...)
+ {
+     int ret = 0;
+@@ -255,4 +271,21 @@ int printk(const char *fmt, ...)
+     va_end(va);
+ 
+     return ret;
++}
++
++int vprints(const char *fmt, va_list _va)
++{
++    return _vprint(fmt, _va, screen_write);
++}
++
++int prints(const char *fmt, ...)
++{
++    int ret = 0;
++    va_list va;
++
++    va_start(va, fmt);
++    ret = vprints(fmt, va);
++    va_end(va);
++
++    return ret;
+ }
+diff -rupdEZbB tiny_libc/include/mthread.h tiny_libc/include/mthread.h
+--- tiny_libc/include/mthread.h	2021-09-29 17:20:26.969530105 +0800
++++ tiny_libc/include/mthread.h	2021-10-14 17:21:24.871142531 +0800
+@@ -39,8 +39,29 @@ typedef struct mthread_mutex
+     // TODO:
+ } mthread_mutex_t;
+ 
+-int mthread_mutex_init(void* handle);
+-int mthread_mutex_lock(void* handle);
+-int mthread_mutex_unlock(void* handle);
++int mthread_mutex_init(void *handle);
++int mthread_mutex_destroy(void *handle);
++int mthread_mutex_trylock(void *handle);
++int mthread_mutex_lock(void *handle);
++int mthread_mutex_unlock(void *handle);
++
++typedef struct mthread_barrier
++{
++    // TODO:
++} mthread_barrier_t;
++
++int mthread_barrier_init(void *handle, unsigned count);
++int mthread_barrier_wait(void *handle);
++int mthread_barrier_destroy(void *handle);
++
++typedef struct mthread_semaphore
++{
++    // TODO:
++} mthread_semaphore_t;
++
++int mthread_semaphore_init(void *handle, int val);
++int mthread_semaphore_up(void *handle);
++int mthread_semaphore_down(void *handle);
++int mthread_semaphore_destroy(void *handle);
+ 
+ #endif
+diff -rupdEZbB tiny_libc/include/stdatomic.h tiny_libc/include/stdatomic.h
+--- tiny_libc/include/stdatomic.h	2021-09-29 17:20:26.969530105 +0800
++++ tiny_libc/include/stdatomic.h	2020-10-20 20:23:01.000000000 +0800
+@@ -13,12 +13,36 @@ typedef volatile int atomic_int;
+ typedef volatile unsigned long atomic_ulong;
+ typedef volatile long atomic_long;
+ 
++static inline uint32_t atomic_load(volatile uint32_t* obj)
++{
++    uint32_t arg = UINT32_MAX;
++    uint32_t ret;
++    __asm__ __volatile__ (
++        "amoand.w.aqrl %0, %2, %1\n"
++        : "=r"(ret), "+A" (*(uint32_t*)obj)
++        : "r"(arg)
++        : "memory");
++    return ret;
++}
++
++static inline uint64_t atomic_load_d(volatile uint64_t* obj)
++{
++    uint64_t arg = UINT64_MAX;
++    uint64_t ret;
++    __asm__ __volatile__ (
++                          "amoand.w.aqrl %0, %2, %1\n"
++                          : "=r"(ret), "+A" (*(uint64_t*)obj)
++                          : "r"(arg)
++                          : "memory");
++    return ret;
++}
++
+ static inline int fetch_add(volatile void* obj, int arg)
+ {
+     uint32_t ret;
+     __asm__ __volatile__ (
+         "amoadd.w.aqrl %0, %2, %1\n"
+-        : "=r"(ret), "+A" (*obj)
++        : "=r"(ret), "+A" (*(uint32_t*)obj)
+         : "r"(arg)
+         : "memory");
+     return ret;
+@@ -30,7 +54,7 @@ static inline int fetch_sub(volatile voi
+     arg = 0 - arg;
+     __asm__ __volatile__ (
+         "amoadd.w.aqrl %0, %2, %1\n"
+-        : "=r"(ret), "+A" (*obj)
++        : "=r"(ret), "+A" (*(uint32_t*)obj)
+         : "r"(arg)
+         : "memory");
+     return ret;
+@@ -41,7 +65,7 @@ static inline int atomic_exchange(volati
+     int ret;
+     __asm__ __volatile__ (
+         "amoswap.w.aqrl %0, %2, %1\n"
+-        : "=r"(ret), "+A" (*obj)
++        : "=r"(ret), "+A" (*(uint32_t*)obj)
+         : "r"(desired)
+         : "memory");
+     return ret;
+@@ -52,7 +76,7 @@ static inline long atomic_exchange_d(vol
+     uint64_t ret;
+     __asm__ __volatile__ (
+                           "amoswap.d.aqrl %0, %2, %1\n"
+-                          : "=r"(ret), "+A" (*obj)
++                          : "=r"(ret), "+A" (*(uint64_t*)obj)
+                           : "r"(desired)
+                           : "memory");
+     return ret;
+@@ -70,7 +94,7 @@ static inline int atomic_compare_exchang
+           "	bnez %1, 0b\n"
+           "	fence rw, rw\n"
+           "1:\n"
+-          : "=&r" (ret), "=&r" (__rc), "+A" (*obj)
++          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint32_t*)obj)
+           : "rJ" (expected), "rJ" (desired)
+           : "memory");
+     return ret;
+@@ -89,7 +113,7 @@ static inline long atomic_compare_exchan
+           "	bnez %1, 0b\n"
+           "	fence rw, rw\n"
+           "1:\n"
+-          : "=&r" (ret), "=&r" (__rc), "+A" (*obj)
++          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint64_t*)obj)
+           : "rJ" (expected), "rJ" (desired)
+           : "memory");
+ 
+diff -rupdEZbB tiny_libc/include/stdio.h tiny_libc/include/stdio.h
+--- tiny_libc/include/stdio.h	2021-09-29 17:20:26.969530105 +0800
++++ tiny_libc/include/stdio.h	2020-10-20 20:23:01.000000000 +0800
+@@ -1,7 +1,8 @@
+ #ifndef INCLUDE_STDIO_H_
+ #define INCLUDE_STDIO_H_
+ 
+-#include<stdarg.h>
++#include <stdarg.h>
++#include <stddef.h>
+ 
+ int printf(const char *fmt, ...);
+ int vprintf(const char *fmt, va_list va);
+diff -rupdEZbB tiny_libc/include/string.h tiny_libc/include/string.h
+--- tiny_libc/include/string.h	2021-09-29 17:20:26.969530105 +0800
++++ tiny_libc/include/string.h	2020-10-20 20:23:01.000000000 +0800
+@@ -2,9 +2,11 @@
+ #define STRING_H
+ 
+ #include <stdint.h>
++#include <stddef.h>
+ 
+ extern void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+-extern void memset(void *dest, uint8_t val, uint32_t len);
++extern void memset(void *dest, uint8_t val, size_t len);
++extern int memcmp(const void *ptr1, const void* ptr2, uint32_t num);
+ 
+ extern int strcmp(const char *str1, const char *str2);
+ extern char *strcpy(char *dest, const char *src);
+diff -rupdEZbB tiny_libc/mthread.c tiny_libc/mthread.c
+--- tiny_libc/mthread.c	2021-09-29 17:20:26.969530105 +0800
++++ tiny_libc/mthread.c	2021-10-14 17:30:30.817017563 +0800
+@@ -18,3 +18,33 @@ int mthread_mutex_unlock(void* handle)
+     /* TODO: */
+     return 0;
+ }
++
++int mthread_barrier_init(void* handle, unsigned count)
++{
++    // TODO:
++}
++int mthread_barrier_wait(void* handle)
++{
++    // TODO:
++}
++int mthread_barrier_destroy(void* handle)
++{
++    // TODO:
++}
++
++int mthread_semaphore_init(void* handle, int val)
++{
++    // TODO:
++}
++int mthread_semaphore_up(void* handle)
++{
++    // TODO:
++}
++int mthread_semaphore_down(void* handle)
++{
++    // TODO:
++}
++int mthread_semaphore_destroy(void* handle)
++{
++    // TODO:
++}

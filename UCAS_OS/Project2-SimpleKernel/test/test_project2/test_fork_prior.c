@@ -35,8 +35,7 @@ void fork_priority_task(void)
         priority = in_ch - '0';
         pid = sys_fork();
         if(pid == 0){
-            register int kid_inc_num = inc_num;
-            register int kid_print_location = print_location + 4 * (kids_num - 1) + 1;
+            int kid_print_location = print_location + 4 * (kids_num - 1) + 1;
             sys_move_cursor(1,kid_print_location + 1);
             printf(">[TASK 5] This is kid (%d)\n",kids_num);
             sys_move_cursor(1,kid_print_location + 2);
@@ -47,7 +46,7 @@ void fork_priority_task(void)
             sys_setpriority(priority);
             while(1){
                 sys_move_cursor(1,kid_print_location + 4);
-                printf(">[TASK 5] This is children process.(%d)\n",kid_inc_num++);
+                printf(">[TASK 5] This is children process.(%d)\n",inc_num++);
                 #ifndef USE_CLOCK_INT
                 sys_yield();
                 #endif

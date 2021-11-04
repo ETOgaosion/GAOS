@@ -1,0 +1,7 @@
+9,11c9,10
+< 
+< /* user printk */
+< int printf(const char *fmt, ...);
+---
+> int prints(const char *fmt, ...);
+> int vprints(const char *fmt, va_list va);

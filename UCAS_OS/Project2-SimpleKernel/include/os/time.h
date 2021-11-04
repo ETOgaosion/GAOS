@@ -50,7 +50,7 @@ extern list_head timers;
 
 uint64_t get_timer(void);
 uint64_t get_ticks(void);
-uint32_t get_wall_time(uint32_t *);
+uint32_t get_wall_time(uint64_t *);
 
 extern uint64_t get_time_base();
 
