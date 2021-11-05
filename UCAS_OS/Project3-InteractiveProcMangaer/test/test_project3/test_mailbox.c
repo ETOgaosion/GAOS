@@ -55,11 +55,13 @@ void strServer(void)
     int64_t correctRecvBytes = 0;
     int64_t errorRecvBytes = 0;
     int64_t blockedCount = 0;
-    int clientPos = 1;
+    int clientPos = 2;
 
-    mailbox_t *mq = mbox_open("str-message-queue");
-    mailbox_t *posmq = mbox_open("pos-message-queue");
-    sys_move_cursor(0, 0);
+    mailbox_t mq_m = mbox_open("str-message-queue");
+    mailbox_t *mq = &mq_m;
+    mailbox_t posmq_m = mbox_open("pos-message-queue");
+    mailbox_t *posmq = &posmq_m;
+    sys_move_cursor(1, 1);
     printf("[Server] server started");
     sys_sleep(1);
 
@@ -75,7 +77,7 @@ void strServer(void)
             errorRecvBytes += header.length;
         }
 
-        sys_move_cursor(0, 0);
+        sys_move_cursor(1, 1);
         printf("[Server]: recved msg from %d (blocked: %ld, correctBytes: %ld, errorBytes: %ld)",
               header.sender, blockedCount, correctRecvBytes, errorRecvBytes);
 
@@ -118,18 +120,20 @@ void generateRandomString(char* buf, int len)
 
 void strGenerator(void)
 {
-    mailbox_t *mq = mbox_open("str-message-queue");
-    mailbox_t *posmq = mbox_open("pos-message-queue");
+    mailbox_t mq_m = mbox_open("str-message-queue");
+    mailbox_t *mq = &mq_m;
+    mailbox_t posmq_m = mbox_open("pos-message-queue");
+    mailbox_t *posmq = &posmq_m;
 
     int len = 0;
     int strBuffer[MAX_MBOX_LENGTH - sizeof(struct MsgHeader)];
     clientSendMsg(mq, initReq, initReqLen);
-    int position = 0;
+    int position = 1;
     mbox_recv(posmq, &position, sizeof(int));
     int blocked = 0;
     int64_t bytes = 0;
 
-    sys_move_cursor(0, position);
+    sys_move_cursor(1, position);
     printf("[Client %d] server started", position);
     sys_sleep(1);
     for (;;)
@@ -139,7 +143,7 @@ void strGenerator(void)
         blocked += clientSendMsg(mq, strBuffer, len);
         bytes += len;
 
-        sys_move_cursor(0, position);
+        sys_move_cursor(1, position);
         printf("[Client %d] send bytes: %ld, blocked: %d", position,
             bytes, blocked);
         sys_sleep(1);

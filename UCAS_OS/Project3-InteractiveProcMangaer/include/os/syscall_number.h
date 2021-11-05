@@ -44,7 +44,7 @@
 #define SYSCALL_SET_PRIORITY 9
 
 #define SYSCALL_LOCKOP 10
-// proc comm, [0,3] is for Semaphore, [4,6] is for barrier
+// proc comm, [0,3] is for Semaphore, [4,6] is for barrier, [7,10] is for mailbox
 #define SYSCALL_COMMOP 11
 
 #define SYSCALL_WRITE 20

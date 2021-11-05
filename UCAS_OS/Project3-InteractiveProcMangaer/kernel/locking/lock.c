@@ -9,23 +9,23 @@ static inline void assert_supervisor_mode()
    __asm__ __volatile__("csrr x0, sscratch\n"); 
 }
 
-long do_mutex_lock_op(long *key,int op){
+long k_mutex_lock_op(long *key,int op){
     assert_supervisor_mode();
     int operator = current_running->pid;
     if(op == 0){
-        return do_mutex_lock_init(key, operator);
+        return k_mutex_lock_init(key, operator);
     }
     else if(op == 1){
-        return do_mutex_lock_acquire(*key - 1, operator);
+        return k_mutex_lock_acquire(*key - 1, operator);
     }
     else if(op == 2){
-        return do_mutex_lock_release(*key - 1, operator);
+        return k_mutex_lock_release(*key - 1, operator);
     }
     else if(op == 3){
-        return do_mutex_lock_destroy(key, operator);
+        return k_mutex_lock_destroy(key, operator);
     }
     else if(op == 4){
-        return do_mutex_lock_trylock(key, operator);
+        return k_mutex_lock_trylock(key, operator);
     }
     return -1;
 }
@@ -43,13 +43,13 @@ static inline int find_lock(){
     }
 }
 
-long do_mutex_lock_init(int *key, int operator)
+long k_mutex_lock_init(int *key, int operator)
 {
     assert_supervisor_mode();
     /* TODO */
     if(first_time){
         for(int i=0; i<LOCK_NUM; i++){
-            locks[i] = (mutex_lock_t *)kmalloc(sizeof(mutex_lock_t),current_running->pid * 2 - 1);
+            locks[i] = (mutex_lock_t *)kmalloc(sizeof(mutex_lock_t),pcb[operator-1].pid * 2 - 1);
             locks[i]->initialized = 0;
         }
         first_time = 0;
@@ -73,7 +73,7 @@ long do_mutex_lock_init(int *key, int operator)
     return 0;
 }
 
-long do_mutex_lock_acquire(long key, int operator)
+long k_mutex_lock_acquire(long key, int operator)
 {
     assert_supervisor_mode();
     /* TODO */
@@ -91,14 +91,14 @@ long do_mutex_lock_acquire(long key, int operator)
         return locks[key]->lock_id;
     }
     else{
-        do_block(&current_running->list,&locks[key]->block_queue);
+        k_block(&current_running->list,&locks[key]->block_queue);
         locks[key]->lock.guard = 0;
-        do_scheduler();
+        k_scheduler();
         return -2;
     }
 }
 
-long do_mutex_lock_release(long key, int operator)
+long k_mutex_lock_release(long key, int operator)
 {
     /* TODO */
     if(!locks[key]->initialized){
@@ -115,16 +115,13 @@ long do_mutex_lock_release(long key, int operator)
         locks[key]->lock.flag = 0;
     }
     else{
-        unblock_args_t *args = (unblock_args_t *)kmalloc(sizeof(unblock_args_t),current_running->pid * 2 - 1);
-        args->queue = locks[key]->block_queue.next;
-        args->way = 2;
-        do_unblock(args);
+        k_unblock(locks[key]->block_queue.next,2);
     }
     locks[key]->lock.guard = 0;
     return locks[key]->lock_id;
 }
 
-long do_mutex_lock_destroy(long *key, int operator){
+long k_mutex_lock_destroy(long *key, int operator){
     if(!locks[*key - 1]->initialized){
         return -1;
     }
@@ -136,7 +133,7 @@ long do_mutex_lock_destroy(long *key, int operator){
     return 0;
 }
 
-long do_mutex_lock_trylock(int *key, int operator){
+long k_mutex_lock_trylock(int *key, int operator){
     if(*key > 0){
         return -2;
     }

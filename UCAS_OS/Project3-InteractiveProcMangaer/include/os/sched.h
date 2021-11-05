@@ -112,9 +112,12 @@ typedef struct pcb
     /* process id */
     pid_t pid;
 
-    // locks owned
+    // locks and mbox owned
     long lock_keys[MAX_LOCK_PER_PCB];
     int owned_lock_num;
+
+    int mbox_keys[MAX_LOCK_PER_PCB];
+    int owned_mbox_num;
 
     /* kernel/user thread/process */
     task_type_t type;
@@ -143,12 +146,6 @@ typedef struct task_info
     task_type_t type;
 } task_info_t;
 
-typedef struct unblock_args{
-    list_head *queue;
-    int way;
-} unblock_args_t;
-
-
 extern void ret_from_exception();
 extern void __global_pointer$();
 
@@ -176,24 +173,24 @@ extern void init_pcb_stack(
 
 int find_pcb(void);
 
-pid_t do_spawn(task_info_t *task, void* arg, spawn_mode_t mode);
-void do_exit(void);
-int do_kill(pid_t pid);
-int do_waitpid(pid_t pid);
-void do_process_show();
-pid_t do_getpid();
+pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode);
+void k_exit(void);
+int k_kill(pid_t pid);
+int k_waitpid(pid_t pid);
+void k_process_show();
+pid_t k_getpid();
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
 extern void load_next_task(pcb_t *next);
 pcb_t *block_current_task();
 void switch_to_next_task(pcb_t *curr);
-void do_scheduler();
-void do_sleep(uint32_t);
+void k_scheduler();
+void k_sleep(uint32_t);
 
-void do_block(list_node_t *, list_head *queue);
-void do_unblock(void *args);
+void k_block(list_node_t *, list_head *queue);
+void k_unblock(list_head *queue, int way);
 
-long do_fork(void);
+long k_fork(void);
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src);
 
 void set_priority(long priority);

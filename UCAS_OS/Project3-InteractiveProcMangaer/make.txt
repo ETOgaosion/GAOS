@@ -178,28 +178,28 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-./kernel/locking/lock.c: In function 'do_mutex_lock_op':
-./kernel/locking/lock.c:16:35: warning: passing argument 1 of 'do_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
-   16 |         return do_mutex_lock_init(key, operator);
-      |                                   ^~~
-      |                                   |
-      |                                   long int *
+./kernel/locking/lock.c: In function 'k_mutex_lock_op':
+./kernel/locking/lock.c:16:34: warning: passing argument 1 of 'k_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
+   16 |         return k_mutex_lock_init(key, operator);
+      |                                  ^~~
+      |                                  |
+      |                                  long int *
 In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:70:30: note: expected 'int *' but argument is of type 'long int *'
-   70 | long do_mutex_lock_init(int *key, int operator);
-      |                         ~~~~~^~~
-./kernel/locking/lock.c:28:38: warning: passing argument 1 of 'do_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
-   28 |         return do_mutex_lock_trylock(key, operator);
-      |                                      ^~~
-      |                                      |
-      |                                      long int *
+include/os/lock.h:70:29: note: expected 'int *' but argument is of type 'long int *'
+   70 | long k_mutex_lock_init(int *key, int operator);
+      |                        ~~~~~^~~
+./kernel/locking/lock.c:28:37: warning: passing argument 1 of 'k_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
+   28 |         return k_mutex_lock_trylock(key, operator);
+      |                                     ^~~
+      |                                     |
+      |                                     long int *
 In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:74:33: note: expected 'int *' but argument is of type 'long int *'
-   74 | long do_mutex_lock_trylock(int *key, int operator);
-      |                            ~~~~~^~~
-./kernel/locking/lock.c: In function 'do_mutex_lock_destroy':
-./kernel/locking/lock.c:134:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
-  134 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
+include/os/lock.h:74:32: note: expected 'int *' but argument is of type 'long int *'
+   74 | long k_mutex_lock_trylock(int *key, int operator);
+      |                           ~~~~~^~~
+./kernel/locking/lock.c: In function 'k_mutex_lock_destroy':
+./kernel/locking/lock.c:131:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
+  131 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
       |     ^~~~~~~
 ./kernel/locking/lock.c: In function 'find_lock':
 ./kernel/locking/lock.c:44:1: warning: control reaches end of non-void function [-Wreturn-type]
@@ -232,98 +232,119 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/comm/comm.c:3:
-tiny_libc/include/stdint.h: At top level:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/list.h:40,
-                 from include/os/comm.h:4,
-                 from ./kernel/comm/comm.c:1:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/comm/comm.c:3:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/list.h:40,
-                 from include/os/comm.h:4,
-                 from ./kernel/comm/comm.c:1:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/comm/comm.c:3:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/list.h:40,
-                 from include/os/comm.h:4,
-                 from ./kernel/comm/comm.c:1:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:5,
-                 from ./kernel/comm/comm.c:3:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/list.h:40,
-                 from include/os/comm.h:4,
-                 from ./kernel/comm/comm.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./kernel/comm/comm.c: In function 'do_semaphore_destroy':
-./kernel/comm/comm.c:134:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
-  134 |     kmemset(sem_list[*key - 1], 0, sizeof(sem_list[*key - 1]));
-      |     ^~~~~~~
-      |     memset
-./kernel/comm/comm.c: In function 'do_barrier_destroy':
-./kernel/comm/comm.c:256:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  256 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
-      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                           |
-      |                           int *
+./kernel/comm/comm.c: In function 'k_barrier_destroy':
+./kernel/comm/comm.c:269:26: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  269 |     k_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
+      |                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                          |
+      |                          int *
 In file included from include/os/comm.h:5,
                  from ./kernel/comm/comm.c:1:
-include/os/lock.h:73:34: note: expected 'long int *' but argument is of type 'int *'
-   73 | long do_mutex_lock_destroy(long *key, int operator);
-      |                            ~~~~~~^~~
+include/os/lock.h:73:33: note: expected 'long int *' but argument is of type 'int *'
+   73 | long k_mutex_lock_destroy(long *key, int operator);
+      |                           ~~~~~~^~~
+./kernel/comm/comm.c: In function 'k_mbox_close':
+./kernel/comm/comm.c:321:34: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  321 |             k_mutex_lock_destroy(&mbox_list[pcb[operator-1].mbox_keys[i] - 1]->mutex_id,operator);
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                  |
+      |                                  int *
+In file included from include/os/comm.h:5,
+                 from ./kernel/comm/comm.c:1:
+include/os/lock.h:73:33: note: expected 'long int *' but argument is of type 'int *'
+   73 | long k_mutex_lock_destroy(long *key, int operator);
+      |                           ~~~~~~^~~
+./kernel/comm/comm.c: In function 'k_mbox_send':
+./kernel/comm/comm.c:339:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  339 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+      |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                      |
+      |                                      char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |              ~~~~~~~~~^~~~
+./kernel/comm/comm.c:340:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  340 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+      |                 ~~~~~~~~~~~~~~^~~~~~
+      |                               |
+      |                               char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |              ~~~~~~~~~^~~~
+./kernel/comm/comm.c:344:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  344 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+      |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                      |
+      |                                      char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |              ~~~~~~~~~^~~~
+./kernel/comm/comm.c: In function 'k_mbox_recv':
+./kernel/comm/comm.c:366:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  366 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+      |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                               |
+      |                                               char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                             ~~~~~~~~~~~~~~~^~~
+./kernel/comm/comm.c:367:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  367 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+      |                                                                         ~~~~~~~~~~~~~~^~~~~~
+      |                                                                                       |
+      |                                                                                       char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                             ~~~~~~~~~~~~~~~^~~
+./kernel/comm/comm.c:371:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  371 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+      |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                               |
+      |                                               char *
+In file included from ./kernel/comm/comm.c:3:
+include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                             ~~~~~~~~~~~~~~~^~~
 ./kernel/comm/comm.c: In function 'find_free':
-./kernel/comm/comm.c:48:1: warning: control reaches end of non-void function [-Wreturn-type]
-   48 | }
+./kernel/comm/comm.c:58:1: warning: control reaches end of non-void function [-Wreturn-type]
+   58 | }
       | ^
-./kernel/comm/comm.c: In function 'do_commop':
-./kernel/comm/comm.c:79:1: warning: control reaches end of non-void function [-Wreturn-type]
-   79 | }
+./kernel/comm/comm.c: In function 'k_commop':
+./kernel/comm/comm.c:98:1: warning: control reaches end of non-void function [-Wreturn-type]
+   98 | }
       | ^
-./kernel/comm/comm.c: In function 'do_semaphore_p':
-./kernel/comm/comm.c:115:1: warning: control reaches end of non-void function [-Wreturn-type]
-  115 | }
+./kernel/comm/comm.c: In function 'k_semaphore_p':
+./kernel/comm/comm.c:135:1: warning: control reaches end of non-void function [-Wreturn-type]
+  135 | }
       | ^
-./kernel/comm/comm.c: In function 'do_semaphore_v':
-./kernel/comm/comm.c:128:1: warning: control reaches end of non-void function [-Wreturn-type]
-  128 | }
+./kernel/comm/comm.c: In function 'k_semaphore_v':
+./kernel/comm/comm.c:145:1: warning: control reaches end of non-void function [-Wreturn-type]
+  145 | }
       | ^
-./kernel/comm/comm.c: In function 'do_cond_wait':
-./kernel/comm/comm.c:173:1: warning: control reaches end of non-void function [-Wreturn-type]
-  173 | }
+./kernel/comm/comm.c: In function 'k_cond_wait':
+./kernel/comm/comm.c:191:1: warning: control reaches end of non-void function [-Wreturn-type]
+  191 | }
       | ^
-./kernel/comm/comm.c: In function 'do_cond_signal':
-./kernel/comm/comm.c:186:1: warning: control reaches end of non-void function [-Wreturn-type]
-  186 | }
+./kernel/comm/comm.c: In function 'k_cond_signal':
+./kernel/comm/comm.c:201:1: warning: control reaches end of non-void function [-Wreturn-type]
+  201 | }
       | ^
-./kernel/comm/comm.c: In function 'do_cond_broadcast':
-./kernel/comm/comm.c:199:1: warning: control reaches end of non-void function [-Wreturn-type]
-  199 | }
+./kernel/comm/comm.c: In function 'k_cond_broadcast':
+./kernel/comm/comm.c:211:1: warning: control reaches end of non-void function [-Wreturn-type]
+  211 | }
       | ^
-./kernel/comm/comm.c: In function 'do_barrier_wait':
-./kernel/comm/comm.c:250:1: warning: control reaches end of non-void function [-Wreturn-type]
-  250 | }
+./kernel/comm/comm.c: In function 'k_barrier_wait':
+./kernel/comm/comm.c:263:1: warning: control reaches end of non-void function [-Wreturn-type]
+  263 | }
+      | ^
+./kernel/comm/comm.c: In function 'k_mbox_close':
+./kernel/comm/comm.c:325:1: warning: control reaches end of non-void function [-Wreturn-type]
+  325 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -397,6 +418,17 @@ include/type.h:30: note: this is the location of the previous definition
    64 |         kmemset(&ret->timer,0,sizeof(ret->timer));
       |         ^~~~~~~
       |         memset
+./kernel/sched/sched.c: In function 'k_sleep':
+./kernel/sched/sched.c:143:45: warning: passing argument 2 of 'create_timer' from incompatible pointer type [-Wincompatible-pointer-types]
+  143 |     create_timer(sleep_time*get_time_base(),(void (*)(void *))&k_unblock,&current_running->list);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             void (*)(void *)
+In file included from include/os/sched.h:35,
+                 from ./kernel/sched/sched.c:3:
+include/os/time.h:58:53: note: expected 'timer_ret' {aka 'void (*)(void *, int)'} but argument is of type 'void (*)(void *)'
+   58 | void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, list_head *queue);
+      |                                           ~~~~~~~~~~^~~~~~~~~~~~
 In file included from tiny_libc/include/string.h:4,
                  from ./kernel/sched/time.c:5:
 tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
@@ -724,18 +756,42 @@ In file included from tiny_libc/include/time.h:4,
 tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
    83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
       | 
-./tiny_libc/mailbox.c: In function 'mbox_open':
-./tiny_libc/mailbox.c:7:1: warning: control reaches end of non-void function [-Wreturn-type]
-    7 | }
-      | ^
-./tiny_libc/mailbox.c: In function 'mbox_send':
-./tiny_libc/mailbox.c:17:1: warning: control reaches end of non-void function [-Wreturn-type]
-   17 | }
-      | ^
-./tiny_libc/mailbox.c: In function 'mbox_recv':
-./tiny_libc/mailbox.c:22:1: warning: control reaches end of non-void function [-Wreturn-type]
-   22 | }
-      | ^
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/mailbox.c:3:
+include/type.h:58: warning: "INT64_MIN" redefined
+   58 | # define INT64_MIN              (-9223372036854775807lu-1)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/mailbox.c:2:
+tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
+   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/mailbox.c:3:
+include/type.h:63: warning: "INT64_MAX" redefined
+   63 | # define INT64_MAX              (9223372036854775807lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/mailbox.c:2:
+tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
+   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
+      | 
+In file included from include/os/sched.h:32,
+                 from tiny_libc/include/os.h:5,
+                 from include/sys/syscall.h:32,
+                 from ./tiny_libc/mailbox.c:3:
+include/type.h:69: warning: "UINT64_MAX" redefined
+   69 | # define UINT64_MAX             (18446744073709551615lu)
+      | 
+In file included from tiny_libc/include/string.h:4,
+                 from ./tiny_libc/mailbox.c:2:
+tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
+   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
+      | 
 In file included from tiny_libc/include/string.h:4,
                  from ./test/test_project3/test_shell.c:30:
 tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
@@ -996,8 +1052,8 @@ include/type.h:30: note: this is the location of the previous definition
    30 | #define NULL  (void*)0
       | 
 ./test/test_project3/test_mailbox.c: In function 'strServer':
-./test/test_project3/test_mailbox.c:71:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-   71 |         uint32_t checksum = adler32(msgBuffer, header.length);
+./test/test_project3/test_mailbox.c:73:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+   73 |         uint32_t checksum = adler32(msgBuffer, header.length);
       |                                     ^~~~~~~~~
       |                                     |
       |                                     char *
@@ -1005,28 +1061,28 @@ include/type.h:30: note: this is the location of the previous definition
    27 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'clientSendMsg':
-./test/test_project3/test_mailbox.c:98:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-   98 |     header->checksum = adler32(content, length);
+./test/test_project3/test_mailbox.c:100:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  100 |     header->checksum = adler32(content, length);
       |                                ^~~~~~~
 ./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'const char *'
    27 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'strGenerator':
-./test/test_project3/test_mailbox.c:138:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
-  138 |         generateRandomString(strBuffer, len);
+./test/test_project3/test_mailbox.c:142:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
+  142 |         generateRandomString(strBuffer, len);
       |                              ^~~~~~~~~
       |                              |
       |                              int *
-./test/test_project3/test_mailbox.c:107:33: note: expected 'char *' but argument is of type 'int *'
-  107 | void generateRandomString(char* buf, int len)
+./test/test_project3/test_mailbox.c:109:33: note: expected 'char *' but argument is of type 'int *'
+  109 | void generateRandomString(char* buf, int len)
       |                           ~~~~~~^~~
-./test/test_project3/test_mailbox.c:139:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
-  139 |         blocked += clientSendMsg(mq, strBuffer, len);
+./test/test_project3/test_mailbox.c:143:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
+  143 |         blocked += clientSendMsg(mq, strBuffer, len);
       |                                      ^~~~~~~~~
       |                                      |
       |                                      int *
-./test/test_project3/test_mailbox.c:91:46: note: expected 'const char *' but argument is of type 'int *'
-   91 | int clientSendMsg(mailbox_t *mq, const char* content, int length)
+./test/test_project3/test_mailbox.c:93:46: note: expected 'const char *' but argument is of type 'int *'
+   93 | int clientSendMsg(mailbox_t *mq, const char* content, int length)
       |                                  ~~~~~~~~~~~~^~~~~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,
@@ -1196,12 +1252,12 @@ main can open
 0x50200000: main
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x8e18		memsz 0xf810
-		writing 0x8e18 bytes
-		padding up to 0xfc00
+		filesz 0x9c84		memsz 0x10e80
+		writing 0x9c84 bytes
+		padding up to 0x11200
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 125 sector(s)
+kernel_size: 136 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

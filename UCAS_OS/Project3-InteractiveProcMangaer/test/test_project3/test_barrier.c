@@ -40,7 +40,7 @@ void barrier_task(int print_location)
 
     for (i = 0; i < 10; i++)
     {
-        int next = 1;
+        int next = rand() % 3 + 1;
         sys_move_cursor(1, print_location);
         printf("> [TASK] Ready to enter the barrier.(%d)", i);
 

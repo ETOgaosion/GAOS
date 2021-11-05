@@ -130,7 +130,7 @@ static int shell_exec(void *pid_str, void *mode_str, void *arg2)
 {
     int pid = atoi((char *)pid_str);
     int mode = atoi((char *)mode_str);
-    if(pid < 1 || pid >= CURRENT_TASK_NUM){
+    if(pid < 1 || pid > CURRENT_TASK_NUM){
         panic(arg_num_error);
         return -1;
     }
@@ -142,7 +142,7 @@ static int shell_exec(void *pid_str, void *mode_str, void *arg2)
 static int shell_kill(void *pid_str, void *arg1, void *arg2)
 {
     int pid = atoi((char *)pid_str);
-    if(pid < 1 || pid >= CURRENT_TASK_NUM){
+    if(pid < 1 || pid > CURRENT_TASK_NUM){
         panic(arg_num_error);
         return -1;
     }

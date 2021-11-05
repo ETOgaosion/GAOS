@@ -35,14 +35,14 @@ extern uint32_t time_base;
 extern uint64_t time_elapsed;
 extern uint64_t MHZ;
 
-typedef void (*timer_ret)(void *args);
+typedef void (*timer_ret)(void *arg1,int arg2);
 
 typedef struct timer{
     int initialized;
     uint64_t init_tick;
     uint64_t timeout_tick;
     timer_ret timeout_func;
-    void *args;
+    list_head *queue;
 } timer_t;
 
 extern list_head timers;
@@ -55,7 +55,7 @@ extern uint64_t get_time_base();
 
 void latency(uint64_t time);
 
-void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *args);
+void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, list_head *queue);
 
 void check_timer(void);
 

@@ -23,7 +23,7 @@ void reset_irq_timer()
     // note: use sbi_set_timer
     // remember to reschedule
     sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
-    do_scheduler();
+    k_scheduler();
 }
 
 void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t cause)

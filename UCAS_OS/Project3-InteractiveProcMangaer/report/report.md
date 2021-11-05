@@ -16,14 +16,14 @@ author:高梓源   Stu. Num: 2019K8009929026
 
 对于光标等的初始化包含在以上，因为每个任务在固定位置输出时都要系统调用获取光标位置，因此为每个PCB设置一个光标指示
 
-### do_scheduler
+### k_scheduler
 
 设置好任务后可以开始运行和调度，调度过程就是停止当前任务的运行（或已经运行到一定阶段完毕，主动调用调度函数，非抢占式，使用该方法），保存当前任务上下文，寻找`ready_queue`中的一个任务（直接取队列对头，第一个进入的任务）并删除该任务，取该任务的上下文加载到寄存器中，开始执行。
 
 如此循环
 
 ```C
-void do_scheduler(void)
+void k_scheduler(void)
 {
     // TODO schedule
     // Modify the current_running pointer.
@@ -91,7 +91,7 @@ void do_scheduler(void)
 有一个trick，事实上解救出来执行的任务并不会再次`acquire`获得锁，因此不改变`flag`是明智的，新任务开始执行则自动获得了锁，其他任务的见到`flag`为1则按部就班进入`block_queue`，因此这种trick保证了结果的正确性。
 
 ```C
-void do_mutex_lock_acquire(mutex_lock_t *lock)
+void k_mutex_lock_acquire(mutex_lock_t *lock)
 {
     /* TODO */
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
@@ -103,13 +103,13 @@ void do_mutex_lock_acquire(mutex_lock_t *lock)
         lock->lock.guard = 0;
     }
     else{
-        do_block(&current_running->list,&lock->block_queue);
+        k_block(&current_running->list,&lock->block_queue);
         lock->lock.guard = 0;
-        do_scheduler();
+        k_scheduler();
     }
 }
 
-void do_mutex_lock_release(mutex_lock_t *lock)
+void k_mutex_lock_release(mutex_lock_t *lock)
 {
     /* TODO */
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(lock->lock.guard)) == GUARDED)
@@ -120,7 +120,7 @@ void do_mutex_lock_release(mutex_lock_t *lock)
         lock->lock.flag = 0;
     }
     else{
-        do_unblock(&lock->block_queue);
+        k_unblock(&lock->block_queue);
     }
     lock->lock.guard = 0;
 }
@@ -131,14 +131,14 @@ void do_mutex_lock_release(mutex_lock_t *lock)
 而去解救`block_queue`中的任务，利用`dequeue`函数，取出对首并且删去，将状态改为READY，而后加入`ready_queue`即可。
 
 ```C
-void do_block(list_node_t *pcb_node, list_head *queue)
+void k_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
     list_add_tail(pcb_node,queue);
     current_running->status = TASK_BLOCKED;
 }
 
-void do_unblock(list_head *queue)
+void k_unblock(list_head *queue)
 {
     // TODO: unblock the `pcb` from the block queue
     pcb_t *fetch_pcb = dequeue(queue);

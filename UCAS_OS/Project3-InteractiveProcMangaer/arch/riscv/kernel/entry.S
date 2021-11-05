@@ -130,13 +130,13 @@ _save_context:
 .macro ENABLE_PREEMPT
   ld t1, current_running
   ld t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, macro_do_enable
+  beq t0, zero, macro_k_enable
   addi t0, t0, -1
   sd t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, macro_do_enable
+  beq t0, zero, macro_k_enable
   la t0,break
   jr t0
-macro_do_enable:
+macro_k_enable:
   not t0, x0
   csrs CSR_SIE, t0
 break:
@@ -166,12 +166,12 @@ break:
 ENTRY(enable_preempt)
   ld t1, current_running
   ld t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, do_enable
+  beq t0, zero, k_enable
   addi t0, t0, -1
   sd t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, do_enable
+  beq t0, zero, k_enable
   jr ra
-do_enable:
+k_enable:
   not t0, x0
   csrs CSR_SIE, t0
   jr ra

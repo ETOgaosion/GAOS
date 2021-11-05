@@ -129,6 +129,8 @@ static void init_pcb()
         init_list_head(&pcb[i].list);
         pcb[i].wait_parent = NULL;
         pcb[i].pid = i+1;
+        pcb[i].owned_lock_num = 0;
+        pcb[i].owned_mbox_num = 0;
         pcb[i].type = tasks[i]->type;
         pcb[i].status = TASK_READY;
         pcb[i].cursor_x = 0;
@@ -156,18 +158,18 @@ static void init_syscall(void)
     for(int i=0;i<NUM_SYSCALLS;i++){
         syscall[i] = (long (*)())&unknown_syscall; // only print register info
     }
-    syscall[SYSCALL_SPAWN]          = (long (*)())&do_spawn;
-    syscall[SYSCALL_EXIT]           = (long (*)())&do_exit;
-    syscall[SYSCALL_SLEEP]          = (long (*)())&do_sleep;
-    syscall[SYSCALL_KILL]           = (long (*)())&do_kill;
-    syscall[SYSCALL_WAITPID]        = (long (*)())&do_waitpid;
-    syscall[SYSCALL_PS]             = (long (*)())&do_process_show;
-    syscall[SYSCALL_GETPID]         = (long (*)())&do_getpid;
-    syscall[SYSCALL_YIELD]          = (long (*)())&do_scheduler;
-    syscall[SYSCALL_FORK]           = (long (*)())&do_fork;
+    syscall[SYSCALL_SPAWN]          = (long (*)())&k_spawn;
+    syscall[SYSCALL_EXIT]           = (long (*)())&k_exit;
+    syscall[SYSCALL_SLEEP]          = (long (*)())&k_sleep;
+    syscall[SYSCALL_KILL]           = (long (*)())&k_kill;
+    syscall[SYSCALL_WAITPID]        = (long (*)())&k_waitpid;
+    syscall[SYSCALL_PS]             = (long (*)())&k_process_show;
+    syscall[SYSCALL_GETPID]         = (long (*)())&k_getpid;
+    syscall[SYSCALL_YIELD]          = (long (*)())&k_scheduler;
+    syscall[SYSCALL_FORK]           = (long (*)())&k_fork;
     syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
-    syscall[SYSCALL_LOCKOP]         = (long (*)())&do_mutex_lock_op;
-    syscall[SYSCALL_COMMOP]         = (long (*)())&do_commop;
+    syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
+    syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
     
     syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
     syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
@@ -213,14 +215,14 @@ int main()
     while (1) {
         // (QAQQQQQQQQQQQ)
         // If you do non-preemptive scheduling, you need to use it
-        // to surrender control do_scheduler();
+        // to surrender control k_scheduler();
         #if defined (USE_CLOCK_INT)
         reset_irq_timer();
         enable_interrupt();
         __asm__ __volatile__("wfi\n\r":::);
         #endif
         #if !defined (USE_CLOCK_INT)
-        do_scheduler();
+        k_scheduler();
         #endif
     };
     return 0;

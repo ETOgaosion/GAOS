@@ -126,56 +126,52 @@ void switch_to_next_task(pcb_t *curr)
     }
 }
 
-void do_scheduler()
+void k_scheduler()
 {
     pcb_t *curr = block_current_task();
     switch_to_next_task(curr);
 
 }
 
-void do_sleep(uint32_t sleep_time)
+void k_sleep(uint32_t sleep_time)
 {
     // TODO: sleep(seconds)
     // note: you can assume: 1 second = `timebase` ticks
     // 1. block the current_running
-    do_block(&current_running->list,&blocked_queue);
-    // 2. create a timer which calls `do_unblock` when timeout
-    unblock_args_t *args = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), current_running->pid * 2 - 1);
-    args->queue = &current_running->list;
-    args->way = 1;
-    create_timer(sleep_time*get_time_base(),(void (*)(void *))&do_unblock,(void *)args);
+    k_block(&current_running->list,&blocked_queue);
+    // 2. create a timer which calls `k_unblock` when timeout
+    create_timer(sleep_time*get_time_base(),(void (*)(void *))&k_unblock,&current_running->list);
     // 3. reschedule because the current_running is blocked.
     // must restore context, so see at sys_sleep()
-    do_scheduler();
+    k_scheduler();
 }
 
-void do_block(list_node_t *pcb_node, list_head *queue)
+void k_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
     list_add(pcb_node,queue);
     current_running->status = TASK_BLOCKED;
 }
 
-void do_unblock(void *args)
+void k_unblock(list_head *queue, int way)
 {
     // TODO: unblock the `pcb` from the block queue
-    unblock_args_t *actual_arg = (unblock_args_t *)args;
     pcb_t *fetch_pcb = (pcb_t *)kmalloc(sizeof(pcb_t), current_running->pid * 2 - 1);
-    switch (actual_arg->way)
+    switch (way)
     {
     case 1:
-        fetch_pcb = dequeue(actual_arg->queue->prev,0);
+        fetch_pcb = dequeue(queue->prev,0);
         list_add_tail(&fetch_pcb->list,&ready_queue);
         break;
     case 2:
-        fetch_pcb = dequeue(actual_arg->queue->prev,0);
+        fetch_pcb = dequeue(queue->prev,0);
         list_add(&fetch_pcb->list,&ready_queue);
         break;
     case 3:
-        fetch_pcb = dequeue(actual_arg->queue->prev,0);
+        fetch_pcb = dequeue(queue->prev,0);
         break;
     case 4:
-        fetch_pcb = dequeue(actual_arg->queue->prev,2);
+        fetch_pcb = dequeue(queue->prev,2);
         list_add_tail(&fetch_pcb->list,&ready_queue);
         break;
 
@@ -195,7 +191,7 @@ int find_pcb(void)
     return -1;
 }
 
-long do_fork(void)
+long k_fork(void)
 {
     int pcb_i = find_pcb();
     if(pcb_i == -1){
@@ -210,6 +206,8 @@ long do_fork(void)
     init_list_head(&kid->list);
     kid->wait_parent = current_running;
     kid->pid = pcb_i;
+    kid->owned_lock_num = 0;
+    kid->owned_mbox_num = 0;
     kid->type = curr->type;
     kid->status = TASK_READY;
     kid->cursor_x = curr->cursor_x;
@@ -320,7 +318,7 @@ pcb_t *choose_sched_task(list_head *queue){
     return max_one;
 }
 
-pid_t do_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
+pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
 {
     int pcb_i = find_pcb();
     if(pcb_i == -1){
@@ -342,6 +340,7 @@ pid_t do_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
     new->wait_parent = NULL;
     new->pid = pcb_i + 1;
     new->owned_lock_num = 0;
+    new->owned_mbox_num = 0;
     new->type = task->type;
     new->status = TASK_READY;
     new->mode = mode;
@@ -359,12 +358,12 @@ pid_t do_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
     return new->pid;
 }
 
-void do_exit(void)
+void k_exit(void)
 {
-    do_kill(current_running->pid);
+    k_kill(current_running->pid);
 }
 
-int do_kill(pid_t pid)
+int k_kill(pid_t pid)
 {
     int pcb_i = pid - 1;
     if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
@@ -378,17 +377,14 @@ int do_kill(pid_t pid)
 
     // realease lock
     for(int i = 0; i < pcb[pcb_i].owned_lock_num; i++){
-        do_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1, pcb[pcb_i].pid);
+        k_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1, pcb[pcb_i].pid);
     }
     if(pcb[pcb_i].mode == ENTER_ZOMBIE_ON_EXIT){
         // wake up parent
         if(pcb[pcb_i].wait_parent){
             pcb_t *parent = pcb[pcb_i].wait_parent;
-            unblock_args_t *unblk_par = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), current_running->pid * 2 - 1);
-            unblk_par->queue = &parent->list;
             if(!parent->timer.initialized){
-                unblk_par->way = 1;
-                do_unblock(unblk_par);
+                k_unblock(&parent->list,1);
             }
         }
         pcb[pcb_i].status = TASK_ZOMBIE;
@@ -411,7 +407,7 @@ int do_kill(pid_t pid)
     return 0;
 }
 
-int do_waitpid(pid_t pid)
+int k_waitpid(pid_t pid)
 {
     int pcb_i = pid - 1;
     if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
@@ -429,8 +425,8 @@ int do_waitpid(pid_t pid)
     if(pcb[pcb_i].status != TASK_ZOMBIE && pcb[pcb_i].status != TASK_EXITED ){
         pcb[pcb_i].wait_parent = current_running;
         current_running->status = TASK_BLOCKED;
-        do_block(&current_running->list,&blocked_queue);
-        do_scheduler();
+        k_block(&current_running->list,&blocked_queue);
+        k_scheduler();
     }
     if(pcb[pcb_i].status == TASK_ZOMBIE){
         kmemset((void *)pcb[pcb_i].user_stack_base,0,2*PAGE_SIZE);
@@ -441,7 +437,7 @@ int do_waitpid(pid_t pid)
     return 0;
 }
 
-void do_process_show()
+void k_process_show()
 {
     prints("\nProcesses:\nprocess id: 0 (shell), process status: TASK_RUNNING");
     for (int i = 1; i < NUM_MAX_TASK; i++)
@@ -469,7 +465,7 @@ void do_process_show()
     
 }
 
-pid_t do_getpid()
+pid_t k_getpid()
 {
     return current_running->pid;
 }
