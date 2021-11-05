@@ -382,18 +382,18 @@ int do_kill(pid_t pid)
         do_mutex_lock_release(pcb[pcb_i].lock_keys[i]);
     }
     if(pcb[pcb_i].mode == ENTER_ZOMBIE_ON_EXIT){
-        pcb[pcb_i].pid = 0;
-        pcb[pcb_i].status = TASK_ZOMBIE;
         // wake up parent
         if(pcb[pcb_i].wait_parent){
             pcb_t *parent = pcb[pcb_i].wait_parent;
-            unblock_args_t *unblk_par = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), curr_pid * 2 - 1);
+            unblock_args_t *unblk_par = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), parent->pid * 2 - 1);
             unblk_par->queue = &parent->list;
             if(!parent->timer.initialized){
                 unblk_par->way = 1;
                 do_unblock(unblk_par);
             }
         }
+        pcb[pcb_i].pid = 0;
+        pcb[pcb_i].status = TASK_ZOMBIE;
     }
     else if(pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
         pcb[pcb_i].pid = 0;

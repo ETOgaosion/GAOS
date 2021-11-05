@@ -46,7 +46,7 @@ void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, void *args){
     current_running->timer.timeout_tick = timeout_ticks + current_running->timer.init_tick;
     current_running->timer.timeout_func = timeout_func;
     current_running->timer.args = args;
-    list_head *list_iterator = &(*(timers.next));
+    list_head *list_iterator = timers.next;
     pcb_t *pcb_iterator = NULL;
     while (list_iterator != &timers)
     {
