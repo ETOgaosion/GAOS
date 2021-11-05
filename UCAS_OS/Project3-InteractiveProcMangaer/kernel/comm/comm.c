@@ -219,17 +219,17 @@ long do_barrier_init(int *key, int total){
     if(*key < 0){
         return -3;
     }
-    int barrire_i = find_free(1);
-    if(barrire_i < 0){
+    int barrier_i = find_free(2);
+    if(barrier_i < 0){
         return -1;
     }
-    barrier_list[barrire_i]->barrier_info.id = barrire_i + 1;
-    barrier_list[barrire_i]->barrier_info.initialized = 1;
-    barrier_list[barrire_i]->count = 0;
-    barrier_list[barrire_i]->total = total;
-    do_mutex_lock_init(&barrier_list[barrire_i]->mutex_id);
-    do_cond_init(&barrier_list[barrire_i]->cond_id);
-    *key = barrire_i + 1;
+    barrier_list[barrier_i]->barrier_info.id = barrier_i + 1;
+    barrier_list[barrier_i]->barrier_info.initialized = 1;
+    barrier_list[barrier_i]->count = 0;
+    barrier_list[barrier_i]->total = total;
+    do_mutex_lock_init(&barrier_list[barrier_i]->mutex_id);
+    do_cond_init(&barrier_list[barrier_i]->cond_id);
+    *key = barrier_i + 1;
     return 0;
 }
 
@@ -238,12 +238,11 @@ long do_barrier_wait(int key){
         return -1;
     }
     do_mutex_lock_acquire(barrier_list[key]->mutex_id - 1);
-    if(barrier_list[key]->count == barrier_list[key]->total){
+    if((++barrier_list[key]->count) == barrier_list[key]->total){
         barrier_list[key]->count = 0;
         do_cond_broadcast(barrier_list[key]->cond_id - 1);
     }
     else{
-        barrier_list[key]->count++;
         do_cond_wait(barrier_list[key]->cond_id - 1, barrier_list[key]->mutex_id - 1);
     }
     do_mutex_lock_release(barrier_list[key]->mutex_id - 1);

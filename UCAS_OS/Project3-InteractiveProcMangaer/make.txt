@@ -283,8 +283,8 @@ include/type.h:30: note: this is the location of the previous definition
       |     ^~~~~~~
       |     memset
 ./kernel/comm/comm.c: In function 'do_barrier_destroy':
-./kernel/comm/comm.c:256:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  256 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id);
+./kernel/comm/comm.c:255:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  255 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id);
       |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                           |
       |                           int *
@@ -322,8 +322,8 @@ include/os/lock.h:73:34: note: expected 'long int *' but argument is of type 'in
   198 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_barrier_wait':
-./kernel/comm/comm.c:250:1: warning: control reaches end of non-void function [-Wreturn-type]
-  250 | }
+./kernel/comm/comm.c:249:1: warning: control reaches end of non-void function [-Wreturn-type]
+  249 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -1196,8 +1196,8 @@ main can open
 0x50200000: main
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x8a88		memsz 0xf480
-		writing 0x8a88 bytes
+		filesz 0x8bb0		memsz 0xf5a8
+		writing 0x8bb0 bytes
 		padding up to 0xf800
 	segment 1
 		offset 0x0		vaddr 0x0

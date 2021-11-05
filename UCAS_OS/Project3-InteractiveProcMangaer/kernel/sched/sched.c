@@ -375,24 +375,22 @@ int do_kill(pid_t pid)
         print2("No task running on [%d]",pid)
         return -1;
     }
-    int curr_pid = current_running->pid;
 
     // realease lock
     for(int i = 0; i < pcb[pcb_i].owned_lock_num; i++){
-        do_mutex_lock_release(pcb[pcb_i].lock_keys[i]);
+        do_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1);
     }
     if(pcb[pcb_i].mode == ENTER_ZOMBIE_ON_EXIT){
         // wake up parent
         if(pcb[pcb_i].wait_parent){
             pcb_t *parent = pcb[pcb_i].wait_parent;
-            unblock_args_t *unblk_par = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), parent->pid * 2 - 1);
+            unblock_args_t *unblk_par = (unblock_args_t *)kmalloc(sizeof(unblock_args_t), current_running->pid * 2 - 1);
             unblk_par->queue = &parent->list;
             if(!parent->timer.initialized){
                 unblk_par->way = 1;
                 do_unblock(unblk_par);
             }
         }
-        pcb[pcb_i].pid = 0;
         pcb[pcb_i].status = TASK_ZOMBIE;
     }
     else if(pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
@@ -407,7 +405,7 @@ int do_kill(pid_t pid)
     }
     if(pcb[pcb_i].list.next)
         list_del(&pcb[pcb_i].list);
-    if(curr_pid == pid){
+    if(current_running->pid == pid || current_running->pid == 0 || pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
         switch_to_next_task(NULL);
     }
     return 0;
