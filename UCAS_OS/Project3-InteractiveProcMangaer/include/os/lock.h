@@ -67,10 +67,10 @@ void spin_lock_release(spin_lock_t *lock);
 */
 
 long do_mutex_lock_op(long *key,int op);
-long do_mutex_lock_init(int *key);
-long do_mutex_lock_acquire(long key);
-long do_mutex_lock_release(long key);
-long do_mutex_lock_destroy(long *key);
-long do_mutex_lock_trylock(int *key);
+long do_mutex_lock_init(int *key, int operator);
+long do_mutex_lock_acquire(long key, int operator);
+long do_mutex_lock_release(long key, int operator);
+long do_mutex_lock_destroy(long *key, int operator);
+long do_mutex_lock_trylock(int *key, int operator);
 
 #endif

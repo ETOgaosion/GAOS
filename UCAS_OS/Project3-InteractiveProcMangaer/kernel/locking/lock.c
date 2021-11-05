@@ -11,20 +11,21 @@ static inline void assert_supervisor_mode()
 
 long do_mutex_lock_op(long *key,int op){
     assert_supervisor_mode();
+    int operator = current_running->pid;
     if(op == 0){
-        return do_mutex_lock_init(key);
+        return do_mutex_lock_init(key, operator);
     }
     else if(op == 1){
-        return do_mutex_lock_acquire(*key - 1);
+        return do_mutex_lock_acquire(*key - 1, operator);
     }
     else if(op == 2){
-        return do_mutex_lock_release(*key - 1);
+        return do_mutex_lock_release(*key - 1, operator);
     }
     else if(op == 3){
-        return do_mutex_lock_destroy(key);
+        return do_mutex_lock_destroy(key, operator);
     }
     else if(op == 4){
-        return do_mutex_lock_trylock(key);
+        return do_mutex_lock_trylock(key, operator);
     }
     return -1;
 }
@@ -42,7 +43,7 @@ static inline int find_lock(){
     }
 }
 
-long do_mutex_lock_init(int *key)
+long do_mutex_lock_init(int *key, int operator)
 {
     assert_supervisor_mode();
     /* TODO */
@@ -72,7 +73,7 @@ long do_mutex_lock_init(int *key)
     return 0;
 }
 
-long do_mutex_lock_acquire(long key)
+long do_mutex_lock_acquire(long key, int operator)
 {
     assert_supervisor_mode();
     /* TODO */
@@ -86,7 +87,7 @@ long do_mutex_lock_acquire(long key)
     if(locks[key]->lock.flag == 0){
         locks[key]->lock.flag = 1;
         locks[key]->lock.guard = 0;
-        current_running->lock_keys[current_running->owned_lock_num++] = key + 1;
+        pcb[operator-1].lock_keys[pcb[operator-1].owned_lock_num++] = key + 1;
         return locks[key]->lock_id;
     }
     else{
@@ -97,11 +98,14 @@ long do_mutex_lock_acquire(long key)
     }
 }
 
-long do_mutex_lock_release(long key)
+long do_mutex_lock_release(long key, int operator)
 {
     /* TODO */
     if(!locks[key]->initialized){
         return -1;
+    }
+    if(pcb[operator-1].owned_lock_num){
+        pcb[operator-1].lock_keys[--current_running->owned_lock_num] = 0;
     }
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
@@ -120,16 +124,19 @@ long do_mutex_lock_release(long key)
     return locks[key]->lock_id;
 }
 
-long do_mutex_lock_destroy(long *key){
+long do_mutex_lock_destroy(long *key, int operator){
     if(!locks[*key - 1]->initialized){
         return -1;
+    }
+    while(pcb[operator-1].owned_lock_num){
+        pcb[operator-1].lock_keys[--current_running->owned_lock_num] = 0;
     }
     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
     *key = 0;
     return 0;
 }
 
-long do_mutex_lock_trylock(int *key){
+long do_mutex_lock_trylock(int *key, int operator){
     if(*key > 0){
         return -2;
     }

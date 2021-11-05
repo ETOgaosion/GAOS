@@ -34,19 +34,20 @@ typedef struct barrier{
 
 long do_commop(int *key, void *arg, int op);
 
-long do_semaphore_init(int *key, int sem);
-long do_semaphore_p(int key);
-long do_semaphore_v(int key);
-long do_semaphore_destroy(int *key);
+long do_semaphore_init(int *key, int sem, int operator);
+long do_semaphore_p(int key, int operator);
+long do_semaphore_v(int key, int operator);
+long do_semaphore_destroy(int *key, int operator);
 
-long do_cond_init(int *key);
-long do_cond_wait(int key, int lock_id);
-long do_cond_signal(int key);
-long do_cond_broadcast(int key);
-long do_cond_destroy(int *key);
+long do_cond_init(int *key, int operator);
+// long do_cond_wait(int key, int lock_id, int operator);
+long do_cond_wait(int key, int lock_id, int operator);
+long do_cond_signal(int key, int operator);
+long do_cond_broadcast(int key, int operator);
+long do_cond_destroy(int *key, int operator);
 
-long do_barrier_init(int *key, int total);
-long do_barrier_wait(int key);
-long do_barrier_destroy(int *key);
+long do_barrier_init(int *key, int total, int operator);
+long do_barrier_wait(int key, int operator);
+long do_barrier_destroy(int *key, int operator);
 
 #endif

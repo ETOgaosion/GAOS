@@ -179,31 +179,31 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'do_mutex_lock_op':
-./kernel/locking/lock.c:15:35: warning: passing argument 1 of 'do_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
-   15 |         return do_mutex_lock_init(key);
+./kernel/locking/lock.c:16:35: warning: passing argument 1 of 'do_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
+   16 |         return do_mutex_lock_init(key, operator);
       |                                   ^~~
       |                                   |
       |                                   long int *
 In file included from ./kernel/locking/lock.c:1:
 include/os/lock.h:70:30: note: expected 'int *' but argument is of type 'long int *'
-   70 | long do_mutex_lock_init(int *key);
+   70 | long do_mutex_lock_init(int *key, int operator);
       |                         ~~~~~^~~
-./kernel/locking/lock.c:27:38: warning: passing argument 1 of 'do_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
-   27 |         return do_mutex_lock_trylock(key);
+./kernel/locking/lock.c:28:38: warning: passing argument 1 of 'do_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
+   28 |         return do_mutex_lock_trylock(key, operator);
       |                                      ^~~
       |                                      |
       |                                      long int *
 In file included from ./kernel/locking/lock.c:1:
 include/os/lock.h:74:33: note: expected 'int *' but argument is of type 'long int *'
-   74 | long do_mutex_lock_trylock(int *key);
+   74 | long do_mutex_lock_trylock(int *key, int operator);
       |                            ~~~~~^~~
 ./kernel/locking/lock.c: In function 'do_mutex_lock_destroy':
-./kernel/locking/lock.c:127:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
-  127 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
+./kernel/locking/lock.c:134:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
+  134 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
       |     ^~~~~~~
 ./kernel/locking/lock.c: In function 'find_lock':
-./kernel/locking/lock.c:43:1: warning: control reaches end of non-void function [-Wreturn-type]
-   43 | }
+./kernel/locking/lock.c:44:1: warning: control reaches end of non-void function [-Wreturn-type]
+   44 | }
       | ^
 In file included from include/os/lock.h:32,
                  from include/os/comm.h:5,
@@ -278,52 +278,52 @@ include/type.h:30: note: this is the location of the previous definition
    30 | #define NULL  (void*)0
       | 
 ./kernel/comm/comm.c: In function 'do_semaphore_destroy':
-./kernel/comm/comm.c:133:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
-  133 |     kmemset(sem_list[*key - 1], 0, sizeof(sem_list[*key - 1]));
+./kernel/comm/comm.c:134:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+  134 |     kmemset(sem_list[*key - 1], 0, sizeof(sem_list[*key - 1]));
       |     ^~~~~~~
       |     memset
 ./kernel/comm/comm.c: In function 'do_barrier_destroy':
-./kernel/comm/comm.c:255:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  255 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id);
+./kernel/comm/comm.c:256:27: warning: passing argument 1 of 'do_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  256 |     do_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
       |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                           |
       |                           int *
 In file included from include/os/comm.h:5,
                  from ./kernel/comm/comm.c:1:
 include/os/lock.h:73:34: note: expected 'long int *' but argument is of type 'int *'
-   73 | long do_mutex_lock_destroy(long *key);
+   73 | long do_mutex_lock_destroy(long *key, int operator);
       |                            ~~~~~~^~~
 ./kernel/comm/comm.c: In function 'find_free':
 ./kernel/comm/comm.c:48:1: warning: control reaches end of non-void function [-Wreturn-type]
    48 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_commop':
-./kernel/comm/comm.c:78:1: warning: control reaches end of non-void function [-Wreturn-type]
-   78 | }
+./kernel/comm/comm.c:79:1: warning: control reaches end of non-void function [-Wreturn-type]
+   79 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_semaphore_p':
-./kernel/comm/comm.c:114:1: warning: control reaches end of non-void function [-Wreturn-type]
-  114 | }
+./kernel/comm/comm.c:115:1: warning: control reaches end of non-void function [-Wreturn-type]
+  115 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_semaphore_v':
-./kernel/comm/comm.c:127:1: warning: control reaches end of non-void function [-Wreturn-type]
-  127 | }
+./kernel/comm/comm.c:128:1: warning: control reaches end of non-void function [-Wreturn-type]
+  128 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_cond_wait':
-./kernel/comm/comm.c:172:1: warning: control reaches end of non-void function [-Wreturn-type]
-  172 | }
+./kernel/comm/comm.c:173:1: warning: control reaches end of non-void function [-Wreturn-type]
+  173 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_cond_signal':
-./kernel/comm/comm.c:185:1: warning: control reaches end of non-void function [-Wreturn-type]
-  185 | }
+./kernel/comm/comm.c:186:1: warning: control reaches end of non-void function [-Wreturn-type]
+  186 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_cond_broadcast':
-./kernel/comm/comm.c:198:1: warning: control reaches end of non-void function [-Wreturn-type]
-  198 | }
+./kernel/comm/comm.c:199:1: warning: control reaches end of non-void function [-Wreturn-type]
+  199 | }
       | ^
 ./kernel/comm/comm.c: In function 'do_barrier_wait':
-./kernel/comm/comm.c:249:1: warning: control reaches end of non-void function [-Wreturn-type]
-  249 | }
+./kernel/comm/comm.c:250:1: warning: control reaches end of non-void function [-Wreturn-type]
+  250 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -1196,12 +1196,12 @@ main can open
 0x50200000: main
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x8bb0		memsz 0xf5a8
-		writing 0x8bb0 bytes
-		padding up to 0xf800
+		filesz 0x8e18		memsz 0xf810
+		writing 0x8e18 bytes
+		padding up to 0xfc00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 123 sector(s)
+kernel_size: 125 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

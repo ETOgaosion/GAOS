@@ -378,7 +378,7 @@ int do_kill(pid_t pid)
 
     // realease lock
     for(int i = 0; i < pcb[pcb_i].owned_lock_num; i++){
-        do_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1);
+        do_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1, pcb[pcb_i].pid);
     }
     if(pcb[pcb_i].mode == ENTER_ZOMBIE_ON_EXIT){
         // wake up parent
@@ -435,6 +435,7 @@ int do_waitpid(pid_t pid)
     if(pcb[pcb_i].status == TASK_ZOMBIE){
         kmemset((void *)pcb[pcb_i].user_stack_base,0,2*PAGE_SIZE);
         pcb[pcb_i].status = TASK_EXITED;
+        pcb[pcb_i].pid = 0;
         freePage(pcb[pcb_i].user_stack_base,2);
     }
     return 0;
@@ -449,16 +450,16 @@ void do_process_show()
             switch (pcb[i].status)
             {
             case TASK_BLOCKED:
-                prints("process id: %d, process status: BLOCKED",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: BLOCKED",pcb[i].pid);
                 break;
             case TASK_EXITED:
-                prints("process id: %d, process status: EXITED",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: EXITED",pcb[i].pid);
                 break;
             case TASK_RUNNING:
-                prints("process id: %d, process status: RUNNING",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: RUNNING",pcb[i].pid);
                 break;
             case TASK_ZOMBIE:
-                prints("process id: %d, process status: ZOMBIE",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: ZOMBIE",pcb[i].pid);
                 break;
             default:
                 break;
