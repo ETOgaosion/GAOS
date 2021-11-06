@@ -25,8 +25,8 @@ void kernel_move_cursor(int x,int y){
 }
 
 void pcb_move_cursor(int x,int y){
-    current_running->cursor_x = x;
-    current_running->cursor_y = y;
+    (*current_running)->cursor_x = x;
+    (*current_running)->cursor_y = y;
 }
 
 /* cursor position */
@@ -120,7 +120,7 @@ void screen_move_cursor(int x, int y)
 }
 
 void load_curpcb_cursor(){
-    kernel_move_cursor(current_running->cursor_x, current_running->cursor_y);
+    kernel_move_cursor((*current_running)->cursor_x, (*current_running)->cursor_y);
 }
 
 void screen_write(char *buff)
@@ -137,8 +137,8 @@ void screen_write(char *buff)
 }
 
 void get_cursor(int *x, int *y){
-    *x = current_running->cursor_x;
-    *y = current_running->cursor_y;
+    *x = (*current_running)->cursor_x;
+    *y = (*current_running)->cursor_y;
 }
 
 /*

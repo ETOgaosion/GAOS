@@ -40,7 +40,8 @@
 #include <tasks.h>
 #include <ticks.h>
 #include <os/stdio.h>
-#include <string.h>
+#include <os/string.h>
+#include <os/smp.h>
 
 extern void ret_from_exception();
 extern void __global_pointer$();
@@ -147,9 +148,12 @@ static void init_pcb()
         list_add_tail(&(pcb[i].list),&ready_queue);
     }
     // help initialize pid0
-    switchto_context_t *stored_switchto_k = (switchto_context_t *) pid0_pcb.kernel_sp;
-    stored_switchto_k->regs[1] = pid0_pcb.kernel_sp;
-    current_running = &pid0_pcb;
+    switchto_context_t *stored_switchto_k_m = (switchto_context_t *) pid0_pcb_core_m.kernel_sp;
+    stored_switchto_k_m->regs[1] = pid0_pcb_core_m.kernel_sp;
+    current_running_core_m = &pid0_pcb_core_m;
+    switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
+    stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
+    current_running_core_s = &pid0_pcb_core_s;
 }
 
 static void init_syscall(void)
@@ -187,44 +191,62 @@ static void init_syscall(void)
 // The beginning of everything >_< ~~~~~~~~~~~~~~
 int main()
 {
+    // lock kernel and wakeup slave core
+    smp_init();
+    lock_kernel();
+
+    // find current core
+    int current_core = get_current_cpu_id();
+
     // init Process Control Block (-_-!)
-    init_pcb();
-    printk("> [INIT] PCB initialization succeeded.\n\r");
+    if(current_core == 0){
+        init_pcb();
+        current_running = &current_running_core_m;
+        printk("> [INIT] PCB initialization succeeded.\n\r");
 
-    // init interrupt (^_^)
-    init_exception();
-    printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
+        // init interrupt (^_^)
+        init_exception();
+        printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
 
-    // init system call table (0_0)
-    init_syscall();
-    printk("> [INIT] System call initialized successfully.\n\r");
+        // init system call table (0_0)
+        init_syscall();
+        printk("> [INIT] System call initialized successfully.\n\r");
+
+        // init screen (QAQ)
+        init_screen();
+        printk("> [INIT] SCREEN initialization succeeded.\n\r");
+
+        // read CPU frequency
+        time_base = sbi_read_fdt(TIMEBASE);
+        printk("time_base:%d\n",time_base);
+
+        // wake up slave
+        wakeup_other_hart();
+
+        printk("> [READY] Master core ready to launch!\n\r");
+    }
+    else{
+        current_running = &current_running_core_s;
+        setup_exception();
+        printk("> [READY] Slave core ready to launch!\n\r");
+    }
 
     // fdt_print(riscv_dtb);
-
-    // init screen (QAQ)
-    init_screen();
-    printk("> [INIT] SCREEN initialization succeeded.\n\r");
 
     // TODO:
     // Setup timer interrupt and enable all interrupt
 
-    // read CPU frequency
-    time_base = sbi_read_fdt(TIMEBASE);
-    printk("time_base:%d\n",time_base);
+    #if defined (USE_CLOCK_INT)
+    sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
+    unlock_kernel();
+    enable_interrupt();
+    //__asm__ __volatile__("wfi\n\r":::);
+    #endif
 
-    while (1) {
-        // (QAQQQQQQQQQQQ)
-        // If you do non-preemptive scheduling, you need to use it
-        // to surrender control k_scheduler();
-        #if defined (USE_CLOCK_INT)
-        reset_irq_timer();
-        enable_interrupt();
-        __asm__ __volatile__("wfi\n\r":::);
-        #endif
-        #if !defined (USE_CLOCK_INT)
-        k_scheduler();
-        #endif
-    };
+    #if !defined (USE_CLOCK_INT)
+    unlock_kernel();
+    reset_irq_timer();
+    #endif
     return 0;
 }
 

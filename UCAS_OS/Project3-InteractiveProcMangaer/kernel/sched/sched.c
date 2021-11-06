@@ -6,21 +6,21 @@
 #include <screen.h>
 #include <stdio.h>
 #include <assert.h>
-#include <string.h>
+#include <os/string.h>
 #include <tasks.h>
 
 int cursor_x,cursor_y;
 
-#define print1(str) cursor_x = current_running->cursor_x;\
-        cursor_y = current_running->cursor_y;\
+#define print1(str) cursor_x = (*current_running)->cursor_x;\
+        cursor_y = (*current_running)->cursor_y;\
         vt100_move_cursor(1,1);\
         printk("                         ");\
         vt100_move_cursor(1,1);\
         printk(str);\
         vt100_move_cursor(cursor_x,cursor_y);
 
-#define print2(str, val) cursor_x = current_running->cursor_x;\
-        cursor_y = current_running->cursor_y;\
+#define print2(str, val) cursor_x = (*current_running)->cursor_x;\
+        cursor_y = (*current_running)->cursor_y;\
         vt100_move_cursor(1,1);\
         printk("                         ");\
         vt100_move_cursor(1,1);\
@@ -28,11 +28,18 @@ int cursor_x,cursor_y;
         vt100_move_cursor(cursor_x,cursor_y);
 
 pcb_t pcb[NUM_MAX_TASK];
-const ptr_t pid0_stack = INIT_KERNEL_STACK + PAGE_SIZE;
-pcb_t pid0_pcb = {
+const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
+const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 3 * PAGE_SIZE;
+pcb_t pid0_pcb_core_m = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack - sizeof(regs_context_t) - sizeof(switchto_context_t),
-    .user_sp = (ptr_t)pid0_stack + PAGE_SIZE,
+    .kernel_sp = (ptr_t)pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .user_sp = (ptr_t)pid0_stack_core_m + PAGE_SIZE,
+    .preempt_count = 0
+};
+pcb_t pid0_pcb_core_s = {
+    .pid = 0,
+    .kernel_sp = (ptr_t)pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .user_sp = (ptr_t)pid0_stack_core_s + PAGE_SIZE,
     .preempt_count = 0
 };
 
@@ -40,7 +47,9 @@ LIST_HEAD(ready_queue);
 LIST_HEAD(blocked_queue);
 
 /* current running task PCB */
-pcb_t * volatile current_running;
+pcb_t ** volatile current_running;
+pcb_t * volatile current_running_core_m;
+pcb_t * volatile current_running_core_s;
 
 /* global process id */
 pid_t process_id = 1;
@@ -78,8 +87,8 @@ pcb_t *block_current_task()
 {
     assert_supervisor_mode();
     // TODO schedule
-    // Modify the current_running pointer.
-    pcb_t *curr = current_running;
+    // Modify the (*current_running) pointer.
+    pcb_t *curr = (*current_running);
     if(curr->status == TASK_RUNNING && curr->pid != 0){
         if(list_is_empty(&ready_queue) || curr->sched_prior.priority == 0){
             list_add_tail(&(curr->list), &ready_queue);
@@ -111,13 +120,13 @@ void switch_to_next_task(pcb_t *curr)
     pcb_t *next_pcb = dequeue(&ready_queue,0);
     #endif
     next_pcb->status = TASK_RUNNING;
-    current_running = next_pcb;
+    (*current_running) = next_pcb;
     process_id = next_pcb->pid;
     
     // restore the current_runnint's cursor_x and cursor_y
     load_curpcb_cursor();
 
-    // TODO: switch_to current_running
+    // TODO: switch_to (*current_running)
     if(curr){
         switch_to(curr,next_pcb);
     }
@@ -137,11 +146,11 @@ void k_sleep(uint32_t sleep_time)
 {
     // TODO: sleep(seconds)
     // note: you can assume: 1 second = `timebase` ticks
-    // 1. block the current_running
-    k_block(&current_running->list,&blocked_queue);
+    // 1. block the (*current_running)
+    k_block(&(*current_running)->list,&blocked_queue);
     // 2. create a timer which calls `k_unblock` when timeout
-    create_timer(sleep_time*get_time_base(),(void (*)(void *))&k_unblock,&current_running->list);
-    // 3. reschedule because the current_running is blocked.
+    create_timer(sleep_time*get_time_base(),(void (*)(void *, int))&k_unblock,&(*current_running)->list);
+    // 3. reschedule because the (*current_running) is blocked.
     // must restore context, so see at sys_sleep()
     k_scheduler();
 }
@@ -150,13 +159,13 @@ void k_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
     list_add(pcb_node,queue);
-    current_running->status = TASK_BLOCKED;
+    (*current_running)->status = TASK_BLOCKED;
 }
 
 void k_unblock(list_head *queue, int way)
 {
     // TODO: unblock the `pcb` from the block queue
-    pcb_t *fetch_pcb = (pcb_t *)kmalloc(sizeof(pcb_t), current_running->pid * 2 - 1);
+    pcb_t *fetch_pcb = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
     switch (way)
     {
     case 1:
@@ -197,14 +206,14 @@ long k_fork(void)
     if(pcb_i == -1){
         return -1;
     }
-    // pcb_t *curr = current_running, *kid = (pcb_t *)kmalloc(sizeof(pcb_t), current_running->pid * 2 - 1);
-    // pcb_t *curr = current_running, *kid = &pcb[tasks_num];
-    pcb_t *curr = current_running, *kid = &pcb[pcb_i];
+    // pcb_t *curr = (*current_running), *kid = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
+    // pcb_t *curr = (*current_running), *kid = &pcb[tasks_num];
+    pcb_t *curr = (*current_running), *kid = &pcb[pcb_i];
     kid->user_sp = allocPage(1,2*pcb_i);
     kid->kernel_sp = allocPage(1,2*pcb_i + 1);
     kid->preempt_count = curr->preempt_count;
     init_list_head(&kid->list);
-    kid->wait_parent = current_running;
+    kid->wait_parent = (*current_running);
     kid->pid = pcb_i;
     kid->owned_lock_num = 0;
     kid->owned_mbox_num = 0;
@@ -233,7 +242,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
     
     kid->user_sp = kid->user_sp - src->user_sp + src_pt_regs->regs[8];
-    memcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
+    kmemcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
     
     // kid's ra, after do scheduler of the last task, kid shall go to ret_from_exception
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
@@ -241,7 +250,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     kid_stored_switchto_k->regs[2] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[2] % PAGE_SIZE);
     // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
-    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
+    kmemcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
     for(int i=2;i<14;i++){
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }
@@ -261,7 +270,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
 }
 
 void set_priority(long priority){
-    current_running->sched_prior.priority = priority;
+    (*current_running)->sched_prior.priority = priority;
 }
 
 uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
@@ -273,8 +282,8 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
     uint64_t cal_res = cur_time - idle_time + priority * mul_res;
     #ifdef PRINT_PRIORITY
     if(priority == 0){
-        int cursor_x = current_running->cursor_x;
-        int cursor_y = current_running->cursor_y;
+        int cursor_x = (*current_running)->cursor_x;
+        int cursor_y = (*current_running)->cursor_y;
         vt100_move_cursor(1,1);
         printk("priority calculation:\n");
         vt100_move_cursor(1,2);
@@ -282,8 +291,8 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority){
         vt100_move_cursor(cursor_x,cursor_y);
     }
     else{
-        int cursor_x = current_running->cursor_x;
-        int cursor_y = current_running->cursor_y;
+        int cursor_x = (*current_running)->cursor_x;
+        int cursor_y = (*current_running)->cursor_y;
         vt100_move_cursor(1,priority+3);
         printk("cur_time: %lu, idle_time: %lu, priority argument: %ld, mul_res:%lu, cal_res:%lu\n",cur_time,idle_time,priority,mul_res,cal_res);
         vt100_move_cursor(cursor_x,cursor_y);
@@ -324,7 +333,7 @@ pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
     if(pcb_i == -1){
         return -1;
     }
-    // pcb_t *new = (pcb_t *)kmalloc(sizeof(pcb_t), current_running->pid * 2 - 1);
+    // pcb_t *new = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
     pcb_t *new = &pcb[pcb_i];
     new->user_sp = allocPage(1, 2*pcb_i);
     new->user_stack_base = new->user_sp - PAGE_SIZE;
@@ -360,7 +369,7 @@ pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
 
 void k_exit(void)
 {
-    k_kill(current_running->pid);
+    k_kill((*current_running)->pid);
 }
 
 int k_kill(pid_t pid)
@@ -401,7 +410,7 @@ int k_kill(pid_t pid)
     }
     if(pcb[pcb_i].list.next)
         list_del(&pcb[pcb_i].list);
-    if(current_running->pid == pid || current_running->pid == 0 || pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
+    if((*current_running)->pid == pid || (*current_running)->pid == 0 || pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
         switch_to_next_task(NULL);
     }
     return 0;
@@ -414,8 +423,8 @@ int k_waitpid(pid_t pid)
         return -1;
     }
     if(pcb[pcb_i].pid == 0){
-        int cursor_x = current_running->cursor_x;
-        int cursor_y = current_running->cursor_y;
+        int cursor_x = (*current_running)->cursor_x;
+        int cursor_y = (*current_running)->cursor_y;
         vt100_move_cursor(1,1);
         print1("                         ")
         vt100_move_cursor(1,1);
@@ -423,9 +432,9 @@ int k_waitpid(pid_t pid)
         return -1;
     }
     if(pcb[pcb_i].status != TASK_ZOMBIE && pcb[pcb_i].status != TASK_EXITED ){
-        pcb[pcb_i].wait_parent = current_running;
-        current_running->status = TASK_BLOCKED;
-        k_block(&current_running->list,&blocked_queue);
+        pcb[pcb_i].wait_parent = (*current_running);
+        (*current_running)->status = TASK_BLOCKED;
+        k_block(&(*current_running)->list,&blocked_queue);
         k_scheduler();
     }
     if(pcb[pcb_i].status == TASK_ZOMBIE){
@@ -467,5 +476,5 @@ void k_process_show()
 
 pid_t k_getpid()
 {
-    return current_running->pid;
+    return (*current_running)->pid;
 }

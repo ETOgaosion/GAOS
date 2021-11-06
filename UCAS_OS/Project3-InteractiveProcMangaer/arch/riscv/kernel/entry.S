@@ -127,44 +127,15 @@ _save_context:
   LOAD(t6,T6)
 .endm
 
-.macro ENABLE_PREEMPT
-  ld t1, current_running
-  ld t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, macro_k_enable
-  addi t0, t0, -1
-  sd t0, PCB_PREEMPT_COUNT(t1)
-  beq t0, zero, macro_k_enable
-  la t0,break
-  jr t0
-macro_k_enable:
-  not t0, x0
-  csrs CSR_SIE, t0
-break:
-.endm
-
-.macro DISABLE_PREEMPT
-  csrw CSR_SIE, zero
-  ld t1, current_running
-  ld t0, PCB_PREEMPT_COUNT(t1)
-  addi t0, t0, 1
-  sd t0, PCB_PREEMPT_COUNT(t1)
-.endm
-
-.macro ENABLE_INTERRUPT
-  li t0, SR_SIE
-  csrs CSR_SSTATUS, t0
-.endm
-
-.macro DISABLE_INTERRUPT
-  csrr t0,CSR_SSTATUS
-  li t1,SR_SIE
-  not t1,t1
-  and t0,t0,t1
-  csrs CSR_SSTATUS, t0
-.endm
 
 ENTRY(enable_preempt)
-  ld t1, current_running
+  csrr t0, CSR_MHARTID
+  bnez t0, enable_core_s
+  ld t1, current_running_core_m
+  j enable_pre
+enable_core_s:
+  ld t1, current_running_core_s
+enable_pre:
   ld t0, PCB_PREEMPT_COUNT(t1)
   beq t0, zero, k_enable
   addi t0, t0, -1
@@ -179,7 +150,13 @@ ENDPROC(enable_preempt)
 
 ENTRY(disable_preempt)
   csrw CSR_SIE, zero
-  ld t1, current_running
+  csrr t0, CSR_MHARTID
+  bnez t0, disable_core_s
+  ld t1, current_running_core_m
+  j disable_pre
+disable_core_s:
+  ld t1, current_running_core_s
+disable_pre:
   ld t0, PCB_PREEMPT_COUNT(t1)
   addi t0, t0, 1
   sd t0, PCB_PREEMPT_COUNT(t1)
@@ -193,11 +170,8 @@ ENTRY(enable_interrupt)
 ENDPROC(enable_interrupt)
 
 ENTRY(disable_interrupt)
-  csrr t0,CSR_SSTATUS
-  li t1,SR_SIE
-  not t1,t1
-  and t0,t0,t1
-  csrs CSR_SSTATUS, t0
+  li t0, SR_SIE
+  csrc CSR_SSTATUS, t0
   jr ra
 ENDPROC(disable_interrupt)
 
@@ -268,18 +242,18 @@ ENTRY(load_next_task)
 ENDPROC(load_next_task)
 
 ENTRY(ret_from_exception)
+  call unlock_kernel
   RESTORE_CONTEXT
   csrw CSR_SSCRATCH,tp
-  //ENABLE_PREEMPT
-  //ENABLE_INTERRUPT
   ld sp, PCB_USER_SP(tp)
   sret
 ENDPROC(ret_from_exception)
 
 ENTRY(exception_handler_entry)
-  //DISABLE_PREEMPT
-  //DISABLE_INTERRUPT
   SAVE_CONTEXT
+
+  ld sp, PCB_KERNEL_SP(tp)
+  call lock_kernel
 
   csrw CSR_SSCRATCH, x0
 
@@ -297,6 +271,9 @@ ENTRY(exception_handler_entry)
   /* TODO: call interrupt_helper
    * note: don't forget to pass parameters for it.
    */
+  
+  ld sp, PCB_KERNEL_SP(tp)
+  addi sp, sp, SWITCH_TO_SIZE
   mv a0,sp
   addi sp,sp,-(SWITCH_TO_SIZE)
   LOAD_SWITCH(sp,SP)
@@ -304,6 +281,5 @@ ENTRY(exception_handler_entry)
   csrr a2,CSR_SCAUSE
   call t0,interrupt_helper
   ld sp, PCB_KERNEL_SP(tp)
-  LOAD(a3,A3)
   jr ra
 ENDPROC(exception_handler_entry)

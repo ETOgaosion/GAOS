@@ -41,7 +41,7 @@
 #define SHELL_ARG_NUM 3
 #define SHELL_ARG_MAX_LENGTH 20
 #define SUPPORTED_CMD_NUM 5
-#define CURRENT_TASK_NUM 6
+#define CURRENT_TASK_NUM 7
 #define MAX_CMD_IN_LINES 15
 
 #define BEGIN cmd_in_length = 0;\
@@ -69,8 +69,8 @@ struct task_info task_test_affinity = {(uintptr_t)&test_affinity, USER_PROCESS};
 static struct task_info *test_tasks[16] = {&task_test_waitpid,
                                            &task_test_semaphore,
                                            &task_test_barrier,
-                                           &task_test_multicore,
-                                           &strserver_task, &strgenerator_task};
+                                           &strserver_task, &strgenerator_task,
+                                           &task_test_multicore, &task_test_affinity};
 void panic(char *error);
 static int shell_help(void *cmd_str, void *arg1, void*arg2);
 static int shell_exec(void *pid_str, void *mode_str, void *arg2);

@@ -1,6 +1,10 @@
 #ifndef SMP_H
 #define SMP_H
 
+#include <os/lock.h>
+
+extern spin_lock_t kernel_lock;
+
 // #define NR_CPUS 2
 // extern void* cpu_stack_pointer[NR_CPUS];
 // extern void* cpu_pcb_pointer[NR_CPUS];

@@ -6,20 +6,20 @@ CFLAGS = -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclud
 DISK = /dev/sdb
 
 BOOTLOADER_ENTRYPOINT = 0x50200000
-KERNEL_ENTRYPOINT = 0x50200000
+KERNEL_ENTRYPOINT = 0x50201000
 
 ARCH = riscv
 ARCH_DIR = ./arch/$(ARCH)
 CFLAGS += -Iarch/$(ARCH)/include
 
 SRC_BOOT 	= $(ARCH_DIR)/boot/bootblock.S
-SRC_ARCH	= $(ARCH_DIR)/kernel/trap.S $(ARCH_DIR)/kernel/entry.S $(ARCH_DIR)/kernel/head.S $(ARCH_DIR)/sbi/common.c
+SRC_ARCH	= $(ARCH_DIR)/kernel/trap.S $(ARCH_DIR)/kernel/entry.S $(ARCH_DIR)/kernel/head.S $(ARCH_DIR)/kernel/smp.S $(ARCH_DIR)/sbi/common.c
 SRC_DRIVER	= ./drivers/screen.c
 SRC_INIT 	= ./init/main.c
 SRC_INT		= ./kernel/irq/irq.c
 SRC_LOCK	= ./kernel/locking/lock.c 
 SRC_COMM	= ./kernel/comm/comm.c 
-SRC_SCHED	= ./kernel/sched/sched.c ./kernel/sched/time.c
+SRC_SCHED	= ./kernel/sched/sched.c ./kernel/sched/smp.c ./kernel/sched/time.c
 SRC_MM	= ./kernel/mm/mm.c
 SRC_SYSCALL	= ./kernel/syscall/syscall.c
 SRC_LIBS	= ./libs/string.c ./libs/printk.c

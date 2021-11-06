@@ -228,7 +228,7 @@ end:
 }
 
 static int _vprint(const char* fmt, va_list _va,
-                   void (*output)(char*))
+                   void (*output)(char*), int from)
 {
     va_list va;
     va_copy(va, _va);
@@ -240,28 +240,28 @@ static int _vprint(const char* fmt, va_list _va,
 
     buff[ret] = '\0';
 
-    disable_preempt();
     output(buff);
-    for (int i = 0; i < ret; ++i) {
-        if (buff[i] == '\n') {
-            current_running->cursor_x = 1;
-            current_running->cursor_y++;
-        } else if (buff[i] == '\r') {
-            current_running->cursor_x = 1;
-        } else if (buff[i] == '\t') {
-            current_running->cursor_x += TAB_LENGTH;
-        } else {
-            current_running->cursor_x++;
+    if(from == 0){
+        for (int i = 0; i < ret; ++i) {
+            if (buff[i] == '\n') {
+                (*current_running)->cursor_x = 1;
+                (*current_running)->cursor_y++;
+            } else if (buff[i] == '\r') {
+                (*current_running)->cursor_x = 1;
+            } else if (buff[i] == '\t') {
+                (*current_running)->cursor_x += TAB_LENGTH;
+            } else {
+                (*current_running)->cursor_x++;
+            }
         }
     }
-    enable_preempt();
 
     return ret;
 }
 
 int vprintk(const char *fmt, va_list _va)
 {
-    return _vprint(fmt, _va, port_write);
+    return _vprint(fmt, _va, port_write,0);
 }
 
 int printk(const char *fmt, ...)
@@ -278,7 +278,7 @@ int printk(const char *fmt, ...)
 
 int vprints(const char *fmt, va_list _va)
 {
-    return _vprint(fmt, _va, screen_write);
+    return _vprint(fmt, _va, screen_write,1);
 }
 
 int prints(const char *fmt, ...)

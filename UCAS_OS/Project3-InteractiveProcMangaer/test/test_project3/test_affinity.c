@@ -16,7 +16,6 @@ void test_affinity(void)
     srand(42);
     sys_move_cursor(1, 1);
     printf("start test cpu affinity, pids = {");
-    int single_core_result = 0;
     struct task_info task_test = {(uintptr_t)&integer_test_task, USER_PROCESS};
     pid_t pids[INTEGER_TEST_NUM] = {0};
     int tmp;

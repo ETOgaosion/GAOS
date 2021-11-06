@@ -1,19 +1,16 @@
 #include <asm/sbidef.h>
 #include <asm/sbiasm.h>
-
-// #define BOOT_LOADER_SIG_OFFSET 0x1fe
-// #define OS_SIZE_LOC (BOOT_LOADER_SIG_OFFSET - 2)
-// #define OS_SIZE_LOC 0x1fc
+#include <csr.h>
 
 .equ os_num, 0x502001fc
 .equ kn0_os_size_loc, 0x502001fa
 
 // 1. kernel address (move kernel to here ~)
-.equ kernel, 0x50200000
+.equ kernel, 0x50201000
 // .equ kernel, 0x50201000
 
 // 2. kernel main address (jmp here to start kernel main!)
-.equ kernel_main, 0x50200000
+.equ kernel_main, 0x50201000
 // .equ kernel_main, 0x50201000
 
 .equ kernel_stack, 0x50500000
@@ -21,7 +18,6 @@
 // 3. move bootblock to total_os_size
 // .equ bbl_new_addr, 0x5efff000
 // .equ bbl_new_entrance,0x5efff026
-# see by objdump
 
 .text
 .global main
@@ -34,7 +30,6 @@ main:
 	move s0,a0
 	move s1,a1
 
-	// print a \n to avoid system output error...
 	PRINT_N
 
 	// The core whose mhartid=0 is selected to boot the kernel.
@@ -43,9 +38,7 @@ main:
  	move a0, s0
 	bnez a0, secondary
 
-	// your code
-	
-	// 1) task1 call BIOS print string "It's bootblock!"
+	// your code 
 	lui a0,%hi(msg)
 	addi a0,a0,%lo(msg)
 	SBI_CALL SBI_CONSOLE_PUTSTR
@@ -59,9 +52,6 @@ main:
 	mv t0,a0
 	SBI_CALL SBI_CONSOLE_PUTCHAR
 
-	PRINT_N
-
-	// C core: read input char
 read_input:
 	SBI_CALL SBI_CONSOLE_GETCHAR
 	blt a0,zero,read_input
@@ -80,37 +70,11 @@ read_input:
 	la t0,kn0_os_size_loc
 sum:
 	addi a0,a0,-1
-	blt a0,zero,move_bootblock
+	blt a0,zero,read_kernel
 	lh t1,(t0)
 	add a3,a3,t1
 	addi t0,t0,-2
 	j sum
-
-move_bootblock:
-	// move bootblock
-	la a0,kernel
-	slli a5,a4,9
-	add a0,a0,a5
-	la a6,kernel_stack
-	blt a0,a6,normal
-	j mov
-normal:
-	mv a0,a6
-	mv t0,a0
-mov:
-	addi a1,zero,1 #unkown block number
-	addi a2,zero,0
-	SBI_CALL SBI_SD_READ
-	
-	fence.i
-	// jump to new address
-	// calculate entrance
-	mv a0,t0
-	lla a1,read_kernel
-	la a2,kernel
-	sub a1,a1,a2
-	add a0,a0,a1
-	jr a0
 	
 read_kernel:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
@@ -125,13 +89,23 @@ read_kernel:
 	la a3,kernel_main
 	jr a3
 
-	
+
 secondary:
 	/* TODO: 
 	 * 1. Mask all interrupts
 	 * 2. let stvec pointer to kernel_main
 	 * 3. enable software interrupt for ipi
 	 */
+    csrw CSR_SIE, zero
+	la a0,kernel_main
+	csrw CSR_STVEC, a0
+	li a0, SIE_SSIE
+	csrw CSR_SIE, a0
+	li a0, SR_SIE
+	csrw CSR_SSTATUS, a0
+	la a0, msg2
+
+    fence.i
 
 wait_for_wakeup:
 	wfi
@@ -144,4 +118,5 @@ stop:
 
 .data
 
-msg: .string "It's a bootloader...\n\rPlease choose which kernel you hope to use, 0 ~ ";
+msg: .string "Master core activated\n\rIt's a bootloader...\n\rPlease choose which kernel you hope to use, 0 ~ ";
+msg2: .string "Slave core activated\n\r"

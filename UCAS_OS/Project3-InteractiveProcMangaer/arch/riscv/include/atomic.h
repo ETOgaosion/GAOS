@@ -9,7 +9,7 @@ static inline uint32_t atomic_swap(uint32_t val, ptr_t mem_addr)
 {
     uint32_t ret;
     __asm__ __volatile__ (
-        "amoswap.w.aqrl %0, %2, %1"
+        "amoswap.w %0, %2, %1"
         : "=r"(ret), "+A" (*(void*)mem_addr)
         : "r"(val)
         : "memory");
@@ -20,7 +20,7 @@ static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
 {
     uint64_t ret;
     __asm__ __volatile__ (
-                          "amoswap.d.aqrl %0, %2, %1"
+                          "amoswap.d %0, %2, %1"
                           : "=r"(ret), "+A" (*(void*)mem_addr)
                           : "r"(val)
                           : "memory");

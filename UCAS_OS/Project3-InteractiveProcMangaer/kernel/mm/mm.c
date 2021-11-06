@@ -1,5 +1,5 @@
 #include <os/mm.h>
-#include <string.h>
+#include <os/string.h>
 
 int first_time_alloc = 1;
 ptr_t memCurr[NUM_MAX_TASK*2] = {FREEMEM};

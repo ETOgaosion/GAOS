@@ -26,20 +26,20 @@ author:高梓源   Stu. Num: 2019K8009929026
 void k_scheduler(void)
 {
     // TODO schedule
-    // Modify the current_running pointer.
-    pcb_t *curr = current_running;
+    // Modify the (*current_running) pointer.
+    pcb_t *curr = (*current_running);
     if(curr->status == TASK_RUNNING && curr->pid != 0){
         list_add_tail(&(curr->list), &ready_queue);
         curr->status = TASK_READY;
     }
     pcb_t *next_pcb = dequeue(&ready_queue);
     next_pcb->status = TASK_RUNNING;
-    current_running = next_pcb;
+    (*current_running) = next_pcb;
     process_id = next_pcb->pid;
     
     // restore the current_runnint's cursor_x and cursor_y
 
-    // TODO: switch_to current_running
+    // TODO: switch_to (*current_running)
     switch_to(curr,next_pcb);
 }
 ```
@@ -103,7 +103,7 @@ void k_mutex_lock_acquire(mutex_lock_t *lock)
         lock->lock.guard = 0;
     }
     else{
-        k_block(&current_running->list,&lock->block_queue);
+        k_block(&(*current_running)->list,&lock->block_queue);
         lock->lock.guard = 0;
         k_scheduler();
     }
@@ -135,7 +135,7 @@ void k_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
     list_add_tail(pcb_node,queue);
-    current_running->status = TASK_BLOCKED;
+    (*current_running)->status = TASK_BLOCKED;
 }
 
 void k_unblock(list_head *queue)

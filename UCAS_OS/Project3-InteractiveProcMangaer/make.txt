@@ -1,5 +1,5 @@
 riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50200000
+riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/kernel/smp.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/smp.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50201000
 In file included from include/os/lock.h:32,
                  from ./init/main.c:37:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
@@ -26,52 +26,13 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-In file included from tiny_libc/include/string.h:4,
-                 from ./init/main.c:43:
-tiny_libc/include/stdint.h: At top level:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from arch/riscv/include/common.h:27,
-                 from ./init/main.c:27:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./init/main.c:43:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from arch/riscv/include/common.h:27,
-                 from ./init/main.c:27:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./init/main.c:43:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from arch/riscv/include/common.h:27,
-                 from ./init/main.c:27:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:5,
-                 from ./init/main.c:43:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from arch/riscv/include/common.h:27,
-                 from ./init/main.c:27:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./init/main.c: In function 'init_pcb':
-./init/main.c:108:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
-  108 |     kmemset(pcb,0,sizeof(pcb));
-      |     ^~~~~~~
-      |     memset
+./init/main.c: In function 'main':
+./init/main.c:204:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  204 |         current_running = &current_running_core_m;
+      |                         ^
+./init/main.c:229:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  229 |         current_running = &current_running_core_s;
+      |                         ^
 In file included from tiny_libc/include/stddef.h:4,
                  from tiny_libc/include/stdio.h:5,
                  from ./kernel/irq/irq.c:5:
@@ -121,9 +82,40 @@ include/assert.h:8:5: warning: implicit declaration of function 'prints'; did yo
     8 |     prints("Assertion failed at %s in %s:%d\n\r",
       |     ^~~~~~
       |     printf
+In file included from include/os/lock.h:32,
+                 from include/os/smp.h:4,
+                 from ./kernel/irq/irq.c:11:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+./kernel/irq/irq.c: In function 'interrupt_helper':
+./kernel/irq/irq.c:34:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   34 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+      |                     ^
 ./kernel/irq/irq.c: In function 'handle_other':
-./kernel/irq/irq.c:73:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
-   73 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
+./kernel/irq/irq.c:75:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
+   75 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
       |             ^~~~~~
       |             printf
 In file included from include/os/lock.h:32,
@@ -178,32 +170,43 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
+./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
+./kernel/locking/lock.c:12:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
+   12 |     return atomic_swap_d(LOCKED,&lock->flag);
+      |                                 ^~~~~~~~~~~
+      |                                 |
+      |                                 volatile lock_status_t * {aka volatile enum <anonymous> *}
+In file included from include/os/lock.h:32,
+                 from ./kernel/locking/lock.c:1:
+arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'volatile lock_status_t *' {aka 'volatile enum <anonymous> *'}
+   19 | static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
+      |                                                    ~~~~~~^~~~~~~~
 ./kernel/locking/lock.c: In function 'k_mutex_lock_op':
-./kernel/locking/lock.c:16:34: warning: passing argument 1 of 'k_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
-   16 |         return k_mutex_lock_init(key, operator);
+./kernel/locking/lock.c:32:34: warning: passing argument 1 of 'k_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
+   32 |         return k_mutex_lock_init(key, operator);
       |                                  ^~~
       |                                  |
       |                                  long int *
 In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:70:29: note: expected 'int *' but argument is of type 'long int *'
-   70 | long k_mutex_lock_init(int *key, int operator);
+include/os/lock.h:73:29: note: expected 'int *' but argument is of type 'long int *'
+   73 | long k_mutex_lock_init(int *key, int operator);
       |                        ~~~~~^~~
-./kernel/locking/lock.c:28:37: warning: passing argument 1 of 'k_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
-   28 |         return k_mutex_lock_trylock(key, operator);
+./kernel/locking/lock.c:44:37: warning: passing argument 1 of 'k_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
+   44 |         return k_mutex_lock_trylock(key, operator);
       |                                     ^~~
       |                                     |
       |                                     long int *
 In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:74:32: note: expected 'int *' but argument is of type 'long int *'
-   74 | long k_mutex_lock_trylock(int *key, int operator);
+include/os/lock.h:77:32: note: expected 'int *' but argument is of type 'long int *'
+   77 | long k_mutex_lock_trylock(int *key, int operator);
       |                           ~~~~~^~~
 ./kernel/locking/lock.c: In function 'k_mutex_lock_destroy':
-./kernel/locking/lock.c:131:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
-  131 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
+./kernel/locking/lock.c:147:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
+  147 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
       |     ^~~~~~~
 ./kernel/locking/lock.c: In function 'find_lock':
-./kernel/locking/lock.c:44:1: warning: control reaches end of non-void function [-Wreturn-type]
-   44 | }
+./kernel/locking/lock.c:60:1: warning: control reaches end of non-void function [-Wreturn-type]
+   60 | }
       | ^
 In file included from include/os/lock.h:32,
                  from include/os/comm.h:5,
@@ -233,30 +236,30 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_barrier_destroy':
-./kernel/comm/comm.c:269:26: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  269 |     k_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
+./kernel/comm/comm.c:273:26: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  273 |     k_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
       |                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                          |
       |                          int *
 In file included from include/os/comm.h:5,
                  from ./kernel/comm/comm.c:1:
-include/os/lock.h:73:33: note: expected 'long int *' but argument is of type 'int *'
-   73 | long k_mutex_lock_destroy(long *key, int operator);
+include/os/lock.h:76:33: note: expected 'long int *' but argument is of type 'int *'
+   76 | long k_mutex_lock_destroy(long *key, int operator);
       |                           ~~~~~~^~~
 ./kernel/comm/comm.c: In function 'k_mbox_close':
-./kernel/comm/comm.c:321:34: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  321 |             k_mutex_lock_destroy(&mbox_list[pcb[operator-1].mbox_keys[i] - 1]->mutex_id,operator);
+./kernel/comm/comm.c:325:34: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
+  325 |             k_mutex_lock_destroy(&mbox_list[pcb[operator-1].mbox_keys[i] - 1]->mutex_id,operator);
       |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                  |
       |                                  int *
 In file included from include/os/comm.h:5,
                  from ./kernel/comm/comm.c:1:
-include/os/lock.h:73:33: note: expected 'long int *' but argument is of type 'int *'
-   73 | long k_mutex_lock_destroy(long *key, int operator);
+include/os/lock.h:76:33: note: expected 'long int *' but argument is of type 'int *'
+   76 | long k_mutex_lock_destroy(long *key, int operator);
       |                           ~~~~~~^~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
-./kernel/comm/comm.c:339:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  339 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+./kernel/comm/comm.c:344:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  344 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -264,8 +267,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:340:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  340 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+./kernel/comm/comm.c:345:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  345 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
       |                 ~~~~~~~~~~~~~~^~~~~~
       |                               |
       |                               char *
@@ -273,8 +276,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:344:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  344 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+./kernel/comm/comm.c:349:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  349 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -283,8 +286,8 @@ include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} bu
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
 ./kernel/comm/comm.c: In function 'k_mbox_recv':
-./kernel/comm/comm.c:366:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  366 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+./kernel/comm/comm.c:371:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  371 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -292,8 +295,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:367:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  367 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+./kernel/comm/comm.c:372:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  372 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
       |                                                                         ~~~~~~~~~~~~~~^~~~~~
       |                                                                                       |
       |                                                                                       char *
@@ -301,8 +304,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:371:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  371 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+./kernel/comm/comm.c:376:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  376 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -325,26 +328,6 @@ include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned
 ./kernel/comm/comm.c: In function 'k_semaphore_v':
 ./kernel/comm/comm.c:145:1: warning: control reaches end of non-void function [-Wreturn-type]
   145 | }
-      | ^
-./kernel/comm/comm.c: In function 'k_cond_wait':
-./kernel/comm/comm.c:191:1: warning: control reaches end of non-void function [-Wreturn-type]
-  191 | }
-      | ^
-./kernel/comm/comm.c: In function 'k_cond_signal':
-./kernel/comm/comm.c:201:1: warning: control reaches end of non-void function [-Wreturn-type]
-  201 | }
-      | ^
-./kernel/comm/comm.c: In function 'k_cond_broadcast':
-./kernel/comm/comm.c:211:1: warning: control reaches end of non-void function [-Wreturn-type]
-  211 | }
-      | ^
-./kernel/comm/comm.c: In function 'k_barrier_wait':
-./kernel/comm/comm.c:263:1: warning: control reaches end of non-void function [-Wreturn-type]
-  263 | }
-      | ^
-./kernel/comm/comm.c: In function 'k_mbox_close':
-./kernel/comm/comm.c:325:1: warning: control reaches end of non-void function [-Wreturn-type]
-  325 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -372,63 +355,31 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/sched/sched.c:9:
-tiny_libc/include/stdint.h: At top level:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/sched/sched.c:1:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/sched/sched.c:9:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/sched/sched.c:1:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/sched/sched.c:9:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/sched/sched.c:1:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:5,
-                 from ./kernel/sched/sched.c:9:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/sched/sched.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./kernel/sched/sched.c: In function 'dequeue':
-./kernel/sched/sched.c:64:9: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
-   64 |         kmemset(&ret->timer,0,sizeof(ret->timer));
-      |         ^~~~~~~
-      |         memset
-./kernel/sched/sched.c: In function 'k_sleep':
-./kernel/sched/sched.c:143:45: warning: passing argument 2 of 'create_timer' from incompatible pointer type [-Wincompatible-pointer-types]
-  143 |     create_timer(sleep_time*get_time_base(),(void (*)(void *))&k_unblock,&current_running->list);
-      |                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                             |
-      |                                             void (*)(void *)
-In file included from include/os/sched.h:35,
-                 from ./kernel/sched/sched.c:3:
-include/os/time.h:58:53: note: expected 'timer_ret' {aka 'void (*)(void *, int)'} but argument is of type 'void (*)(void *)'
-   58 | void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, list_head *queue);
-      |                                           ~~~~~~~~~~^~~~~~~~~~~~
+In file included from ./kernel/sched/smp.c:2:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
 In file included from tiny_libc/include/string.h:4,
                  from ./kernel/sched/time.c:5:
 tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
@@ -474,51 +425,43 @@ include/type.h:30: note: this is the location of the previous definition
    72 |             kmemset((void *)&pcb_check->timer,0,sizeof(pcb_check->timer));
       |             ^~~~~~~
       |             memset
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/mm/mm.c:2:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/mm/mm.c:1:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/mm/mm.c:2:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/mm/mm.c:1:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./kernel/mm/mm.c:2:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/mm/mm.c:1:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:5,
-                 from ./kernel/mm/mm.c:2:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/mm.h:30,
-                 from ./kernel/mm/mm.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
 ./kernel/mm/mm.c: In function 'freePage':
-./kernel/mm/mm.c:30:5: warning: implicit declaration of function 'kmemset'; did you mean 'memset'? [-Wimplicit-function-declaration]
+./kernel/mm/mm.c:30:20: warning: passing argument 1 of 'kmemset' makes pointer from integer without a cast [-Wint-conversion]
    30 |     kmemset(memCurr[page],0,numPage * PAGE_SIZE);
-      |     ^~~~~~~
-      |     memset
+      |             ~~~~~~~^~~~~~
+      |                    |
+      |                    ptr_t {aka long unsigned int}
+In file included from ./kernel/mm/mm.c:2:
+include/os/string.h:34:20: note: expected 'void *' but argument is of type 'ptr_t' {aka 'long unsigned int'}
+   34 | void kmemset(void *dest, uint8_t val, uint32_t len);
+      |              ~~~~~~^~~~
+In file included from include/os/lock.h:32,
+                 from include/os/smp.h:4,
+                 from ./libs/printk.c:47:
+arch/riscv/include/atomic.h: In function 'atomic_swap':
+arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
+   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                            ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_swap_d':
+arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
+   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
+arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
+arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
+arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
+arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
+arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+      |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,
                  from include/sys/syscall.h:32,
@@ -888,10 +831,6 @@ In file included from include/os/sched.h:32,
 include/type.h:30: note: this is the location of the previous definition
    30 | #define NULL  (void*)0
       | 
-./test/test_project3/test_affinity.c: In function 'test_affinity':
-./test/test_project3/test_affinity.c:19:9: warning: unused variable 'single_core_result' [-Wunused-variable]
-   19 |     int single_core_result = 0;
-      |         ^~~~~~~~~~~~~~~~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,
                  from include/sys/syscall.h:32,
@@ -1245,19 +1184,19 @@ bootblock can open
 0x50200000: bootblock
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x143		memsz 0x143
-		writing 0x143 bytes
+		filesz 0x147		memsz 0x147
+		writing 0x147 bytes
 		padding up to 0x200
 main can open
-0x50200000: main
+0x50201000: main
 	segment 0
-		offset 0x1000		vaddr 0x50200000
-		filesz 0x9c84		memsz 0x10e80
-		writing 0x9c84 bytes
-		padding up to 0x11200
+		offset 0x1000		vaddr 0x50201000
+		filesz 0xa19c		memsz 0x113b0
+		writing 0xa19c bytes
+		padding up to 0x11600
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 136 sector(s)
+kernel_size: 138 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

@@ -58,7 +58,7 @@ static int find_free(int type){
 }
 
 long k_commop(void *key_id, void *arg, int op){
-    int operator = current_running->pid;
+    int operator = (*current_running)->pid;
     int *key = (int *)key_id;
     switch (op)
     {
@@ -129,7 +129,7 @@ long k_semaphore_p(int key, int operator){
     }
     sem_list[key]->sem--;
     if(sem_list[key]->sem < 0){
-        k_block(&current_running->list,&sem_list[key]->wait_queue);
+        k_block(&(*current_running)->list,&sem_list[key]->wait_queue);
         k_scheduler();
     }
 }
@@ -184,10 +184,11 @@ long k_cond_wait(int key, int lock_id, int operator){
         return -1;
     }
     cond_list[key]->num_wait++;
-    k_block(&current_running->list,&cond_list[key]->wait_queue);
+    k_block(&(*current_running)->list,&cond_list[key]->wait_queue);
     k_mutex_lock_release(lock_id,operator);
     k_scheduler();
     k_mutex_lock_acquire(lock_id,operator);
+    return 0;
 }
 
 long k_cond_signal(int key, int operator){
@@ -198,6 +199,7 @@ long k_cond_signal(int key, int operator){
         k_unblock(cond_list[key]->wait_queue.next,2);
         cond_list[key]->num_wait--;
     }
+    return 0;
 }
 
 long k_cond_broadcast(int key, int operator){
@@ -208,6 +210,7 @@ long k_cond_broadcast(int key, int operator){
         k_unblock(cond_list[key]->wait_queue.next,2);
         cond_list[key]->num_wait--;
     }
+    return 0;
 }
 
 long k_cond_destroy(int *key, int operator){
@@ -260,6 +263,7 @@ long k_barrier_wait(int key, int operator){
         k_cond_wait(barrier_list[key]->cond_id - 1, barrier_list[key]->mutex_id - 1,operator);
     }
     k_mutex_lock_release(barrier_list[key]->mutex_id - 1,operator);
+    return 0;
 }
 
 long k_barrier_destroy(int *key, int operator){
@@ -322,6 +326,7 @@ long k_mbox_close(int operator){
             kmemset(mbox_list[pcb[operator-1].mbox_keys[i] - 1],0,sizeof(mbox_list[pcb[operator-1].mbox_keys[i] - 1]));
         }
     }
+    return 0;
 }
 
 long k_mbox_send(int key, mbox_arg_t *arg, int operator){

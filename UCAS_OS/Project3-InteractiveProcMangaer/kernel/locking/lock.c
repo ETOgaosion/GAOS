@@ -4,6 +4,22 @@
 int first_time = 1;
 mutex_lock_t *locks[LOCK_NUM];
 
+void spin_lock_init(spin_lock_t *lock){
+    lock->flag = UNLOCKED;
+}
+
+int spin_lock_try_acquire(spin_lock_t *lock){
+    return atomic_swap_d(LOCKED,&lock->flag);
+}
+
+void spin_lock_acquire(spin_lock_t *lock){
+    while(spin_lock_try_acquire(lock) == LOCKED) ;
+}
+
+void spin_lock_release(spin_lock_t *lock){
+    lock->flag = UNLOCKED;
+}
+
 static inline void assert_supervisor_mode() 
 { 
    __asm__ __volatile__("csrr x0, sscratch\n"); 
@@ -11,7 +27,7 @@ static inline void assert_supervisor_mode()
 
 long k_mutex_lock_op(long *key,int op){
     assert_supervisor_mode();
-    int operator = current_running->pid;
+    int operator = (*current_running)->pid;
     if(op == 0){
         return k_mutex_lock_init(key, operator);
     }
@@ -91,7 +107,7 @@ long k_mutex_lock_acquire(long key, int operator)
         return locks[key]->lock_id;
     }
     else{
-        k_block(&current_running->list,&locks[key]->block_queue);
+        k_block(&(*current_running)->list,&locks[key]->block_queue);
         locks[key]->lock.guard = 0;
         k_scheduler();
         return -2;
@@ -105,7 +121,7 @@ long k_mutex_lock_release(long key, int operator)
         return -1;
     }
     if(pcb[operator-1].owned_lock_num){
-        pcb[operator-1].lock_keys[--current_running->owned_lock_num] = 0;
+        pcb[operator-1].lock_keys[--(*current_running)->owned_lock_num] = 0;
     }
     while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
@@ -126,7 +142,7 @@ long k_mutex_lock_destroy(long *key, int operator){
         return -1;
     }
     while(pcb[operator-1].owned_lock_num){
-        pcb[operator-1].lock_keys[--current_running->owned_lock_num] = 0;
+        pcb[operator-1].lock_keys[--(*current_running)->owned_lock_num] = 0;
     }
     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
     *key = 0;

@@ -41,22 +41,22 @@ void latency(uint64_t time)
 }
 
 void create_timer(uint64_t timeout_ticks, timer_ret timeout_func, list_head *queue){
-    current_running->timer.initialized = 1;
-    current_running->timer.init_tick = get_ticks();
-    current_running->timer.timeout_tick = timeout_ticks + current_running->timer.init_tick;
-    current_running->timer.timeout_func = timeout_func;
-    current_running->timer.queue = queue;
+    (*current_running)->timer.initialized = 1;
+    (*current_running)->timer.init_tick = get_ticks();
+    (*current_running)->timer.timeout_tick = timeout_ticks + (*current_running)->timer.init_tick;
+    (*current_running)->timer.timeout_func = timeout_func;
+    (*current_running)->timer.queue = queue;
     list_head *list_iterator = timers.next;
     pcb_t *pcb_iterator = NULL;
     while (list_iterator != &timers)
     {
         pcb_iterator = list_entry(list_iterator,pcb_t,timer_list);
-        if(pcb_iterator->timer.timeout_tick > current_running->timer.timeout_tick){
+        if(pcb_iterator->timer.timeout_tick > (*current_running)->timer.timeout_tick){
             break;
         }
         list_iterator = list_iterator->next;
     }
-    list_add(&(current_running->timer_list),list_iterator->prev);
+    list_add(&((*current_running)->timer_list),list_iterator->prev);
 }
 
 void check_timer(void){

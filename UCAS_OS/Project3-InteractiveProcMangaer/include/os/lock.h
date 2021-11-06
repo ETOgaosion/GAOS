@@ -44,27 +44,30 @@ typedef enum {
     GUARDED,
 } guard_status_t;
 
-typedef struct spin_lock
+typedef struct spin_lock{
+    volatile lock_status_t flag;
+} spin_lock_t;
+
+typedef struct double_spin_lock
 {
     volatile lock_status_t flag;
     volatile guard_status_t guard;
-} spin_lock_t;
+} double_spin_lock_t;
 
 typedef struct mutex_lock
 {
     int lock_id;
     int initialized;
-    spin_lock_t lock;
+    double_spin_lock_t lock;
     list_head block_queue;
 } mutex_lock_t;
 
 /* init lock */
-/*
+// for kernel_lock
 void spin_lock_init(spin_lock_t *lock);
 int spin_lock_try_acquire(spin_lock_t *lock);
 void spin_lock_acquire(spin_lock_t *lock);
 void spin_lock_release(spin_lock_t *lock);
-*/
 
 long k_mutex_lock_op(long *key,int op);
 long k_mutex_lock_init(int *key, int operator);

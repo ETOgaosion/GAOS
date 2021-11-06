@@ -35,11 +35,21 @@ clear_bss:
   blt a3, a4, clear_bss
 clear_bss_done:
 
+  // find core
+  csrr t0, CSR_MHARTID
+  bnez t0, set_secondary_stack
+
   /* setup C environment */
-  la tp, pid0_pcb
-  lw sp, pid0_stack
+  ld sp, pid0_stack_core_m
+  la tp, pid0_pcb_core_m
+  j set_env_finish
+
+set_secondary_stack:
+  la tp, pid0_pcb_core_s
+  ld sp, pid0_stack_core_s
   csrw CSR_SSCRATCH, x0
 
+set_env_finish:
   la a0, riscv_dtb
   sd a1, (a0)
 

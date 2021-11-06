@@ -8,6 +8,7 @@
 #include <screen.h>
 #include <csr.h>
 #include <ticks.h>
+#include <os/smp.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -30,6 +31,7 @@ void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t cause)
 {
     // TODO interrupt handler.
     // call corresponding handler by the value of `cause`
+    current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
     handler_t *handle_table = (cause & SCAUSE_IRQ_FLAG) ? irq_table : exc_table;
     uint64_t exception_code = cause & ~SCAUSE_IRQ_FLAG;
     handle_table[exception_code](regs,stval,cause);
@@ -74,8 +76,8 @@ void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
         }
         printk("\n\r");
     }
-    printk("current running pid:%d\n",current_running->pid);
-    printk("current running preempt_count:%d\n",current_running->preempt_count);
+    printk("current running pid:%d\n",(*current_running)->pid);
+    printk("current running preempt_count:%d\n",(*current_running)->preempt_count);
     printk("sstatus: 0x%lx sbadaddr: 0x%lx scause: %lu\n\r",
            regs->sstatus, regs->sbadaddr, regs->scause);
     printk("sepc: 0x%lx\n\r", regs->sepc);
