@@ -28,5 +28,6 @@ void strGenerator(void);
 // [MULTI-CORE]
 void test_multicore(void);
 void test_affinity(void);
+void bubble_task();
 
 #endif

@@ -30,13 +30,13 @@ main:
 	move s0,a0
 	move s1,a1
 
-	PRINT_N
-
 	// The core whose mhartid=0 is selected to boot the kernel.
 	// Other cores should wait until the kernel's initialization
 	// has been finished.
  	move a0, s0
 	bnez a0, secondary
+
+	PRINT_N
 
 	// your code 
 	lui a0,%hi(msg)

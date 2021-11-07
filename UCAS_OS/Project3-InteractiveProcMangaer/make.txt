@@ -1,5 +1,5 @@
 riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/kernel/smp.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/smp.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50201000
+riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/kernel/smp.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/smp.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/bubble.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50201000
 In file included from include/os/lock.h:32,
                  from ./init/main.c:37:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
@@ -26,12 +26,16 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
+./init/main.c: At top level:
+./init/main.c:225:5: warning: 'main' takes only zero or two arguments [-Wmain]
+  225 | int main(int arg)
+      |     ^~~~
 ./init/main.c: In function 'main':
-./init/main.c:204:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  204 |         current_running = &current_running_core_m;
+./init/main.c:235:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  235 |         current_running = &current_running_core_m;
       |                         ^
-./init/main.c:229:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  229 |         current_running = &current_running_core_s;
+./init/main.c:262:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  262 |         current_running = &current_running_core_s;
       |                         ^
 In file included from tiny_libc/include/stddef.h:4,
                  from tiny_libc/include/stdio.h:5,
@@ -1191,12 +1195,12 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xa19c		memsz 0x113b0
-		writing 0xa19c bytes
-		padding up to 0x11600
+		filesz 0xa328		memsz 0x116d8
+		writing 0xa328 bytes
+		padding up to 0x11a00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 138 sector(s)
+kernel_size: 140 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <os/string.h>
 #include <tasks.h>
+#include <os/smp.h>
 
 int cursor_x,cursor_y;
 
@@ -32,14 +33,14 @@ const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
 const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 3 * PAGE_SIZE;
 pcb_t pid0_pcb_core_m = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t),
-    .user_sp = (ptr_t)pid0_stack_core_m + PAGE_SIZE,
+    .kernel_sp = (ptr_t)pid0_stack_core_m + PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .user_sp = (ptr_t)pid0_stack_core_m,
     .preempt_count = 0
 };
 pcb_t pid0_pcb_core_s = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t),
-    .user_sp = (ptr_t)pid0_stack_core_s + PAGE_SIZE,
+    .kernel_sp = (ptr_t)pid0_stack_core_s + PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .user_sp = (ptr_t)pid0_stack_core_s,
     .preempt_count = 0
 };
 
@@ -50,6 +51,9 @@ LIST_HEAD(blocked_queue);
 pcb_t ** volatile current_running;
 pcb_t * volatile current_running_core_m;
 pcb_t * volatile current_running_core_s;
+
+pcb_t bubble_pcb;
+const ptr_t bubble_stack = INIT_KERNEL_STACK + 5 * PAGE_SIZE;
 
 /* global process id */
 pid_t process_id = 1;
@@ -105,9 +109,17 @@ pcb_t *block_current_task()
 void switch_to_next_task(pcb_t *curr)
 {
     if(list_is_empty(&ready_queue)){
-        print1("No valid task to run!\n")
-        while (1) ;
-        assert(0);
+        if(get_current_cpu_id() == 0){
+            (*current_running) = &bubble_pcb;
+        }
+        else{
+            (*current_running) = &bubble_pcb;
+        }
+        if(kernel_lock.flag == LOCKED){
+            unlock_kernel();
+        }
+        switch_to(curr,(*current_running));
+        return;
     }
     if (!list_is_empty(&blocked_queue))
     {

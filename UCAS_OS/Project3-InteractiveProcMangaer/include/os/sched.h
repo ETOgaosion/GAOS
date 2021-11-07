@@ -170,6 +170,9 @@ extern const ptr_t pid0_stack_core_m;
 extern pcb_t pid0_pcb_core_s;
 extern const ptr_t pid0_stack_core_s;
 
+extern pcb_t bubble_pcb;
+extern const ptr_t bubble_stack;
+
 extern void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
     pcb_t *pcb, void *arg);

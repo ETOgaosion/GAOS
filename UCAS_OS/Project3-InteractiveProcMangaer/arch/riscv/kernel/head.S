@@ -25,6 +25,10 @@ ENTRY(_start)
   la gp, __global_pointer$
   .option pop
 
+  // find core
+  csrr t0, CSR_MHARTID
+  bnez t0, set_secondary_stack
+
   /* Clear BSS for flat non-ELF images */
   la a3, __bss_start
   la a4, __BSS_END__
@@ -34,10 +38,6 @@ clear_bss:
   add a3, a3, RISCV_SZPTR
   blt a3, a4, clear_bss
 clear_bss_done:
-
-  // find core
-  csrr t0, CSR_MHARTID
-  bnez t0, set_secondary_stack
 
   /* setup C environment */
   ld sp, pid0_stack_core_m
@@ -53,6 +53,7 @@ set_env_finish:
   la a0, riscv_dtb
   sd a1, (a0)
 
+  mv a0,t0
   call main
 
 loop:

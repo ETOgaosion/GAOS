@@ -27,7 +27,7 @@ SRC_LIBS	= ./libs/string.c ./libs/printk.c
 SRC_LIBC	= ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c
 
 SRC_TEST	= ./test/test.c
-SRC_TEST3	= ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c
+SRC_TEST3	= ./test/test_project3/bubble.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c
 
 SRC_MAIN	= ${SRC_ARCH} ${SRC_INIT} ${SRC_INT} ${SRC_DRIVER} ${SRC_LOCK} ${SRC_COMM} ${SRC_SCHED} ${SRC_MM} ${SRC_SYSCALL} ${SRC_LIBS} ${SRC_LIBC} ${SRC_TEST} ${SRC_TEST3}
 
