@@ -30,17 +30,15 @@ int cursor_x,cursor_y;
 
 pcb_t pcb[NUM_MAX_TASK];
 const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
-const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 3 * PAGE_SIZE;
+const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 2 * PAGE_SIZE;
 pcb_t pid0_pcb_core_m = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_m + PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t),
-    .user_sp = (ptr_t)pid0_stack_core_m,
+    .kernel_sp = (ptr_t)pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t),
     .preempt_count = 0
 };
 pcb_t pid0_pcb_core_s = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_s + PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t),
-    .user_sp = (ptr_t)pid0_stack_core_s,
+    .kernel_sp = (ptr_t)pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t),
     .preempt_count = 0
 };
 
@@ -53,7 +51,7 @@ pcb_t * volatile current_running_core_m;
 pcb_t * volatile current_running_core_s;
 
 pcb_t bubble_pcb;
-const ptr_t bubble_stack = INIT_KERNEL_STACK + 5 * PAGE_SIZE;
+const ptr_t bubble_stack = INIT_KERNEL_STACK + 3 * PAGE_SIZE;
 
 /* global process id */
 pid_t process_id = 1;

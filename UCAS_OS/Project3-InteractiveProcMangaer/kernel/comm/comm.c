@@ -377,7 +377,7 @@ long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
         mbox_list[key]->read_head += arg->msg_length;
     }
     mbox_list[key]->used_units -= arg->msg_length;
-    k_cond_broadcast(mbox_list[key]->empty_cond_id - 1,operator);
+    k_cond_broadcast(mbox_list[key]->full_cond_id - 1,operator);
     k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
     arg->valid = 0;
     return blocked_time;

@@ -25,7 +25,7 @@ static inline void assert_supervisor_mode()
    __asm__ __volatile__("csrr x0, sscratch\n"); 
 }
 
-long k_mutex_lock_op(long *key,int op){
+long k_mutex_lock_op(int *key,int op){
     assert_supervisor_mode();
     int operator = (*current_running)->pid;
     if(op == 0){
@@ -89,7 +89,7 @@ long k_mutex_lock_init(int *key, int operator)
     return 0;
 }
 
-long k_mutex_lock_acquire(long key, int operator)
+long k_mutex_lock_acquire(int key, int operator)
 {
     assert_supervisor_mode();
     /* TODO */
@@ -114,7 +114,7 @@ long k_mutex_lock_acquire(long key, int operator)
     }
 }
 
-long k_mutex_lock_release(long key, int operator)
+long k_mutex_lock_release(int key, int operator)
 {
     /* TODO */
     if(!locks[key]->initialized){
@@ -137,7 +137,7 @@ long k_mutex_lock_release(long key, int operator)
     return locks[key]->lock_id;
 }
 
-long k_mutex_lock_destroy(long *key, int operator){
+long k_mutex_lock_destroy(int *key, int operator){
     if(!locks[*key - 1]->initialized){
         return -1;
     }

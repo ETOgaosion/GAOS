@@ -68,7 +68,7 @@ void init_pcb_stack(
     pt_regs->regs[1] = entry_point;
     pt_regs->regs[3] = (reg_t)__global_pointer$;
     pt_regs->regs[4] = (reg_t)pcb;
-    pt_regs->regs[10]= (reg_t)*(int *)arg;
+    pt_regs->regs[10]= (reg_t)(uint32_t)arg;
     pt_regs->sepc = entry_point;
     pt_regs->scause = 0;
     pt_regs->sbadaddr = 0;

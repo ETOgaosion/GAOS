@@ -26,6 +26,10 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
+./init/main.c: In function 'init_pcb_stack':
+./init/main.c:71:31: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+   71 |     pt_regs->regs[10]= (reg_t)(uint32_t)arg;
+      |                               ^
 ./init/main.c: At top level:
 ./init/main.c:225:5: warning: 'main' takes only zero or two arguments [-Wmain]
   225 | int main(int arg)
@@ -185,25 +189,6 @@ In file included from include/os/lock.h:32,
 arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'volatile lock_status_t *' {aka 'volatile enum <anonymous> *'}
    19 | static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
       |                                                    ~~~~~~^~~~~~~~
-./kernel/locking/lock.c: In function 'k_mutex_lock_op':
-./kernel/locking/lock.c:32:34: warning: passing argument 1 of 'k_mutex_lock_init' from incompatible pointer type [-Wincompatible-pointer-types]
-   32 |         return k_mutex_lock_init(key, operator);
-      |                                  ^~~
-      |                                  |
-      |                                  long int *
-In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:73:29: note: expected 'int *' but argument is of type 'long int *'
-   73 | long k_mutex_lock_init(int *key, int operator);
-      |                        ~~~~~^~~
-./kernel/locking/lock.c:44:37: warning: passing argument 1 of 'k_mutex_lock_trylock' from incompatible pointer type [-Wincompatible-pointer-types]
-   44 |         return k_mutex_lock_trylock(key, operator);
-      |                                     ^~~
-      |                                     |
-      |                                     long int *
-In file included from ./kernel/locking/lock.c:1:
-include/os/lock.h:77:32: note: expected 'int *' but argument is of type 'long int *'
-   77 | long k_mutex_lock_trylock(int *key, int operator);
-      |                           ~~~~~^~~
 ./kernel/locking/lock.c: In function 'k_mutex_lock_destroy':
 ./kernel/locking/lock.c:147:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
   147 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
@@ -239,28 +224,6 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-./kernel/comm/comm.c: In function 'k_barrier_destroy':
-./kernel/comm/comm.c:273:26: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  273 |     k_mutex_lock_destroy(&barrier_list[*key - 1]->mutex_id,operator);
-      |                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                          |
-      |                          int *
-In file included from include/os/comm.h:5,
-                 from ./kernel/comm/comm.c:1:
-include/os/lock.h:76:33: note: expected 'long int *' but argument is of type 'int *'
-   76 | long k_mutex_lock_destroy(long *key, int operator);
-      |                           ~~~~~~^~~
-./kernel/comm/comm.c: In function 'k_mbox_close':
-./kernel/comm/comm.c:325:34: warning: passing argument 1 of 'k_mutex_lock_destroy' from incompatible pointer type [-Wincompatible-pointer-types]
-  325 |             k_mutex_lock_destroy(&mbox_list[pcb[operator-1].mbox_keys[i] - 1]->mutex_id,operator);
-      |                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                  |
-      |                                  int *
-In file included from include/os/comm.h:5,
-                 from ./kernel/comm/comm.c:1:
-include/os/lock.h:76:33: note: expected 'long int *' but argument is of type 'int *'
-   76 | long k_mutex_lock_destroy(long *key, int operator);
-      |                           ~~~~~~^~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
 ./kernel/comm/comm.c:344:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
   344 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
@@ -1195,8 +1158,8 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xa328		memsz 0x116d8
-		writing 0xa328 bytes
+		filesz 0xa338		memsz 0x116e8
+		writing 0xa338 bytes
 		padding up to 0x11a00
 	segment 1
 		offset 0x0		vaddr 0x0
