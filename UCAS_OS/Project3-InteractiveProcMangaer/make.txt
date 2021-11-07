@@ -31,15 +31,15 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    71 |     pt_regs->regs[10]= (reg_t)(uint32_t)arg;
       |                               ^
 ./init/main.c: At top level:
-./init/main.c:225:5: warning: 'main' takes only zero or two arguments [-Wmain]
-  225 | int main(int arg)
+./init/main.c:210:5: warning: 'main' takes only zero or two arguments [-Wmain]
+  210 | int main(int arg)
       |     ^~~~
 ./init/main.c: In function 'main':
-./init/main.c:235:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  235 |         current_running = &current_running_core_m;
+./init/main.c:220:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  220 |         current_running = &current_running_core_m;
       |                         ^
-./init/main.c:262:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  262 |         current_running = &current_running_core_s;
+./init/main.c:247:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  247 |         current_running = &current_running_core_s;
       |                         ^
 In file included from tiny_libc/include/stddef.h:4,
                  from tiny_libc/include/stdio.h:5,
@@ -179,8 +179,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
-./kernel/locking/lock.c:12:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
-   12 |     return atomic_swap_d(LOCKED,&lock->flag);
+./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
+   13 |     return atomic_swap_d(LOCKED,&lock->flag);
       |                                 ^~~~~~~~~~~
       |                                 |
       |                                 volatile lock_status_t * {aka volatile enum <anonymous> *}
@@ -189,13 +189,9 @@ In file included from include/os/lock.h:32,
 arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'volatile lock_status_t *' {aka 'volatile enum <anonymous> *'}
    19 | static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
       |                                                    ~~~~~~^~~~~~~~
-./kernel/locking/lock.c: In function 'k_mutex_lock_destroy':
-./kernel/locking/lock.c:147:5: warning: implicit declaration of function 'kmemset' [-Wimplicit-function-declaration]
-  147 |     kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
-      |     ^~~~~~~
 ./kernel/locking/lock.c: In function 'find_lock':
-./kernel/locking/lock.c:60:1: warning: control reaches end of non-void function [-Wreturn-type]
-   60 | }
+./kernel/locking/lock.c:61:1: warning: control reaches end of non-void function [-Wreturn-type]
+   61 | }
       | ^
 In file included from include/os/lock.h:32,
                  from include/os/comm.h:5,
@@ -1158,12 +1154,12 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xa338		memsz 0x116e8
-		writing 0xa338 bytes
-		padding up to 0x11a00
+		filesz 0xa1f0		memsz 0x115a0
+		writing 0xa1f0 bytes
+		padding up to 0x11800
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 140 sector(s)
+kernel_size: 139 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

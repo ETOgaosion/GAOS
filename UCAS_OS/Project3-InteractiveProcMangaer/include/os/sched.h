@@ -97,27 +97,11 @@ typedef struct pcb
     reg_t kernel_sp;
     reg_t user_sp;
 
-    // count the number of disable_preempt
-    // enable_preempt enables CSR_SIE only when preempt_count == 0
-    reg_t preempt_count;
-
     ptr_t kernel_stack_base;
     ptr_t user_stack_base;
 
-    /* previous, next pointer */
-    list_node_t list;
-    
-    struct pcb *wait_parent;
-
     /* process id */
     pid_t pid;
-
-    // locks and mbox owned
-    long lock_keys[MAX_LOCK_PER_PCB];
-    int owned_lock_num;
-
-    int mbox_keys[MAX_LOCK_PER_PCB];
-    int owned_mbox_num;
 
     /* kernel/user thread/process */
     task_type_t type;
@@ -130,13 +114,31 @@ typedef struct pcb
     int cursor_x;
     int cursor_y;
 
+    /* priority */
+    prior_t sched_prior;
+    
+    // count the number of disable_preempt
+    // enable_preempt enables CSR_SIE only when preempt_count == 0
+    reg_t preempt_count;
+
+    /* previous, next pointer */
+    list_node_t list;
+    
+    struct pcb *wait_parent;
+
     /* timer */
     list_node_t timer_list;
     timer_t timer;
 
-    /* priority */
-    prior_t sched_prior;
+    // locks and mbox owned
+    long lock_keys[MAX_LOCK_PER_PCB];
+    int owned_lock_num;
 
+    int mbox_keys[MAX_LOCK_PER_PCB];
+    int owned_mbox_num;
+
+    // use mask to point to schedule core
+    int core_mask;
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -177,6 +179,7 @@ extern void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
     pcb_t *pcb, void *arg);
 
+extern void init_pcb_block(pcb_t *pcb);
 
 int find_pcb(void);
 

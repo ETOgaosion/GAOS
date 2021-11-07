@@ -103,6 +103,33 @@ void init_pcb_stack(
     }
 }
 
+void init_pcb_block(pcb_t *pcb){
+    int init_ticks = get_ticks();
+    // use allocPage in mm.c, first time allocate 1 page only
+    // user stack is below kernel stack for security
+    #if !defined (USE_CLOCK_INT) // no preempt
+    pcb->preempt_count = 1;
+    #endif
+    #if defined (USE_CLOCK_INT) // enable preempt
+    pcb->preempt_count = 0;
+    #endif
+    init_list_head(&pcb->list);
+    pcb->wait_parent = NULL;
+    pcb->owned_lock_num = 0;
+    pcb->owned_mbox_num = 0;
+    pcb->status = TASK_READY;
+    pcb->cursor_x = 0;
+    pcb->cursor_y = 0;
+    pcb->timer.initialized = 0;
+    #if defined (INIT_WITH_PRIORITY)
+    pcb->sched_prior.priority = i;
+    #endif
+    #ifndef INIT_WITH_PRIORITY
+    pcb->sched_prior.priority = 0;
+    #endif
+    pcb->sched_prior.last_sched_time = init_ticks;
+}
+
 static void init_pcb(int way)
 {
     if(way == 0){
@@ -114,37 +141,15 @@ static void init_pcb(int way)
             tasks_num = num_shell_tasks;
         #endif
         #endif
-        int init_ticks = get_ticks();
         for(int i=0;i<tasks_num;i++){
-            // use allocPage in mm.c, first time allocate 1 page only
-            // user stack is below kernel stack for security
             pcb[i].user_sp = allocPage(1,2*i);
-            pcb[i].user_stack_base = pcb[i].user_sp - PAGE_SIZE;
+            pcb[i].user_stack_base = pcb->user_sp - PAGE_SIZE;
             pcb[i].kernel_sp = allocPage(1,2*i+1);
-            pcb[i].kernel_stack_base = pcb[i].kernel_sp - PAGE_SIZE;
-            #if !defined (USE_CLOCK_INT) // no preempt
-            pcb[i].preempt_count = 1;
-            #endif
-            #if defined (USE_CLOCK_INT) // enable preempt
-            pcb[i].preempt_count = 0;
-            #endif
-            init_list_head(&pcb[i].list);
-            pcb[i].wait_parent = NULL;
+            pcb[i].kernel_stack_base = pcb->kernel_sp - PAGE_SIZE;
             pcb[i].pid = i+1;
-            pcb[i].owned_lock_num = 0;
-            pcb[i].owned_mbox_num = 0;
             pcb[i].type = tasks[i]->type;
-            pcb[i].status = TASK_READY;
-            pcb[i].cursor_x = 0;
-            pcb[i].cursor_y = 0;
-            pcb[i].timer.initialized = 0;
-            #if defined (INIT_WITH_PRIORITY)
-            pcb[i].sched_prior.priority = i;
-            #endif
-            #ifndef INIT_WITH_PRIORITY
-            pcb[i].sched_prior.priority = 0;
-            #endif
-            pcb[i].sched_prior.last_sched_time = init_ticks;
+            pcb[i].core_mask = 0b11;
+            init_pcb_block(&pcb[i]);
             init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i],NULL);
             list_add_tail(&(pcb[i].list),&ready_queue);
         }
@@ -154,34 +159,14 @@ static void init_pcb(int way)
         current_running_core_m = &pid0_pcb_core_m;
     }
     else{
-        int init_ticks = get_ticks();
         bubble_pcb.user_sp = bubble_stack;
         bubble_pcb.user_stack_base = bubble_pcb.user_sp - PAGE_SIZE;
         bubble_pcb.kernel_sp = bubble_stack + PAGE_SIZE;
         bubble_pcb.kernel_stack_base = bubble_pcb.kernel_sp - PAGE_SIZE;
-        #if !defined (USE_CLOCK_INT) // no preempt
-        bubble_pcb.preempt_count = 1;
-        #endif
-        #if defined (USE_CLOCK_INT) // enable preempt
-        bubble_pcb.preempt_count = 0;
-        #endif
-        init_list_head(&bubble_pcb.list);
-        bubble_pcb.wait_parent = NULL;
         bubble_pcb.pid = -1;
-        bubble_pcb.owned_lock_num = 0;
-        bubble_pcb.owned_mbox_num = 0;
         bubble_pcb.type = bubble_tasks[0]->type;
-        bubble_pcb.status = TASK_READY;
-        bubble_pcb.cursor_x = 0;
-        bubble_pcb.cursor_y = 0;
-        bubble_pcb.timer.initialized = 0;
-        #if defined (INIT_WITH_PRIORITY)
-        bubble_pcb.sched_prior.priority = i;
-        #endif
-        #ifndef INIT_WITH_PRIORITY
-        bubble_pcb.sched_prior.priority = 0;
-        #endif
-        bubble_pcb.sched_prior.last_sched_time = init_ticks;
+        bubble_pcb.core_mask = 0b11;
+        init_pcb_block(&bubble_pcb);
         init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp,bubble_tasks[0]->entry_point,&bubble_pcb,NULL);
         switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
         stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;

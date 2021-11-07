@@ -1,5 +1,6 @@
 #include <os/lock.h>
 #include <os/sched.h>
+#include <os/string.h>
 
 int first_time = 1;
 mutex_lock_t *locks[LOCK_NUM];

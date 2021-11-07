@@ -28,6 +28,13 @@ int cursor_x,cursor_y;
         printk(str, val);\
         vt100_move_cursor(cursor_x,cursor_y);
 
+#define no_task_to_schedule (*current_running) = &bubble_pcb;\
+        if(kernel_lock.flag == LOCKED){\
+            unlock_kernel();\
+        }\
+        switch_to(curr,(*current_running));\
+        return;
+
 pcb_t pcb[NUM_MAX_TASK];
 const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
 const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 2 * PAGE_SIZE;
@@ -106,28 +113,33 @@ pcb_t *block_current_task()
 
 void switch_to_next_task(pcb_t *curr)
 {
+    int current_core = get_current_cpu_id();
     if(list_is_empty(&ready_queue)){
-        if(get_current_cpu_id() == 0){
-            (*current_running) = &bubble_pcb;
-        }
-        else{
-            (*current_running) = &bubble_pcb;
-        }
-        if(kernel_lock.flag == LOCKED){
-            unlock_kernel();
-        }
-        switch_to(curr,(*current_running));
-        return;
+        no_task_to_schedule
     }
     if (!list_is_empty(&blocked_queue))
     {
         check_timer();
     }
     #ifdef SCHED_WITH_PRIORITY
-    pcb_t *next_pcb = dequeue(&ready_queue,3);
+    pcb_t *next_pcb = list_entry(ready_queue.next,pcb_t,list);
+    while(!(next_pcb->core_mask & (1 << current_core))){
+        next_pcb = list_entry(next_pcb->list.next,pcb_t,list);;
+        if(next_pcb->list.next == &ready_queue){
+            goto no_task_to_schedule;
+        }
+    }
+    next_pcb = dequeue(next_pcb->list.prev,3);
     #endif
     #ifndef SCHED_WITH_PRIORITY
-    pcb_t *next_pcb = dequeue(&ready_queue,0);
+    pcb_t *next_pcb = list_entry(ready_queue.next,pcb_t,list);
+    while(!(next_pcb->core_mask & (1 << current_core))){
+        next_pcb = list_entry(next_pcb->list.next,pcb_t,list);
+        if(next_pcb->list.next == &ready_queue){
+            no_task_to_schedule
+        }
+    }
+    next_pcb = dequeue(next_pcb->list.prev,0);
     #endif
     next_pcb->status = TASK_RUNNING;
     (*current_running) = next_pcb;
@@ -234,6 +246,7 @@ long k_fork(void)
     kid->timer.initialized = curr->timer.initialized;
     kid->sched_prior.last_sched_time = 0;
     kid->sched_prior.priority = 0;
+    kid->core_mask = (*current_running)->core_mask;
     copy_pcb_stack(kid->kernel_sp,kid->user_sp,kid,curr->kernel_sp,curr->user_sp,curr);
     list_add_tail(&(kid->list),&ready_queue);
     return kid->pid;
@@ -349,29 +362,10 @@ pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
     new->user_stack_base = new->user_sp - PAGE_SIZE;
     new->kernel_sp = allocPage(1, 2*pcb_i + 1);
     new->kernel_stack_base = new->kernel_sp - PAGE_SIZE;
-    #if !defined (USE_CLOCK_INT) // no preempt
-    new->preempt_count = 1;
-    #endif
-    #if defined (USE_CLOCK_INT) // enable preempt
-    new->preempt_count = 0;
-    #endif
-    init_list_head(&new->list);
-    new->wait_parent = NULL;
     new->pid = pcb_i + 1;
-    new->owned_lock_num = 0;
-    new->owned_mbox_num = 0;
     new->type = task->type;
-    new->status = TASK_READY;
-    new->mode = mode;
-    new->cursor_x = 0;
-    new->cursor_y = 0;
-    #if defined (INIT_WITH_PRIORITY)
-    new->sched_prior.priority = i;
-    #endif
-    #ifndef INIT_WITH_PRIORITY
-    new->sched_prior.priority = 0;
-    #endif
-    new->sched_prior.last_sched_time = 0;
+    new->core_mask = (*current_running)->core_mask;
+    init_pcb_block(new);
     init_pcb_stack(new->kernel_sp,new->user_sp,task->entry_point,new,arg);
     list_add_tail(&(new->list),&ready_queue);
     return new->pid;
