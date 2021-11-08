@@ -118,8 +118,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    34 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
 ./kernel/irq/irq.c: In function 'handle_other':
-./kernel/irq/irq.c:76:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
-   76 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
+./kernel/irq/irq.c:78:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
+   78 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
       |             ^~~~~~
       |             printf
 In file included from include/os/lock.h:32,
@@ -1115,8 +1115,8 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xaaf8		memsz 0x11ea8
-		writing 0xaaf8 bytes
+		filesz 0xab20		memsz 0x11ed0
+		writing 0xab20 bytes
 		padding up to 0x12200
 	segment 1
 		offset 0x0		vaddr 0x0

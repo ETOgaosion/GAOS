@@ -150,7 +150,7 @@ void strGenerator(void *arg)
 
     int len = 0;
     int strBuffer[MAX_MBOX_LENGTH - sizeof(struct MsgHeader)];
-    while(clientSendMsg(mq, initReq, initReqLen,actual_arg->operator)){
+    while(clientSendMsg(mq, initReq, initReqLen,actual_arg->operator) < 0){
         sys_sleep(1);
     }
     int position = 1;
