@@ -32,6 +32,7 @@ void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t cause)
     // TODO interrupt handler.
     // call corresponding handler by the value of `cause`
     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+    kernel_move_cursor((*current_running)->cursor_x,(*current_running)->cursor_y);
     handler_t *handle_table = (cause & SCAUSE_IRQ_FLAG) ? irq_table : exc_table;
     uint64_t exception_code = cause & ~SCAUSE_IRQ_FLAG;
     handle_table[exception_code](regs,stval,cause);

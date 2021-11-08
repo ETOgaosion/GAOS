@@ -108,6 +108,9 @@ pcb_t *block_current_task()
         }
         curr->status = TASK_READY;
     }
+    if(curr->pid != -1){
+        curr->status = TASK_READY;
+    }
     return curr;
 }
 
@@ -452,23 +455,26 @@ int k_waitpid(pid_t pid)
 
 void k_process_show()
 {
-    prints("\nProcesses:\nprocess id: 0 (shell), process status: TASK_RUNNING");
+    prints("\n[Process table]:\nprocess id: 0 (shell), process status: TASK_RUNNING");
     for (int i = 1; i < NUM_MAX_TASK; i++)
     {
-        if(pcb[i].pid != 0){
+        if(pcb[i].pid != 0 || (pcb[i].pid == 0 && pcb[i].status == TASK_EXITED)){
             switch (pcb[i].status)
             {
             case TASK_BLOCKED:
-                prints("\n\rprocess id: %d, process status: BLOCKED",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: BLOCKED, mask: %x",pcb[i].pid,pcb[i].core_mask);
                 break;
             case TASK_EXITED:
-                prints("\n\rprocess id: %d, process status: EXITED",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: EXITED, mask: %x",pcb[i].pid,pcb[i].core_mask);
                 break;
             case TASK_RUNNING:
-                prints("\n\rprocess id: %d, process status: RUNNING",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: RUNNING, mask: %x",pcb[i].pid,pcb[i].core_mask);
+                break;
+            case TASK_READY:
+                prints("\n\rprocess id: %d, process status: READY, mask: %x",pcb[i].pid,pcb[i].core_mask);
                 break;
             case TASK_ZOMBIE:
-                prints("\n\rprocess id: %d, process status: ZOMBIE",pcb[i].pid);
+                prints("\n\rprocess id: %d, process status: ZOMBIE, mask: %x",pcb[i].pid,pcb[i].core_mask);
                 break;
             default:
                 break;
@@ -481,4 +487,14 @@ void k_process_show()
 pid_t k_getpid()
 {
     return (*current_running)->pid;
+}
+
+int k_taskset(void *arg){
+    taskset_arg_t *taskset_args = (taskset_arg_t *)arg;
+    int pcb_i = taskset_args->pid - 1;
+    if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
+        return -1;
+    }
+    pcb[taskset_args->pid - 1].core_mask = taskset_args->mask;
+    return taskset_args->pid;
 }

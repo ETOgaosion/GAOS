@@ -68,7 +68,7 @@ void init_pcb_stack(
     pt_regs->regs[1] = entry_point;
     pt_regs->regs[3] = (reg_t)__global_pointer$;
     pt_regs->regs[4] = (reg_t)pcb;
-    pt_regs->regs[10]= (reg_t)(uint32_t)arg;
+    pt_regs->regs[10]= (reg_t)*(int *)arg;
     pt_regs->sepc = entry_point;
     pt_regs->scause = 0;
     pt_regs->sbadaddr = 0;
@@ -190,6 +190,7 @@ static void init_syscall(void)
     syscall[SYSCALL_YIELD]          = (long (*)())&k_scheduler;
     syscall[SYSCALL_FORK]           = (long (*)())&k_fork;
     syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
+    syscall[SYSCALL_TASKSET]        = (long (*)())&k_taskset;
     syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
     syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
     

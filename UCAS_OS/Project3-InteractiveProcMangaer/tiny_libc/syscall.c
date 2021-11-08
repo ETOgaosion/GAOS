@@ -91,6 +91,14 @@ void sys_setpriority(long priority)
     invoke_syscall(SYSCALL_SET_PRIORITY,priority,IGNORE,IGNORE);
 }
 
+int sys_taskset(void *arg){
+    if(MODE){
+        syscall[SYSCALL_TASKSET](arg);
+        return;
+    }
+    invoke_syscall(SYSCALL_TASKSET,arg,IGNORE,IGNORE);
+}
+
 int sys_lockop(int *key, int op)
 {
     if(MODE){

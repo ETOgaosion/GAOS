@@ -148,6 +148,11 @@ typedef struct task_info
     task_type_t type;
 } task_info_t;
 
+typedef struct taskset_arg{
+    int pid;
+    int mask;
+} taskset_arg_t;
+
 extern void ret_from_exception();
 extern void __global_pointer$();
 
@@ -189,6 +194,8 @@ int k_kill(pid_t pid);
 int k_waitpid(pid_t pid);
 void k_process_show();
 pid_t k_getpid();
+
+int k_taskset(void *arg);
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
 extern void load_next_task(pcb_t *next);

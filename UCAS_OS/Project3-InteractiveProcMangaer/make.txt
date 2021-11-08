@@ -26,20 +26,16 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-./init/main.c: In function 'init_pcb_stack':
-./init/main.c:71:31: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-   71 |     pt_regs->regs[10]= (reg_t)(uint32_t)arg;
-      |                               ^
 ./init/main.c: At top level:
-./init/main.c:210:5: warning: 'main' takes only zero or two arguments [-Wmain]
-  210 | int main(int arg)
+./init/main.c:211:5: warning: 'main' takes only zero or two arguments [-Wmain]
+  211 | int main(int arg)
       |     ^~~~
 ./init/main.c: In function 'main':
-./init/main.c:220:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  220 |         current_running = &current_running_core_m;
+./init/main.c:221:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  221 |         current_running = &current_running_core_m;
       |                         ^
-./init/main.c:247:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  247 |         current_running = &current_running_core_s;
+./init/main.c:248:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  248 |         current_running = &current_running_core_s;
       |                         ^
 In file included from tiny_libc/include/stddef.h:4,
                  from tiny_libc/include/stdio.h:5,
@@ -122,8 +118,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    34 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
 ./kernel/irq/irq.c: In function 'handle_other':
-./kernel/irq/irq.c:75:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
-   75 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
+./kernel/irq/irq.c:76:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
+   76 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
       |             ^~~~~~
       |             printf
 In file included from include/os/lock.h:32,
@@ -555,9 +551,25 @@ In file included from ./tiny_libc/syscall.c:1:
 include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'void *'
    35 | extern long invoke_syscall(long, long, long, long);
       |                                        ^~~~
+./tiny_libc/syscall.c: In function 'sys_taskset':
+./tiny_libc/syscall.c:97:9: warning: 'return' with no value, in function returning non-void [-Wreturn-type]
+   97 |         return;
+      |         ^~~~~~
+./tiny_libc/syscall.c:94:5: note: declared here
+   94 | int sys_taskset(void *arg){
+      |     ^~~~~~~~~~~
+./tiny_libc/syscall.c:99:36: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+   99 |     invoke_syscall(SYSCALL_TASKSET,arg,IGNORE,IGNORE);
+      |                                    ^~~
+      |                                    |
+      |                                    void *
+In file included from ./tiny_libc/syscall.c:1:
+include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'void *'
+   35 | extern long invoke_syscall(long, long, long, long);
+      |                                  ^~~~
 ./tiny_libc/syscall.c: In function 'sys_lockop':
-./tiny_libc/syscall.c:99:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-   99 |     return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE);
+./tiny_libc/syscall.c:107:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  107 |     return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE);
       |                                          ^~~
       |                                          |
       |                                          int *
@@ -566,8 +578,8 @@ include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type '
    35 | extern long invoke_syscall(long, long, long, long);
       |                                  ^~~~
 ./tiny_libc/syscall.c: In function 'sys_commop':
-./tiny_libc/syscall.c:107:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  107 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
+./tiny_libc/syscall.c:115:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  115 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
       |                                          ^~~
       |                                          |
       |                                          int *
@@ -575,8 +587,8 @@ In file included from ./tiny_libc/syscall.c:1:
 include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
    35 | extern long invoke_syscall(long, long, long, long);
       |                                  ^~~~
-./tiny_libc/syscall.c:107:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  107 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
+./tiny_libc/syscall.c:115:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  115 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
       |                                              ^~~~
       |                                              |
       |                                              int *
@@ -585,8 +597,8 @@ include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type '
    35 | extern long invoke_syscall(long, long, long, long);
       |                                        ^~~~
 ./tiny_libc/syscall.c: In function 'sys_write':
-./tiny_libc/syscall.c:117:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  117 |     invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
+./tiny_libc/syscall.c:125:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  125 |     invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
       |                                  ^~~~
       |                                  |
       |                                  char *
@@ -595,8 +607,8 @@ include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type '
    35 | extern long invoke_syscall(long, long, long, long);
       |                                  ^~~~
 ./tiny_libc/syscall.c: In function 'sys_get_cursor':
-./tiny_libc/syscall.c:187:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  187 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
+./tiny_libc/syscall.c:195:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  195 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
       |                                  ^
       |                                  |
       |                                  int *
@@ -604,8 +616,8 @@ In file included from ./tiny_libc/syscall.c:1:
 include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
    35 | extern long invoke_syscall(long, long, long, long);
       |                                  ^~~~
-./tiny_libc/syscall.c:187:36: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  187 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
+./tiny_libc/syscall.c:195:36: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  195 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
       |                                    ^
       |                                    |
       |                                    int *
@@ -614,8 +626,8 @@ include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type '
    35 | extern long invoke_syscall(long, long, long, long);
       |                                        ^~~~
 ./tiny_libc/syscall.c: In function 'sys_get_wall_time':
-./tiny_libc/syscall.c:213:49: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  213 |     return invoke_syscall(SYSCALL_GET_WALL_TIME,time_elapsed,IGNORE,IGNORE);
+./tiny_libc/syscall.c:221:49: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
+  221 |     return invoke_syscall(SYSCALL_GET_WALL_TIME,time_elapsed,IGNORE,IGNORE);
       |                                                 ^~~~~~~~~~~~
       |                                                 |
       |                                                 long int *
@@ -1154,12 +1166,12 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xa1f0		memsz 0x115a0
-		writing 0xa1f0 bytes
-		padding up to 0x11800
+		filesz 0xa648		memsz 0x119f8
+		writing 0xa648 bytes
+		padding up to 0x11c00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 139 sector(s)
+kernel_size: 141 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

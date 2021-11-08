@@ -10,9 +10,6 @@ void wait_lock_task();
 void wait_exit_task();
 
 // [TASK3]
-void test_condition(void);
-void producer_task(void);
-void consumer_task(int print_location);
 
 void semaphore_add_task1(void);
 void semaphore_add_task2(void);

@@ -44,6 +44,7 @@ pid_t sys_getpid();
 void sys_yield();
 extern long sys_fork();
 void sys_setpriority(long);
+int sys_taskset(void *);
 int sys_lockop(int *key, int op);
 int sys_commop(int *key, int *args, int op);
 void sys_write(char *);
