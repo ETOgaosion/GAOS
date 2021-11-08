@@ -41,7 +41,7 @@
 #define SHELL_ARG_NUM 3
 #define SHELL_ARG_MAX_LENGTH 20
 #define SUPPORTED_CMD_NUM 6
-#define CURRENT_TASK_NUM 7
+#define CURRENT_TASK_NUM 8
 #define MAX_CMD_IN_LINES 15
 
 #define BEGIN cmd_in_length = 0;\
@@ -65,17 +65,20 @@ struct task_info task_test_semaphore = {
 struct task_info task_test_barrier = {
     (uintptr_t)&test_barrier, USER_PROCESS};
     
-struct task_info strserver_task = {(uintptr_t)&strServer, USER_PROCESS};
-struct task_info strgenerator_task = {(uintptr_t)&strGenerator, USER_PROCESS};
+struct task_info strserver_task = {(uintptr_t)&s2mServer, USER_PROCESS};
+struct task_info strgenerator_task = {(uintptr_t)&s2mGenerator, USER_PROCESS};
 
 struct task_info task_test_multicore = {(uintptr_t)&test_multicore, USER_PROCESS};
 struct task_info task_test_affinity = {(uintptr_t)&test_affinity, USER_PROCESS};
+
+struct task_info task_mbox_multicore = {(uintptr_t)&inter_communication_test, USER_PROCESS};
 
 static struct task_info *test_tasks[16] = {&task_test_waitpid,
                                            &task_test_semaphore,
                                            &task_test_barrier,
                                            &strserver_task, &strgenerator_task,
-                                           &task_test_multicore, &task_test_affinity};
+                                           &task_test_multicore, &task_test_affinity,
+                                           &task_mbox_multicore};
 void panic(char *error);
 static int shell_help(void *cmd_str, void *arg1, void*arg2);
 static int shell_exec(void *pid_str, void *mode_str, void *arg2);

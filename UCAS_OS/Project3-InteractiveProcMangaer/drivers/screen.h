@@ -54,7 +54,6 @@ void load_curpcb_cursor(void);
 /* screen write string */
 void screen_write(char *buff);
 void screen_write_ch(char ch);
-void screen_putchar(char ch);
 
 /* move cursor int (x,y) */
 void screen_move_cursor(int x, int y);

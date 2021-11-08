@@ -30,22 +30,24 @@ static int find_arg_t(){
     return -1;
 }
 
-int mbox_send(mailbox_t *mailbox, void *msg, int msg_length)
+int mbox_send(mailbox_t *mailbox, void *msg, int msg_length, int operator)
 {
     // TODO:
     int arg_i = find_arg_t();
     mbox_args[arg_i].valid = 1;
     mbox_args[arg_i].msg = msg;
     mbox_args[arg_i].msg_length = msg_length;
+    mbox_args[arg_i].sleep_operator = operator;
     return mbox_op(mailbox,&mbox_args[arg_i],2);
 }
 
-int mbox_recv(mailbox_t *mailbox, void *msg, int msg_length)
+int mbox_recv(mailbox_t *mailbox, void *msg, int msg_length, int operator)
 {
     // TODO:
     int arg_i = find_arg_t();
     mbox_args[arg_i].valid = 1;
     mbox_args[arg_i].msg = msg;
     mbox_args[arg_i].msg_length = msg_length;
+    mbox_args[arg_i].sleep_operator = operator;
     return mbox_op(mailbox,&mbox_args[arg_i],3);
 }

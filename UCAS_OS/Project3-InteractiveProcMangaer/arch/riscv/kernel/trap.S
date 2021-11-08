@@ -13,7 +13,7 @@ ENTRY(setup_exception)
   j setup_exception_ret
 setsie:
   li t0, SIE_STIE | SIE_SEIE
-  csrw sie, t0
 setup_exception_ret:
+  csrw CSR_SIE, t0
   jr ra
 ENDPROC(setup_exception)

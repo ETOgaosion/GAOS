@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <mailbox.h>
 #include <sys/syscall.h>
+#include <test.h>
 
 
 // struct task_info strserver_task = {(uintptr_t)&strServer, USER_PROCESS};
@@ -14,6 +15,12 @@
 static const char initReq[] = "clientInitReq";
 static const int initReqLen = sizeof(initReq);
 
+typedef struct mail_box_init_args{
+    char *mbox_1_name;
+    char *mbox_2_name;
+    int pos;
+    int operator;
+} mail_box_init_args_t;
 struct MsgHeader
 {
     int length;
@@ -48,27 +55,38 @@ int clientInitReq(const char* buf, int length)
     return 1;
 }
 
-void strServer(void)
+void strServer(void *arg)
 {
+    mail_box_init_args_t *actual_arg = (mail_box_init_args_t *)arg;
+    char *mbox_1_name = actual_arg->mbox_1_name;
+    char *mbox_2_name = actual_arg->mbox_2_name;
+    int pos = actual_arg->pos;
     char msgBuffer[MAX_MBOX_LENGTH];
     struct MsgHeader header;
     int64_t correctRecvBytes = 0;
     int64_t errorRecvBytes = 0;
     int64_t blockedCount = 0;
-    int clientPos = 2;
+    int clientPos = pos;
 
-    mailbox_t mq_m = mbox_open("str-message-queue");
+    mailbox_t mq_m = mbox_open(mbox_1_name);
     mailbox_t *mq = &mq_m;
-    mailbox_t posmq_m = mbox_open("pos-message-queue");
+    mailbox_t posmq_m = mbox_open(mbox_2_name);
     mailbox_t *posmq = &posmq_m;
     sys_move_cursor(1, 1);
     printf("[Server] server started");
     sys_sleep(1);
+    int recv_res;
 
     for (;;)
     {
-        blockedCount += mbox_recv(mq, &header, sizeof(struct MsgHeader));
-        blockedCount += mbox_recv(mq, msgBuffer, header.length);
+        while((recv_res = mbox_recv(mq, &header, sizeof(struct MsgHeader),actual_arg->operator)) < 0){
+            sys_sleep(1);
+        }
+        blockedCount += recv_res;
+        while((recv_res = mbox_recv(mq, msgBuffer, header.length,actual_arg->operator)) < 0){
+            sys_sleep(1);
+        }
+        blockedCount += recv_res;
 
         uint32_t checksum = adler32(msgBuffer, header.length);
         if (checksum == header.checksum) {
@@ -82,7 +100,9 @@ void strServer(void)
               header.sender, blockedCount, correctRecvBytes, errorRecvBytes);
 
         if (clientInitReq(msgBuffer, header.length)) {
-            mbox_send(posmq, &clientPos, sizeof(int));
+            while(mbox_send(posmq, &clientPos, sizeof(int),actual_arg->operator) < 0){
+                sys_sleep(1);
+            }
             ++clientPos;
         }
 
@@ -90,7 +110,7 @@ void strServer(void)
     }
 }
 
-int clientSendMsg(mailbox_t *mq, const char* content, int length)
+int clientSendMsg(mailbox_t *mq, const char* content, int length, int operator)
 {
     int i;
     char msgBuffer[MAX_MBOX_LENGTH] = {0};
@@ -103,7 +123,7 @@ int clientSendMsg(mailbox_t *mq, const char* content, int length)
     for (i = 0; i < length; ++i) {
         _content[i] = content[i];
     }
-    return mbox_send(mq, msgBuffer, length + sizeof(struct MsgHeader));
+    return mbox_send(mq, msgBuffer, length + sizeof(struct MsgHeader), operator);
 }
 
 void generateRandomString(char* buf, int len)
@@ -118,20 +138,28 @@ void generateRandomString(char* buf, int len)
     }
 }
 
-void strGenerator(void)
+void strGenerator(void *arg)
 {
-    mailbox_t mq_m = mbox_open("str-message-queue");
+    mail_box_init_args_t *actual_arg = (mail_box_init_args_t *)arg;
+    char *mbox_1_name = actual_arg->mbox_1_name;
+    char *mbox_2_name = actual_arg->mbox_2_name;
+    mailbox_t mq_m = mbox_open(mbox_1_name);
     mailbox_t *mq = &mq_m;
-    mailbox_t posmq_m = mbox_open("pos-message-queue");
+    mailbox_t posmq_m = mbox_open(mbox_2_name);
     mailbox_t *posmq = &posmq_m;
 
     int len = 0;
     int strBuffer[MAX_MBOX_LENGTH - sizeof(struct MsgHeader)];
-    clientSendMsg(mq, initReq, initReqLen);
+    while(clientSendMsg(mq, initReq, initReqLen,actual_arg->operator)){
+        sys_sleep(1);
+    }
     int position = 1;
-    mbox_recv(posmq, &position, sizeof(int));
+    while(mbox_recv(posmq, &position, sizeof(int),actual_arg->operator) < 0){
+        sys_sleep(1);
+    }
     int blocked = 0;
     int64_t bytes = 0;
+    int send_res;
 
     sys_move_cursor(1, position);
     printf("[Client %d] server started", position);
@@ -140,7 +168,10 @@ void strGenerator(void)
     {
         len = (rand() % ((MAX_MBOX_LENGTH - sizeof(struct MsgHeader))/2)) + 1;
         generateRandomString(strBuffer, len);
-        blocked += clientSendMsg(mq, strBuffer, len);
+        while((send_res = clientSendMsg(mq, strBuffer, len,actual_arg->operator)) < 0){
+            sys_sleep(1);
+        }
+        blocked += send_res;
         bytes += len;
 
         sys_move_cursor(1, position);
@@ -148,4 +179,47 @@ void strGenerator(void)
             bytes, blocked);
         sys_sleep(1);
     }
+}
+
+void s2mGenerator(){
+    mail_box_init_args_t mailbox_names = {.mbox_1_name = "str-message-queue",.mbox_2_name = "pos-message-queue",.pos = 2,.operator = 0};
+    strGenerator(&mailbox_names);
+}
+
+void s2mServer(){
+    mail_box_init_args_t mailbox_names = {.mbox_1_name = "str-message-queue",.mbox_2_name = "pos-message-queue",.pos = 2,.operator = 0};
+    strServer(&mailbox_names);
+}
+
+void mixMachine(void *arg){
+    mail_box_init_args_t *mailbox_names = (mail_box_init_args_t *)arg;
+    struct task_info mix_send_task = {(uintptr_t)&strGenerator, USER_PROCESS};
+    struct task_info mix_recv_task = {(uintptr_t)&strServer, USER_PROCESS};
+    pid_t mix_machine_pids[2];
+    mix_machine_pids[0] = sys_spawn(&mix_send_task,&mailbox_names,ENTER_ZOMBIE_ON_EXIT);
+    mix_machine_pids[1] = sys_spawn(&mix_recv_task,&mailbox_names,ENTER_ZOMBIE_ON_EXIT);
+    for (int i = 0; i < 2; i++)
+    {
+        sys_waitpid(mix_machine_pids[i]);
+    }
+    sys_exit();
+}
+
+void inter_communication_test(void){
+    struct task_info inter_comm_task = {(uintptr_t)&mixMachine, USER_PROCESS};
+    mail_box_init_args_t inter_task_box_names[3] = {{.mbox_1_name = "box1-str-message-queue",.mbox_2_name = "box1-pos-message-queue",.pos = 2,.operator = 1},\
+                                                    {.mbox_1_name = "box2-str-message-queue",.mbox_2_name = "box2-pos-message-queue",.pos = 4,.operator = 1},\
+                                                    {.mbox_1_name = "box3-str-message-queue",.mbox_2_name = "box3-pos-message-queue",.pos = 6,.operator = 1}};
+    mail_box_init_args_t *inter_task_box_arg_ptr[3];
+    pid_t inter_task_pids[3];
+    for (int i = 0; i < 3; i++)
+    {
+        inter_task_box_arg_ptr[i] = &inter_task_box_names[i];
+        inter_task_pids[i] = sys_spawn(&inter_comm_task,&inter_task_box_arg_ptr[i],ENTER_ZOMBIE_ON_EXIT);
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        sys_waitpid(inter_task_pids[i]);
+    }
+    sys_exit();
 }

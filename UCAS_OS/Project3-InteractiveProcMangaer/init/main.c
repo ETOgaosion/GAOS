@@ -198,7 +198,7 @@ static void init_syscall(void)
     syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
     syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
     syscall[SYSCALL_SERIAL_READ]    = (long (*)())&sbi_console_getchar;
-    syscall[SYSCALL_SERIAL_WRITE]   = (long (*)())&screen_putchar;
+    syscall[SYSCALL_SERIAL_WRITE]   = (long (*)())&screen_write_ch;
     syscall[SYSCALL_SCREEN_CLEAR]   = (long (*)())&screen_clear;
     syscall[SYSCALL_GET_CURSOR]     = (long (*)())&get_cursor;
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
@@ -248,6 +248,9 @@ int main(int arg)
         current_running = &current_running_core_s;
         setup_exception();
         printk("> [READY] Slave core ready to launch!\n\r");
+        enable_interrupt();
+        sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
+        k_scheduler();
     }
 
     // fdt_print(riscv_dtb);

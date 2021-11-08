@@ -19,8 +19,12 @@ void test_barrier(void);
 void barrier_task(int print_location);
 
 // [TASK4]
-void strServer(void);
-void strGenerator(void);
+void strServer(void *arg);
+void strGenerator(void *arg);
+void s2mGenerator();
+void s2mServer();
+void mixMachine(void *arg);
+void inter_communication_test(void);
 
 // [MULTI-CORE]
 void test_multicore(void);

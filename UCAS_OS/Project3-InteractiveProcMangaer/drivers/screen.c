@@ -86,12 +86,6 @@ void screen_write_ch(char ch)
     pcb_move_cursor(screen_cursor_x,screen_cursor_y);
 }
 
-void screen_putchar(char ch)
-{
-    screen_write_ch(ch);
-    port_write_ch(ch);
-}
-
 void init_screen(void)
 {
     vt100_hidden_cursor();

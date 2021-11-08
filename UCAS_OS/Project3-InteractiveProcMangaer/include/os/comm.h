@@ -50,6 +50,7 @@ typedef struct mbox_arg{
     int valid;
     void *msg;
     int msg_length;
+    int sleep_operator;
 } mbox_arg_t;
 
 long k_commop(void *key_id, void *arg, int op);

@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 #include <mthread.h>
 #include <stdlib.h>
+#include <test.h>
 
 #define MAX_ITERATION 100
 #define INTEGER_TEST_CHUNK 100000

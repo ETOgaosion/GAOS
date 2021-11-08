@@ -2,6 +2,7 @@
 #include <test3.h>
 #include <stdio.h>
 #include <sys/syscall.h>
+#include <test.h>
 
 void waiting_task1(void)
 {

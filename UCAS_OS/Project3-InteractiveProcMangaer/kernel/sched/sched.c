@@ -108,7 +108,7 @@ pcb_t *block_current_task()
         }
         curr->status = TASK_READY;
     }
-    if(curr->pid != -1){
+    if(curr->pid == -1){
         curr->status = TASK_READY;
     }
     return curr;
@@ -116,9 +116,12 @@ pcb_t *block_current_task()
 
 void switch_to_next_task(pcb_t *curr)
 {
+    pcb_t *next_pcb = NULL;
     int current_core = get_current_cpu_id();
     if(list_is_empty(&ready_queue)){
-        no_task_to_schedule
+        (*current_running) = &bubble_pcb;
+        next_pcb = (*current_running);
+        goto switch_to_next;
     }
     if (!list_is_empty(&blocked_queue))
     {
@@ -135,22 +138,26 @@ void switch_to_next_task(pcb_t *curr)
     next_pcb = dequeue(next_pcb->list.prev,3);
     #endif
     #ifndef SCHED_WITH_PRIORITY
-    pcb_t *next_pcb = list_entry(ready_queue.next,pcb_t,list);
+    next_pcb = list_entry(ready_queue.next,pcb_t,list);
     while(!(next_pcb->core_mask & (1 << current_core))){
         next_pcb = list_entry(next_pcb->list.next,pcb_t,list);
         if(next_pcb->list.next == &ready_queue){
-            no_task_to_schedule
+            (*current_running) = &bubble_pcb;
+            next_pcb = (*current_running);
+            goto switch_to_next;
         }
     }
     next_pcb = dequeue(next_pcb->list.prev,0);
     #endif
     next_pcb->status = TASK_RUNNING;
+    pcb_move_cursor(screen_cursor_x,screen_cursor_y);
     (*current_running) = next_pcb;
     process_id = next_pcb->pid;
     
     // restore the current_runnint's cursor_x and cursor_y
     load_curpcb_cursor();
 
+switch_to_next:
     // TODO: switch_to (*current_running)
     if(curr){
         switch_to(curr,next_pcb);

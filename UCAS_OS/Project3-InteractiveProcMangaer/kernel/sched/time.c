@@ -2,7 +2,7 @@
 #include <os/mm.h>
 #include <os/irq.h>
 #include <type.h>
-#include <string.h>
+#include <os/string.h>
 
 LIST_HEAD(timers);
 

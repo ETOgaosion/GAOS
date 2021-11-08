@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 #include <mthread.h>
 #include <test3.h>
+#include <test.h>
 
 #define NUM_TB 3
 

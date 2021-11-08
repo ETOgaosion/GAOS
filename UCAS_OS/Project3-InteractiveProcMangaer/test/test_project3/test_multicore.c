@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 #include <mthread.h>
 #include <stdlib.h>
+#include <test.h>
 
 #define MAX_RANGE 5000000
 #define MOD 1000007
@@ -26,10 +27,11 @@ void test_multicore(void)
     struct task_info task_add = {(uintptr_t)&add_task,
                               USER_PROCESS};
     struct TestMultiCoreArg singleCoreArg = {1, 0, MAX_RANGE, &single_core_result};
+    struct TestMultiCoreArg *singleCoreArg_ptr = &singleCoreArg;
     // single core performance
     clock_t singleCoreBegin = clock();
     pid_t single_pid = sys_spawn(&task_add,
-	                    (void*)&singleCoreArg,
+	                    (void*)&singleCoreArg_ptr,
                             ENTER_ZOMBIE_ON_EXIT);
     sys_waitpid(single_pid);
     clock_t singleCoreEnd = clock();
@@ -37,6 +39,10 @@ void test_multicore(void)
     printf("single core: %ld ticks, result = %d            \n\r", singleCoreEnd - singleCoreBegin, single_core_result);
 
     struct TestMultiCoreArg multiCoreArgs[NUM_CPUS];
+    struct TestMultiCoreArg *multiCoreArgs_ptr[NUM_CPUS];
+    for(int i = 0; i < NUM_CPUS; i++){
+        multiCoreArgs_ptr[i] = &multiCoreArgs[i];
+    }
     pid_t pids[NUM_CPUS];
     int multi_core_results[NUM_CPUS] = {0};
     for (int i = 0; i < NUM_CPUS; ++i) {
@@ -49,7 +55,7 @@ void test_multicore(void)
     clock_t multiCoreBegin = clock();
     for (int i = 0; i < NUM_CPUS; ++i) {
         pids[i] = sys_spawn(&task_add,
-	                    (void*)&multiCoreArgs[i],
+	                    (void*)&multiCoreArgs_ptr[i],
                             ENTER_ZOMBIE_ON_EXIT);
     }
 

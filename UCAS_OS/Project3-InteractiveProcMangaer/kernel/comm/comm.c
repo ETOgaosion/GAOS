@@ -337,7 +337,12 @@ long k_mbox_send(int key, mbox_arg_t *arg, int operator){
     int blocked_time = 0;
     while(arg->msg_length > MBOX_MSG_MAX_LEN - mbox_list[key]->used_units){
         blocked_time++;
-        k_cond_wait(mbox_list[key]->full_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
+        if(arg->sleep_operator == 0){
+            k_cond_wait(mbox_list[key]->full_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
+        }
+        else{
+            return -2;
+        }
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->write_tail + arg->msg_length);
     if(left_space < 0){
@@ -364,7 +369,12 @@ long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     int blocked_time = 0;
     while(arg->msg_length > mbox_list[key]->used_units){
         blocked_time++;
-        k_cond_wait(mbox_list[key]->empty_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
+        if(arg->sleep_operator == 0){
+            k_cond_wait(mbox_list[key]->empty_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
+        }
+        else{
+            return -2;
+        }
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->read_head + arg->msg_length);
     if(left_space < 0){
