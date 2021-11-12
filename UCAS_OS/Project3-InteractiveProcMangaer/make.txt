@@ -1108,15 +1108,15 @@ bootblock can open
 0x50200000: bootblock
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x147		memsz 0x147
-		writing 0x147 bytes
+		filesz 0x157		memsz 0x157
+		writing 0x157 bytes
 		padding up to 0x200
 main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xab20		memsz 0x11ed0
-		writing 0xab20 bytes
+		filesz 0xaac8		memsz 0x11e78
+		writing 0xaac8 bytes
 		padding up to 0x12200
 	segment 1
 		offset 0x0		vaddr 0x0

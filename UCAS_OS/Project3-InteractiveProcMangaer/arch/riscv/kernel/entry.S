@@ -221,26 +221,6 @@ ENTRY(switch_to)
 
 ENDPROC(switch_to)
 
-ENTRY(load_next_task)
-  ld sp,PCB_KERNEL_SP(a0)
-  LOAD_SWITCH(ra,RA)
-  LOAD_SWITCH(s0,S0)
-  LOAD_SWITCH(s1,S1)
-  LOAD_SWITCH(s2,S2)
-  LOAD_SWITCH(s3,S3)
-  LOAD_SWITCH(s4,S4)
-  LOAD_SWITCH(s5,S5)
-  LOAD_SWITCH(s6,S6)
-  LOAD_SWITCH(s7,S7)
-  LOAD_SWITCH(s8,S8)
-  LOAD_SWITCH(s9,S9)
-  LOAD_SWITCH(s10,S10)
-  LOAD_SWITCH(s11,S11)
-  LOAD_SWITCH(sp,SP)
-  mv tp,a0
-  jr ra
-ENDPROC(load_next_task)
-
 ENTRY(ret_from_exception)
   call unlock_kernel
   RESTORE_CONTEXT

@@ -198,9 +198,6 @@ pid_t k_getpid();
 int k_taskset(void *arg);
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
-extern void load_next_task(pcb_t *next);
-pcb_t *block_current_task();
-void switch_to_next_task(pcb_t *curr);
 void k_scheduler();
 void k_sleep(uint32_t);
 

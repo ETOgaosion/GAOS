@@ -248,7 +248,6 @@ int main(int arg)
         current_running = &current_running_core_s;
         setup_exception();
         printk("> [READY] Slave core ready to launch!\n\r");
-        enable_interrupt();
         sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
         k_scheduler();
     }
@@ -259,7 +258,6 @@ int main(int arg)
     // Setup timer interrupt and enable all interrupt
 
     #if defined (USE_CLOCK_INT)
-    enable_interrupt();
     while(1){
         reset_irq_timer();
         __asm__ __volatile__("wfi\n\r");

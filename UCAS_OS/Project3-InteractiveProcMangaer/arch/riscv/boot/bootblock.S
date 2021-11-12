@@ -36,6 +36,10 @@ main:
  	move a0, s0
 	bnez a0, secondary
 
+    csrw CSR_SIE, zero
+	csrw CSR_SIE, zero
+	csrw CSR_SSTATUS, zero
+
 	PRINT_N
 
 	// your code 
@@ -50,11 +54,12 @@ main:
 	lh a0,(a0)
 	addi a0,a0,47
 	mv t0,a0
+	li a1,48
 	SBI_CALL SBI_CONSOLE_PUTCHAR
 
 read_input:
 	SBI_CALL SBI_CONSOLE_GETCHAR
-	blt a0,zero,read_input
+	blt a0,a1,read_input
 	bgt a0,t0,read_input
 	addi a1,zero,48
 	sub a0,a0,a1	# calculate which kernel: a0

@@ -92,13 +92,20 @@ pcb_t *dequeue(list_head *queue, int field){
     return ret;
 }
 
-pcb_t *block_current_task()
+void k_scheduler()
 {
     assert_supervisor_mode();
     // TODO schedule
     // Modify the (*current_running) pointer.
-    pcb_t *curr = (*current_running);
-    if(curr->status == TASK_RUNNING && curr->pid != 0){
+    int current_core = get_current_cpu_id();
+    pcb_t *curr = NULL,*next_pcb = NULL;
+    if(current_core == 0){
+        curr = current_running_core_m;
+    }
+    else{
+        curr = current_running_core_s;
+    }
+    if(curr->status == TASK_RUNNING && curr->pid != 0 && curr->pid != -1){
         if(list_is_empty(&ready_queue) || curr->sched_prior.priority == 0){
             list_add_tail(&(curr->list), &ready_queue);
         }
@@ -108,19 +115,11 @@ pcb_t *block_current_task()
         }
         curr->status = TASK_READY;
     }
-    if(curr->pid == -1){
-        curr->status = TASK_READY;
+    if(list_is_empty(&ready_queue) && curr->pid == -1){
+        return;
     }
-    return curr;
-}
-
-void switch_to_next_task(pcb_t *curr)
-{
-    pcb_t *next_pcb = NULL;
-    int current_core = get_current_cpu_id();
     if(list_is_empty(&ready_queue)){
-        (*current_running) = &bubble_pcb;
-        next_pcb = (*current_running);
+        next_pcb = &bubble_pcb;
         goto switch_to_next;
     }
     if (!list_is_empty(&blocked_queue))
@@ -128,50 +127,51 @@ void switch_to_next_task(pcb_t *curr)
         check_timer();
     }
     #ifdef SCHED_WITH_PRIORITY
-    pcb_t *next_pcb = list_entry(ready_queue.next,pcb_t,list);
+    next_pcb = list_entry(ready_queue.next,pcb_t,list);
     while(!(next_pcb->core_mask & (1 << current_core))){
-        next_pcb = list_entry(next_pcb->list.next,pcb_t,list);;
+        next_pcb = list_entry(next_pcb->list.next,pcb_t,list);
         if(next_pcb->list.next == &ready_queue){
-            goto no_task_to_schedule;
+            if(curr->pid == -1){
+                return;
+            }
+            next_pcb = &bubble_pcb;
+            goto switch_to_next;
         }
     }
     next_pcb = dequeue(next_pcb->list.prev,3);
     #endif
     #ifndef SCHED_WITH_PRIORITY
     next_pcb = list_entry(ready_queue.next,pcb_t,list);
-    while(!(next_pcb->core_mask & (1 << current_core))){
+    while((next_pcb->core_mask & (1 << current_core)) == 0){
         next_pcb = list_entry(next_pcb->list.next,pcb_t,list);
         if(next_pcb->list.next == &ready_queue){
-            (*current_running) = &bubble_pcb;
-            next_pcb = (*current_running);
+            if(curr->pid == -1){
+                return;
+            }
+            next_pcb = &bubble_pcb;
             goto switch_to_next;
         }
     }
     next_pcb = dequeue(next_pcb->list.prev,0);
-    #endif
-    next_pcb->status = TASK_RUNNING;
-    pcb_move_cursor(screen_cursor_x,screen_cursor_y);
-    (*current_running) = next_pcb;
     process_id = next_pcb->pid;
-    
-    // restore the current_runnint's cursor_x and cursor_y
+    pcb_move_cursor(screen_cursor_x,screen_cursor_y);
     load_curpcb_cursor();
+    #endif
 
 switch_to_next:
-    // TODO: switch_to (*current_running)
-    if(curr){
-        switch_to(curr,next_pcb);
+    next_pcb->status = TASK_RUNNING;
+    if(current_core == 0){
+        current_running_core_m = next_pcb;
+        *current_running = current_running_core_m;
     }
     else{
-        load_next_task(next_pcb);
+        current_running_core_s = next_pcb;
+        *current_running = current_running_core_s;
     }
-}
-
-void k_scheduler()
-{
-    pcb_t *curr = block_current_task();
-    switch_to_next_task(curr);
-
+    
+    // restore the current_runnint's cursor_x and cursor_y
+    // TODO: switch_to (*current_running)
+    switch_to(curr,next_pcb);
 }
 
 void k_sleep(uint32_t sleep_time)
@@ -197,7 +197,7 @@ void k_block(list_node_t *pcb_node, list_head *queue)
 void k_unblock(list_head *queue, int way)
 {
     // TODO: unblock the `pcb` from the block queue
-    pcb_t *fetch_pcb = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
+    pcb_t *fetch_pcb = NULL;
     switch (way)
     {
     case 1:
@@ -425,7 +425,7 @@ int k_kill(pid_t pid)
     if(pcb[pcb_i].list.next)
         list_del(&pcb[pcb_i].list);
     if((*current_running)->pid == pid || (*current_running)->pid == 0 || pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
-        switch_to_next_task(NULL);
+        k_scheduler();
     }
     return 0;
 }
@@ -452,7 +452,6 @@ int k_waitpid(pid_t pid)
         k_scheduler();
     }
     if(pcb[pcb_i].status == TASK_ZOMBIE){
-        kmemset((void *)pcb[pcb_i].user_stack_base,0,2*PAGE_SIZE);
         pcb[pcb_i].status = TASK_EXITED;
         pcb[pcb_i].pid = 0;
         freePage(pcb[pcb_i].user_stack_base,2);

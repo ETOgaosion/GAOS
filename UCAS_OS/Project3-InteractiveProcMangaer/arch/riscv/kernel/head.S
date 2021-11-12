@@ -17,7 +17,7 @@ ENTRY(_start)
    * floating point in kernel space
    */
   li t0, SR_FS
-  csrc sstatus, t0
+  csrc CSR_SSTATUS, t0
 
   /* Load the global pointer */
   .option push

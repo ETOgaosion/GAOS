@@ -97,7 +97,7 @@ long k_mutex_lock_acquire(int key, int operator)
     if(!locks[key]->initialized){
         return -1;
     }
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
+    while (atomic_cmpxchg(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
         ;
     }
@@ -124,7 +124,7 @@ long k_mutex_lock_release(int key, int operator)
     if(pcb[operator-1].owned_lock_num){
         pcb[operator-1].lock_keys[--(*current_running)->owned_lock_num] = 0;
     }
-    while (atomic_cmpxchg_d(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
+    while (atomic_cmpxchg(UNGUARDED, GUARDED, (ptr_t)&(locks[key]->lock.guard)) == GUARDED)
     {
         ;
     }
