@@ -47,10 +47,9 @@ typedef struct mbox{
 } mbox_t;
 
 typedef struct mbox_arg{
-    int valid;
     void *msg;
     int msg_length;
-    int sleep_operator;
+    int sleep_operation;
 } mbox_arg_t;
 
 long k_commop(void *key_id, void *arg, int op);
@@ -75,5 +74,7 @@ long k_mbox_open(char *name, int operator);
 long k_mbox_close(int operator);
 long k_mbox_send(int key, mbox_arg_t *arg, int operator);
 long k_mbox_recv(int key, mbox_arg_t *arg, int operator);
+long k_mbox_try_send(int key, mbox_arg_t *arg, int operator);
+long k_mbox_try_recv(int key, mbox_arg_t *arg, int operator);
 
 #endif

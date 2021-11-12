@@ -80,11 +80,13 @@ int mthread_barrier_init(void* handle, int total)
     barrier->total = total;
     return barrier_op((mthread_barrier_t *)handle,0);
 }
+
 int mthread_barrier_wait(void* handle)
 {
     // TODO:
     return barrier_op((mthread_barrier_t *)handle,1);
 }
+
 int mthread_barrier_destroy(void* handle)
 {
     // TODO:

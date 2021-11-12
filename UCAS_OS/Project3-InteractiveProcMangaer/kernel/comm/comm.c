@@ -91,6 +91,10 @@ long k_commop(void *key_id, void *arg, int op){
         return k_mbox_send(*key - 1, (mbox_arg_t *)arg, operator);
     case 10:
         return k_mbox_recv(*key - 1, (mbox_arg_t *)arg, operator);
+    case 11:
+        return k_mbox_try_send(*key - 1, (mbox_arg_t *)arg, operator);
+    case 12:
+        return k_mbox_try_recv(*key - 1, (mbox_arg_t *)arg, operator);
 
     default:
         break;
@@ -333,16 +337,14 @@ long k_mbox_send(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
+    if(arg->sleep_operation == 1 && k_mbox_try_send(key,arg,operator) < 0){
+        return -2;
+    }
     k_mutex_lock_acquire(mbox_list[key]->mutex_id - 1,operator);
     int blocked_time = 0;
     while(arg->msg_length > MBOX_MSG_MAX_LEN - mbox_list[key]->used_units){
         blocked_time++;
-        if(arg->sleep_operator == 0){
-            k_cond_wait(mbox_list[key]->full_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
-        }
-        else{
-            return -2;
-        }
+        k_cond_wait(mbox_list[key]->full_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->write_tail + arg->msg_length);
     if(left_space < 0){
@@ -357,7 +359,6 @@ long k_mbox_send(int key, mbox_arg_t *arg, int operator){
     mbox_list[key]->used_units += arg->msg_length;
     k_cond_broadcast(mbox_list[key]->empty_cond_id - 1,operator);
     k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
-    arg->valid = 0;
     return blocked_time;
 }
 
@@ -365,16 +366,14 @@ long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
+    if(arg->sleep_operation == 1 && k_mbox_try_recv(key,arg,operator) < 0){
+        return -2;
+    }
     k_mutex_lock_acquire(mbox_list[key]->mutex_id - 1,operator);
     int blocked_time = 0;
     while(arg->msg_length > mbox_list[key]->used_units){
         blocked_time++;
-        if(arg->sleep_operator == 0){
-            k_cond_wait(mbox_list[key]->empty_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
-        }
-        else{
-            return -2;
-        }
+        k_cond_wait(mbox_list[key]->empty_cond_id - 1, mbox_list[key]->mutex_id - 1, operator);
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->read_head + arg->msg_length);
     if(left_space < 0){
@@ -389,6 +388,31 @@ long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     mbox_list[key]->used_units -= arg->msg_length;
     k_cond_broadcast(mbox_list[key]->full_cond_id - 1,operator);
     k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
-    arg->valid = 0;
     return blocked_time;
+}
+
+long k_mbox_try_send(int key, mbox_arg_t *arg, int operator){
+    if(!mbox_list[key]->mailbox_info.initialized){
+        return -1;
+    }
+    k_mutex_lock_acquire(mbox_list[key]->mutex_id - 1,operator);
+    if(arg->msg_length > MBOX_MSG_MAX_LEN - mbox_list[key]->used_units){
+        k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
+        return -2;
+    }
+    k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
+    return 0;
+}
+
+long k_mbox_try_recv(int key, mbox_arg_t *arg, int operator){
+    if(!mbox_list[key]->mailbox_info.initialized){
+        return -1;
+    }
+    k_mutex_lock_acquire(mbox_list[key]->mutex_id - 1,operator);
+    if(arg->msg_length > mbox_list[key]->used_units){
+        k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
+        return -2;
+    }
+    k_mutex_lock_release(mbox_list[key]->mutex_id - 1,operator);
+    return 0;
 }

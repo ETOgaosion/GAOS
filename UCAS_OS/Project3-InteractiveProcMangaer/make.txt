@@ -217,8 +217,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
-./kernel/comm/comm.c:349:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  349 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+./kernel/comm/comm.c:351:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  351 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -226,8 +226,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:350:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  350 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+./kernel/comm/comm.c:352:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  352 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
       |                 ~~~~~~~~~~~~~~^~~~~~
       |                               |
       |                               char *
@@ -235,8 +235,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:354:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  354 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+./kernel/comm/comm.c:356:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  356 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -245,8 +245,8 @@ include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} bu
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
 ./kernel/comm/comm.c: In function 'k_mbox_recv':
-./kernel/comm/comm.c:381:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  381 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+./kernel/comm/comm.c:380:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  380 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -254,8 +254,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:382:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  382 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+./kernel/comm/comm.c:381:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  381 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
       |                                                                         ~~~~~~~~~~~~~~^~~~~~
       |                                                                                       |
       |                                                                                       char *
@@ -263,8 +263,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:386:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  386 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+./kernel/comm/comm.c:385:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  385 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -277,16 +277,16 @@ include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned
    58 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_commop':
-./kernel/comm/comm.c:98:1: warning: control reaches end of non-void function [-Wreturn-type]
-   98 | }
+./kernel/comm/comm.c:102:1: warning: control reaches end of non-void function [-Wreturn-type]
+  102 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_p':
-./kernel/comm/comm.c:135:1: warning: control reaches end of non-void function [-Wreturn-type]
-  135 | }
+./kernel/comm/comm.c:139:1: warning: control reaches end of non-void function [-Wreturn-type]
+  139 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_v':
-./kernel/comm/comm.c:145:1: warning: control reaches end of non-void function [-Wreturn-type]
-  145 | }
+./kernel/comm/comm.c:149:1: warning: control reaches end of non-void function [-Wreturn-type]
+  149 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -915,38 +915,77 @@ include/type.h:30: note: this is the location of the previous definition
    30 | #define NULL  (void*)0
       | 
 ./test/test_project3/test_mailbox.c: In function 'strServer':
-./test/test_project3/test_mailbox.c:73:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-   73 |         uint32_t checksum = adler32(msgBuffer, header.length);
+./test/test_project3/test_mailbox.c:74:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+   74 |         uint32_t checksum = adler32(msgBuffer, header.length);
       |                                     ^~~~~~~~~
       |                                     |
       |                                     char *
-./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'char *'
-   27 | uint32_t adler32(unsigned char *data, size_t len)
+./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'char *'
+   28 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'clientSendMsg':
-./test/test_project3/test_mailbox.c:100:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  100 |     header->checksum = adler32(content, length);
+./test/test_project3/test_mailbox.c:101:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  101 |     header->checksum = adler32(content, length);
       |                                ^~~~~~~
-./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'const char *'
-   27 | uint32_t adler32(unsigned char *data, size_t len)
+./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'const char *'
+   28 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'strGenerator':
-./test/test_project3/test_mailbox.c:142:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
-  142 |         generateRandomString(strBuffer, len);
+./test/test_project3/test_mailbox.c:143:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
+  143 |         generateRandomString(strBuffer, len);
       |                              ^~~~~~~~~
       |                              |
       |                              int *
-./test/test_project3/test_mailbox.c:109:33: note: expected 'char *' but argument is of type 'int *'
-  109 | void generateRandomString(char* buf, int len)
+./test/test_project3/test_mailbox.c:110:33: note: expected 'char *' but argument is of type 'int *'
+  110 | void generateRandomString(char* buf, int len)
       |                           ~~~~~~^~~
-./test/test_project3/test_mailbox.c:143:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
-  143 |         blocked += clientSendMsg(mq, strBuffer, len);
+./test/test_project3/test_mailbox.c:144:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
+  144 |         blocked += clientSendMsg(mq, strBuffer, len, 0);
       |                                      ^~~~~~~~~
       |                                      |
       |                                      int *
-./test/test_project3/test_mailbox.c:93:46: note: expected 'const char *' but argument is of type 'int *'
-   93 | int clientSendMsg(mailbox_t *mq, const char* content, int length)
+./test/test_project3/test_mailbox.c:94:46: note: expected 'const char *' but argument is of type 'int *'
+   94 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int sleep_operation)
       |                                  ~~~~~~~~~~~~^~~~~~~
+./test/test_project3/test_mailbox.c: In function 'send_recver':
+./test/test_project3/test_mailbox.c:157:42: warning: passing argument 1 of 'mbox_open' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  157 |     mailbox_t mq_m_recv = mbox_open(names[idx]);
+      |                                     ~~~~~^~~~~
+In file included from ./test/test_project3/test_mailbox.c:7:
+tiny_libc/include/mailbox.h:18:27: note: expected 'char *' but argument is of type 'const char *'
+   18 | mailbox_t mbox_open(char *name);
+      |                     ~~~~~~^~~~
+./test/test_project3/test_mailbox.c:190:35: warning: passing argument 1 of 'mbox_open' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  190 |             mq_m = mbox_open(names[send_to]);
+      |                              ~~~~~^~~~~~~~~
+In file included from ./test/test_project3/test_mailbox.c:7:
+tiny_libc/include/mailbox.h:18:27: note: expected 'char *' but argument is of type 'const char *'
+   18 | mailbox_t mbox_open(char *name);
+      |                     ~~~~~~^~~~
+./test/test_project3/test_mailbox.c:192:34: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
+  192 |             generateRandomString(strBuffer, len);
+      |                                  ^~~~~~~~~
+      |                                  |
+      |                                  int *
+./test/test_project3/test_mailbox.c:110:33: note: expected 'char *' but argument is of type 'int *'
+  110 | void generateRandomString(char* buf, int len)
+      |                           ~~~~~~^~~
+./test/test_project3/test_mailbox.c:193:42: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
+  193 |             send_res = clientSendMsg(mq, strBuffer, len, 1);
+      |                                          ^~~~~~~~~
+      |                                          |
+      |                                          int *
+./test/test_project3/test_mailbox.c:94:46: note: expected 'const char *' but argument is of type 'int *'
+   94 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int sleep_operation)
+      |                                  ~~~~~~~~~~~~^~~~~~~
+./test/test_project3/test_mailbox.c:226:41: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+  226 |             uint32_t checksum = adler32(msgBuffer, header.length);
+      |                                         ^~~~~~~~~
+      |                                         |
+      |                                         char *
+./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'char *'
+   28 | uint32_t adler32(unsigned char *data, size_t len)
+      |                  ~~~~~~~~~~~~~~~^~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,
                  from include/sys/syscall.h:32,
@@ -1115,12 +1154,12 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xa4a8		memsz 0x11858
-		writing 0xa4a8 bytes
-		padding up to 0x11c00
+		filesz 0xaed8		memsz 0x12108
+		writing 0xaed8 bytes
+		padding up to 0x12400
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 141 sector(s)
+kernel_size: 145 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

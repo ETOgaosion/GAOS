@@ -22,9 +22,9 @@ void strServer(void);
 void strGenerator(void);
 
 // [MULTI-CORE]
+void bubble_task();
 void test_multicore(void);
 void test_affinity(void);
-void bubble_task();
-
+void test_mailbox_multicore(void);
 
 #endif
