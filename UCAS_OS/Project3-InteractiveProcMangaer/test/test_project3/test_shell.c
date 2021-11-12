@@ -40,8 +40,8 @@
 #define SHELL_CMD_MAX_LENGTH 20
 #define SHELL_ARG_NUM 3
 #define SHELL_ARG_MAX_LENGTH 20
-#define SUPPORTED_CMD_NUM 6
-#define CURRENT_TASK_NUM 8
+#define SUPPORTED_CMD_NUM 5
+#define CURRENT_TASK_NUM 6
 #define MAX_CMD_IN_LINES 15
 
 #define BEGIN cmd_in_length = 0;\
@@ -53,11 +53,6 @@ typedef int (*function)(void *arg0, void *arg1, void *arg2);
 
 int cmd_in_length = 0;
 
-typedef struct sys_taskset_arg{
-    int pid;
-    int mask;
-} sys_taskset_arg_t;
-
 struct task_info task_test_waitpid = {
     (uintptr_t)&wait_exit_task, USER_PROCESS};
 struct task_info task_test_semaphore = {
@@ -65,27 +60,24 @@ struct task_info task_test_semaphore = {
 struct task_info task_test_barrier = {
     (uintptr_t)&test_barrier, USER_PROCESS};
     
-struct task_info strserver_task = {(uintptr_t)&s2mServer, USER_PROCESS};
-struct task_info strgenerator_task = {(uintptr_t)&s2mGenerator, USER_PROCESS};
+struct task_info strserver_task = {(uintptr_t)&strServer, USER_PROCESS};
+struct task_info strgenerator_task = {(uintptr_t)&strGenerator, USER_PROCESS};
 
 struct task_info task_test_multicore = {(uintptr_t)&test_multicore, USER_PROCESS};
 struct task_info task_test_affinity = {(uintptr_t)&test_affinity, USER_PROCESS};
 
-struct task_info task_mbox_multicore = {(uintptr_t)&inter_communication_test, USER_PROCESS};
-
 static struct task_info *test_tasks[16] = {&task_test_waitpid,
                                            &task_test_semaphore,
                                            &task_test_barrier,
-                                           &strserver_task, &strgenerator_task,
-                                           &task_test_multicore, &task_test_affinity,
-                                           &task_mbox_multicore};
+                                           &task_test_multicore,
+                                           &strserver_task, &strgenerator_task};
 void panic(char *error);
 static int shell_help(void *cmd_str, void *arg1, void*arg2);
 static int shell_exec(void *pid_str, void *mode_str, void *arg2);
 static int shell_kill(void *pid_str, void *arg1, void *arg2);
-static int shell_taskset(void *arg0, void *arg1, void *arg2);
 static void shell_ps(void *arg0, void *arg1, void *arg2);
 static void shell_clear(void *arg0, void *arg1, void *arg2);
+
 static struct {
     char *cmd_full_name;
     char *cmd_alias;
@@ -97,7 +89,6 @@ static struct {
     {"help", "h", "Print description of command [cmd] or all supported commands(no args or error cmd)", "help ([cmd])", (int (*)(void *,void *, void *))&shell_help, 1},
     {"exec", "spawn", "Execute task [pid](start from 1) in testset with chosen or default mode:\n\t- mode 1: ENTER_ZOMBIE_ON_EXIT\n\t- mode 2: AUTO_CLEANUP_ON_EXIT", "exec [pid] ([mode])", (int (*)(void *,void *, void *))&shell_exec, 2},
     {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",(int (*)(void *,void *, void *))&shell_kill, 1},
-    {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",(int (*)(void *,void *, void *))&shell_taskset,3},
     {"ps", "ps", "Display all process", "ps", (int (*)(void *,void *, void *))&shell_ps, 0},
     {"clear", "clr", "Clear the screen", "clear", (int (*)(void *,void *, void *))&shell_clear, 0}
 };
@@ -158,35 +149,6 @@ static int shell_kill(void *pid_str, void *arg1, void *arg2)
     printf("\ntask[%d] will be killed soon!",pid);
     cmd_in_length++;
     return sys_kill(pid);
-}
-
-static int shell_taskset(void *arg0, void *arg1, void *arg2)
-{
-    int mask, pid;
-    if(strcmp((char *)arg0,"-p") == 0){
-        mask = atoi((char *)arg1);
-        pid = atoi((char *)arg2);
-        if(pid < 1 || pid > CURRENT_TASK_NUM){
-            panic(arg_num_error);
-            return -1;
-        }
-        taskset_arg_t taskset_args = {.mask = mask, .pid = pid};
-        printf("\ntask[%d] mask will be set soon!",pid);
-        return sys_taskset((void *)&taskset_args);
-    }
-    else{
-        mask = atoi((char *)arg0);
-        pid = atoi((char *)arg1);
-        if(pid < 1 || pid > CURRENT_TASK_NUM){
-            panic(arg_num_error);
-            return -1;
-        }
-        pid = (int)sys_spawn(test_tasks[pid - 1], NULL, 0);
-        printf("\ntask[%d] will be started soon!",pid);
-        taskset_arg_t taskset_args = {.mask = mask, .pid = pid};
-        printf("\ntask[%d] mask will be set soon!",pid);
-        return sys_taskset((void *)&taskset_args);
-    }
 }
 
 static void shell_ps(void *arg0, void *arg1, void *arg2)

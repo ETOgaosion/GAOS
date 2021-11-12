@@ -915,37 +915,37 @@ include/type.h:30: note: this is the location of the previous definition
    30 | #define NULL  (void*)0
       | 
 ./test/test_project3/test_mailbox.c: In function 'strServer':
-./test/test_project3/test_mailbox.c:91:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-   91 |         uint32_t checksum = adler32(msgBuffer, header.length);
+./test/test_project3/test_mailbox.c:73:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+   73 |         uint32_t checksum = adler32(msgBuffer, header.length);
       |                                     ^~~~~~~~~
       |                                     |
       |                                     char *
-./test/test_project3/test_mailbox.c:34:33: note: expected 'unsigned char *' but argument is of type 'char *'
-   34 | uint32_t adler32(unsigned char *data, size_t len)
+./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'char *'
+   27 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'clientSendMsg':
-./test/test_project3/test_mailbox.c:120:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  120 |     header->checksum = adler32(content, length);
+./test/test_project3/test_mailbox.c:100:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  100 |     header->checksum = adler32(content, length);
       |                                ^~~~~~~
-./test/test_project3/test_mailbox.c:34:33: note: expected 'unsigned char *' but argument is of type 'const char *'
-   34 | uint32_t adler32(unsigned char *data, size_t len)
+./test/test_project3/test_mailbox.c:27:33: note: expected 'unsigned char *' but argument is of type 'const char *'
+   27 | uint32_t adler32(unsigned char *data, size_t len)
       |                  ~~~~~~~~~~~~~~~^~~~
 ./test/test_project3/test_mailbox.c: In function 'strGenerator':
-./test/test_project3/test_mailbox.c:170:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
-  170 |         generateRandomString(strBuffer, len);
+./test/test_project3/test_mailbox.c:142:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
+  142 |         generateRandomString(strBuffer, len);
       |                              ^~~~~~~~~
       |                              |
       |                              int *
-./test/test_project3/test_mailbox.c:129:33: note: expected 'char *' but argument is of type 'int *'
-  129 | void generateRandomString(char* buf, int len)
+./test/test_project3/test_mailbox.c:109:33: note: expected 'char *' but argument is of type 'int *'
+  109 | void generateRandomString(char* buf, int len)
       |                           ~~~~~~^~~
-./test/test_project3/test_mailbox.c:171:45: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
-  171 |         while((send_res = clientSendMsg(mq, strBuffer, len,actual_arg->operator)) < 0){
-      |                                             ^~~~~~~~~
-      |                                             |
-      |                                             int *
-./test/test_project3/test_mailbox.c:113:46: note: expected 'const char *' but argument is of type 'int *'
-  113 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int operator)
+./test/test_project3/test_mailbox.c:143:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
+  143 |         blocked += clientSendMsg(mq, strBuffer, len);
+      |                                      ^~~~~~~~~
+      |                                      |
+      |                                      int *
+./test/test_project3/test_mailbox.c:93:46: note: expected 'const char *' but argument is of type 'int *'
+   93 | int clientSendMsg(mailbox_t *mq, const char* content, int length)
       |                                  ~~~~~~~~~~~~^~~~~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,
@@ -1115,12 +1115,12 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xaac8		memsz 0x11e78
-		writing 0xaac8 bytes
-		padding up to 0x12200
+		filesz 0xa4a8		memsz 0x11858
+		writing 0xa4a8 bytes
+		padding up to 0x11c00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 144 sector(s)
+kernel_size: 141 sector(s)
 there are 1 kernel(s) in image
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt

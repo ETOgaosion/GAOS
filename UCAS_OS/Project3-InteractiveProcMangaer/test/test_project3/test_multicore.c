@@ -46,7 +46,7 @@ void test_multicore(void)
     pid_t pids[NUM_CPUS];
     int multi_core_results[NUM_CPUS] = {0};
     for (int i = 0; i < NUM_CPUS; ++i) {
-        multiCoreArgs[i].print_location = i + 1;
+        multiCoreArgs[i].print_location = i + 2;
         multiCoreArgs[i].from = MAX_RANGE * i / NUM_CPUS;
         multiCoreArgs[i].to = MAX_RANGE * (i + 1) / NUM_CPUS;
         multiCoreArgs[i].result = &multi_core_results[i];
