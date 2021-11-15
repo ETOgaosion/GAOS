@@ -1,0 +1,303 @@
+diff -rupdEZbB arch/riscv/include/atomic.h arch/riscv/include/atomic.h
+--- arch/riscv/include/atomic.h	2021-11-07 11:41:16.892268837 +0800
++++ arch/riscv/include/atomic.h	2020-11-15 19:29:28.000000000 +0800
+@@ -10,7 +10,7 @@ static inline uint32_t atomic_swap(uint3
+     uint32_t ret;
+     __asm__ __volatile__ (
+         "amoswap.w.aqrl %0, %2, %1\n"
+-        : "=r"(ret), "+A" (*(void*)mem_addr)
++        : "=r"(ret), "+A" (*(uint32_t*)mem_addr)
+         : "r"(val)
+         : "memory");
+     return ret;
+@@ -21,12 +21,35 @@ static inline uint64_t atomic_swap_d(uin
+     uint64_t ret;
+     __asm__ __volatile__ (
+                           "amoswap.d.aqrl %0, %2, %1\n"
+-                          : "=r"(ret), "+A" (*(void*)mem_addr)
++                          : "=r"(ret), "+A" (*(uint64_t*)mem_addr)
+                           : "r"(val)
+                           : "memory");
+     return ret;
+ }
+ 
++static inline int fetch_add(volatile void* obj, int arg)
++{
++    uint32_t ret;
++    __asm__ __volatile__ (
++                          "amoadd.w.aqrl %0, %2, %1\n"
++                          : "=r"(ret), "+A" (*(uint32_t*)obj)
++                          : "r"(arg)
++                          : "memory");
++    return ret;
++}
++
++static inline uint32_t atomic_load(volatile uint32_t* obj)
++{
++    uint32_t arg = UINT32_MAX;
++    uint32_t ret;
++    __asm__ __volatile__ (
++                          "amoand.w.aqrl %0, %2, %1\n"
++                          : "=r"(ret), "+A" (*(uint32_t*)obj)
++                          : "r"(arg)
++                          : "memory");
++    return ret;
++}
++
+ /* if *mem_addr == old_val, then *mem_addr = new_val, else return *mem_addr */
+ static inline uint32_t atomic_cmpxchg(uint32_t old_val, uint32_t new_val, ptr_t mem_addr)
+ {
+@@ -39,7 +62,7 @@ static inline uint32_t atomic_cmpxchg(ui
+           "	bnez %1, 0b\n"
+           "	fence rw, rw\n"
+           "1:\n"
+-          : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
++          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint32_t*)mem_addr)
+           : "rJ" (old_val), "rJ" (new_val)
+           : "memory");
+     return ret;
+@@ -57,7 +80,7 @@ static inline uint64_t atomic_cmpxchg_d(
+           "	bnez %1, 0b\n"
+           "	fence rw, rw\n"
+           "1:\n"
+-          : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
++          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint64_t*)mem_addr)
+           : "rJ" (old_val), "rJ" (new_val)
+           : "memory");
+     return ret;
+diff -rupdEZbB arch/riscv/include/sbi.h arch/riscv/include/sbi.h
+--- arch/riscv/include/sbi.h	2021-11-07 11:41:16.892268837 +0800
++++ arch/riscv/include/sbi.h	2020-11-15 20:09:01.000000000 +0800
+@@ -40,7 +40,12 @@
+ 
+ static inline void sbi_console_putstr(char *str)
+ {
+-    SBI_CALL_1(SBI_CONSOLE_PUTSTR, str);
++    // FIXME: machine mode cannot access `str`
++    // if `str` is a virtual address. So we use
++    // SBI_CONSOLE_PUTCHAR to implement this function.
++    while (*str != '\0') {
++        SBI_CALL_1(SBI_CONSOLE_PUTCHAR, *str++);
++    }
+ }
+ 
+ static inline uintptr_t sbi_sd_write(
+diff -rupdEZbB include/os/mm.h include/os/mm.h
+--- include/os/mm.h	2021-11-07 11:41:16.893268834 +0800
++++ include/os/mm.h	2020-11-15 19:29:28.000000000 +0800
+@@ -31,4 +31,5 @@
+ #define MEM_SIZE 32
+ #define PAGE_SIZE 4096 // 4K
+-#define INIT_KERNEL_STACK 0x50500000lu
++#define INIT_KERNEL_STACK 0xffffffc051000000lu
+ #define FREEMEM (INIT_KERNEL_STACK+PAGE_SIZE)
++#define USER_STACK_ADDR 0xf00010000lu
+@@ -51,2 +51,6 @@
++extern void share_pgtable(uintptr_t dest_pgdir, uintptr_t src_pgdir);
++extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir);
++uintptr_t shm_page_get(int key);
++void shm_page_dt(uintptr_t addr);
+ 
+ #endif /* MM_H */
+diff -rupdEZbB include/os/sched.h include/os/sched.h
+--- include/os/sched.h	2021-11-07 11:41:16.894268830 +0800
++++ include/os/sched.h	2020-11-15 20:29:42.000000000 +0800
+@@ -29,2 +29,4 @@
+ #ifndef INCLUDE_SCHEDULER_H_
+ #define INCLUDE_SCHEDULER_H_
++ 
++#include <context.h>
+@@ -36,2 +36,4 @@
++extern pid_t do_exec(const char* file_name, int argc, char* argv[], spawn_mode_t mode);
++extern void do_show_exec();
+  
+ #endif
+diff -rupdEZbB include/sys/syscall.h include/sys/syscall.h
+--- include/sys/syscall.h	2021-11-07 11:41:16.894268830 +0800
++++ include/sys/syscall.h	2021-11-07 10:25:07.594245447 +0800
+@@ -32,2 +32,7 @@
+ #include <stdint.h>
+ #include <os.h>
++ 
++#define SCREEN_HEIGHT 80
++ 
++pid_t sys_exec(const char *file_name, int argc, char* argv[], spawn_mode_t mode);
++void sys_show_exec();
+@@ -66,3 +66,7 @@
++#define BINSEM_OP_LOCK 0 // mutex acquire
++#define BINSEM_OP_UNLOCK 1 // mutex release
+ 
++int binsemget(int key);
++int binsemop(int binsem_id, int op);
+ 
+ #endif
+diff -rupdEZbB kernel/mm/mm.c kernel/mm/mm.c
+--- kernel/mm/mm.c	2021-11-07 11:41:16.899268811 +0800
++++ kernel/mm/mm.c	2020-11-15 20:38:05.000000000 +0800
+@@ -1,1 +1,2 @@
+ #include <os/mm.h>
++#include <pgtable.h>
+@@ -89,1 +89,24 @@
+
++uintptr_t shm_page_get(int key)
++{
++    // TODO(c-core):
++}
++
++void shm_page_dt(uintptr_t addr)
++{
++    // TODO(c-core):
++}
++
++/* this is used for mapping kernel virtual address into user page table */
++void share_pgtable(uintptr_t dest_pgdir, uintptr_t src_pgdir)
++{
++    // TODO:
++}
++
++/* allocate physical page for `va`, mapping it into `pgdir`,
++   return the kernel virtual address for the page.
++   */
++uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir)
++{
++    // TODO:
++}
+diff -rupdEZbB tiny_libc/include/mthread.h tiny_libc/include/mthread.h
+--- tiny_libc/include/mthread.h	2021-11-07 11:41:16.900268807 +0800
++++ tiny_libc/include/mthread.h	2021-11-07 10:26:41.105442968 +0800
+@@ -29,2 +29,3 @@
+ #include <stdint.h>
+ #include <stdatomic.h>
++#include <os.h>
+@@ -89,1 +89,6 @@
++typedef pid_t mthread_t;
++int mthread_create(mthread_t *thread,
++                   void (*start_routine)(void*),
++                   void *arg);
++int mthread_join(mthread_t thread);
+ #endif
+diff -rupdEZbB tiny_libc/include/stdio.h tiny_libc/include/stdio.h
+--- tiny_libc/include/stdio.h	2021-11-07 11:41:16.901268804 +0800
++++ tiny_libc/include/stdio.h	2020-11-15 19:29:28.000000000 +0800
+@@ -7,4 +7,7 @@
+ int printf(const char *fmt, ...);
+ int vprintf(const char *fmt, va_list va);
+ 
++int puts(const char *str);
++int putchar(int ch);
++
+ #endif
+diff -rupdEZbB tiny_libc/include/stdlib.h tiny_libc/include/stdlib.h
+--- tiny_libc/include/stdlib.h	2021-11-07 11:41:16.901268804 +0800
++++ tiny_libc/include/stdlib.h	2020-11-15 19:29:28.000000000 +0800
+@@ -2,11 +2,12 @@
+ #define STDLIB_H
+ 
+ #include <stdint.h>
+-#include <stddef.h>
+ 
+ #define RAND_MAX (INT32_MAX)
+ 
+ void srand(unsigned seed);
+ int rand();
+ 
++long int atol ( const char * str );
++
+ #endif /* STDLIB_H */
+diff -rupdEZbB tiny_libc/include/string.h tiny_libc/include/string.h
+--- tiny_libc/include/string.h	2021-11-07 11:41:16.901268804 +0800
++++ tiny_libc/include/string.h	2020-11-15 19:29:28.000000000 +0800
+@@ -4,13 +4,13 @@
+ #include <stdint.h>
+ #include <stddef.h>
+ 
+-extern void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+-extern void memset(void *dest, uint8_t val, size_t len);
+-extern int memcmp(const void *ptr1, const void* ptr2, uint32_t num);
++extern void* memcpy(void *dest, const void *src, size_t len);
++extern void* memset(void *dest, int val, size_t len);
++extern int memcmp(const void *ptr1, const void* ptr2, size_t num);
+ 
+ extern int strcmp(const char *str1, const char *str2);
+ extern char *strcpy(char *dest, const char *src);
+ extern char *strcat(char *dest, const char *src);
+-extern int strlen(const char *src);
++extern size_t strlen(const char *src);
+ 
+ #endif /* STRING_H */
+diff -rupdEZbB tiny_libc/printf.c tiny_libc/printf.c
+--- tiny_libc/printf.c	2021-11-07 11:41:16.901268804 +0800
++++ tiny_libc/printf.c	2020-11-15 19:29:28.000000000 +0800
+@@ -221,7 +221,6 @@ int vprintf(const char *fmt, va_list _va
+ 
+     buff[ret] = '\0';
+ 
+-    //call kernel print function or ecall
+     sys_write(buff);
+ 
+     return ret;
+@@ -238,3 +237,13 @@ int printf(const char *fmt, ...)
+ 
+     return ret;
+ }
++
++int puts(const char *str)
++{
++    return printf("%s\n", str);
++}
++
++int putchar(int ch)
++{
++    return printf("%c", ch);
++}
+diff -rupdEZbB tiny_libc/string.c tiny_libc/string.c
+--- tiny_libc/string.c	2021-11-07 11:41:16.901268804 +0800
++++ tiny_libc/string.c	2020-11-15 19:29:28.000000000 +0800
+@@ -1,6 +1,7 @@
+ #include <string.h>
++#include <stdint.h>
+ 
+-int strlen(const char *src)
++size_t strlen(const char *src)
+ {
+     int i;
+     for (i = 0; src[i] != '\0'; i++) {
+@@ -8,23 +9,34 @@ int strlen(const char *src)
+     return i;
+ }
+ 
+-void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len)
++void* memcpy(void *dest, const void *src, size_t len)
+ {
++    uint8_t *dst = (uint8_t *)dest;
+     for (; len != 0; len--) {
+-        *dest++ = *src++;
++        *dst++ = *(uint8_t*)src++;
+     }
++    return dest;
+ }
+ 
+-void memset(void *dest, uint8_t val, size_t len)
++void* memset(void *dest, int val, size_t len)
+ {
+     uint8_t *dst = (uint8_t *)dest;
+ 
+     for (; len != 0; len--) {
+         *dst++ = val;
+     }
++    return dest;
+ }
+ 
+-void bzero(void *dest, uint32_t len) { memset(dest, 0, len); }
++int memcmp(const void *ptr1, const void *ptr2, size_t num)
++{
++    for (int i = 0; i < num; ++i) {
++        if (((char*)ptr1)[i] != ((char*)ptr2)[i]) {
++            return ((char*)ptr1)[i] - ((char*)ptr2)[i];
++        }
++    }
++    return 0;
++}
+ 
+ int strcmp(const char *str1, const char *str2)
+ {
