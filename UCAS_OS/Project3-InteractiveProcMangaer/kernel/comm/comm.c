@@ -304,7 +304,7 @@ int k_mbox_open(char *name, int operator){
         }
     }
     int mbox_i = find_free(3);
-    if(mbox_i < 0){
+    if(mbox_i < 0){ 
         return -1;
     }
     mbox_list[mbox_i]->mailbox_info.id = mbox_i + 1;

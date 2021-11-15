@@ -193,6 +193,7 @@ void send_recver(int idx){
             send_res = clientSendMsg(mq, strBuffer, len, 1);
             if(send_res < 0){
                 flow = 2;
+                sys_sleep(1);
                 continue;
             }
             else{
@@ -210,6 +211,7 @@ void send_recver(int idx){
             recv_res = mbox_recv(mq_recv, &header, sizeof(struct MsgHeader),1);
             if(recv_res < 0){
                 flow = 1;
+                sys_sleep(1);
                 continue;
             }
             else{
@@ -218,6 +220,7 @@ void send_recver(int idx){
             recv_res = mbox_recv(mq_recv, msgBuffer, header.length,1);
             if(recv_res < 0){
                 flow = 1;
+                sys_sleep(1);
                 continue;
             }
             else{

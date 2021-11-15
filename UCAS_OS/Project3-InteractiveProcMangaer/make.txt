@@ -978,8 +978,8 @@ tiny_libc/include/mailbox.h:18:27: note: expected 'char *' but argument is of ty
 ./test/test_project3/test_mailbox.c:94:46: note: expected 'const char *' but argument is of type 'int *'
    94 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int sleep_operation)
       |                                  ~~~~~~~~~~~~^~~~~~~
-./test/test_project3/test_mailbox.c:226:41: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-  226 |             uint32_t checksum = adler32(msgBuffer, header.length);
+./test/test_project3/test_mailbox.c:229:41: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
+  229 |             uint32_t checksum = adler32(msgBuffer, header.length);
       |                                         ^~~~~~~~~
       |                                         |
       |                                         char *
@@ -1154,8 +1154,13 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
+<<<<<<< HEAD
 		filesz 0xaf38		memsz 0x12168
 		writing 0xaf38 bytes
+=======
+		filesz 0xaee8		memsz 0x12118
+		writing 0xaee8 bytes
+>>>>>>> 9b69cea280afba735a786969ea4fdfebade5f980
 		padding up to 0x12400
 	segment 1
 		offset 0x0		vaddr 0x0
