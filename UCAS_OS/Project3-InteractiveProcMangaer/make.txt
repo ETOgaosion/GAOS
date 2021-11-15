@@ -175,8 +175,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
-./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
-   13 |     return atomic_swap_d(LOCKED,&lock->flag);
+./kernel/locking/lock.c:14:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
+   14 |     return atomic_swap_d(LOCKED,&lock->flag);
       |                                 ^~~~~~~~~~~
       |                                 |
       |                                 volatile lock_status_t * {aka volatile enum <anonymous> *}
@@ -186,8 +186,8 @@ arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned in
    19 | static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
       |                                                    ~~~~~~^~~~~~~~
 ./kernel/locking/lock.c: In function 'find_lock':
-./kernel/locking/lock.c:61:1: warning: control reaches end of non-void function [-Wreturn-type]
-   61 | }
+./kernel/locking/lock.c:62:1: warning: control reaches end of non-void function [-Wreturn-type]
+   62 | }
       | ^
 In file included from include/os/lock.h:32,
                  from include/os/comm.h:5,
@@ -217,8 +217,8 @@ arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
    96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
-./kernel/comm/comm.c:351:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  351 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+./kernel/comm/comm.c:356:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  356 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -226,8 +226,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:352:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  352 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+./kernel/comm/comm.c:357:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  357 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
       |                 ~~~~~~~~~~~~~~^~~~~~
       |                               |
       |                               char *
@@ -235,8 +235,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:356:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  356 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+./kernel/comm/comm.c:361:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  361 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
       |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                      |
       |                                      char *
@@ -245,8 +245,8 @@ include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} bu
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |              ~~~~~~~~~^~~~
 ./kernel/comm/comm.c: In function 'k_mbox_recv':
-./kernel/comm/comm.c:380:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  380 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+./kernel/comm/comm.c:385:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  385 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -254,8 +254,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:381:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  381 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+./kernel/comm/comm.c:386:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  386 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
       |                                                                         ~~~~~~~~~~~~~~^~~~~~
       |                                                                                       |
       |                                                                                       char *
@@ -263,8 +263,8 @@ In file included from ./kernel/comm/comm.c:3:
 include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:385:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  385 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+./kernel/comm/comm.c:390:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
+  390 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
       |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                               |
       |                                               char *
@@ -273,20 +273,20 @@ include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned
    33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                             ~~~~~~~~~~~~~~~^~~
 ./kernel/comm/comm.c: In function 'find_free':
-./kernel/comm/comm.c:58:1: warning: control reaches end of non-void function [-Wreturn-type]
-   58 | }
+./kernel/comm/comm.c:60:1: warning: control reaches end of non-void function [-Wreturn-type]
+   60 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_commop':
-./kernel/comm/comm.c:102:1: warning: control reaches end of non-void function [-Wreturn-type]
-  102 | }
+./kernel/comm/comm.c:104:1: warning: control reaches end of non-void function [-Wreturn-type]
+  104 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_p':
-./kernel/comm/comm.c:139:1: warning: control reaches end of non-void function [-Wreturn-type]
-  139 | }
+./kernel/comm/comm.c:141:1: warning: control reaches end of non-void function [-Wreturn-type]
+  141 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_v':
-./kernel/comm/comm.c:149:1: warning: control reaches end of non-void function [-Wreturn-type]
-  149 | }
+./kernel/comm/comm.c:151:1: warning: control reaches end of non-void function [-Wreturn-type]
+  151 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -1154,8 +1154,8 @@ main can open
 0x50201000: main
 	segment 0
 		offset 0x1000		vaddr 0x50201000
-		filesz 0xaed8		memsz 0x12108
-		writing 0xaed8 bytes
+		filesz 0xaf38		memsz 0x12168
+		writing 0xaf38 bytes
 		padding up to 0x12400
 	segment 1
 		offset 0x0		vaddr 0x0

@@ -1,11 +1,13 @@
 #include <os/comm.h>
 #include <os/sched.h>
 #include <os/string.h>
+#include <screen.h>
 
 int sem_first_time = 1;
 int cond_first_time = 1;
 int barrier_first_time = 1;
 int mbox_first_time = 1;
+int print_loc = 3;
 
 Semaphore_t *sem_list[COMM_NUM];
 cond_t *cond_list[COMM_NUM];
@@ -57,7 +59,7 @@ static int find_free(int type){
     }
 }
 
-long k_commop(void *key_id, void *arg, int op){
+int k_commop(void *key_id, void *arg, int op){
     int operator = (*current_running)->pid;
     int *key = (int *)key_id;
     switch (op)
@@ -101,7 +103,7 @@ long k_commop(void *key_id, void *arg, int op){
     }
 }
 
-long k_semaphore_init(int *key, int sem, int operator){
+int k_semaphore_init(int *key, int sem, int operator){
     if(sem_first_time){
         for(int i = 0; i < COMM_NUM; i++){
             sem_list[i] = (Semaphore_t *)kmalloc(sizeof(Semaphore_t),pcb[operator-1].pid * 2 - 1);
@@ -127,7 +129,7 @@ long k_semaphore_init(int *key, int sem, int operator){
     return 0;
 }
 
-long k_semaphore_p(int key, int operator){
+int k_semaphore_p(int key, int operator){
     if(!sem_list[key]->sem_info.initialized){
         return -1;
     }
@@ -138,7 +140,7 @@ long k_semaphore_p(int key, int operator){
     }
 }
 
-long k_semaphore_v(int key, int operator){
+int k_semaphore_v(int key, int operator){
     if(!sem_list[key]->sem_info.initialized){
         return -1;
     }
@@ -148,7 +150,7 @@ long k_semaphore_v(int key, int operator){
     }
 }
 
-long k_semaphore_destroy(int *key, int operator){
+int k_semaphore_destroy(int *key, int operator){
     if(!sem_list[*key - 1]->sem_info.initialized){
         return -1;
     }
@@ -157,7 +159,7 @@ long k_semaphore_destroy(int *key, int operator){
     return 0;
 }
 
-long k_cond_init(int *key, int operator){
+int k_cond_init(int *key, int operator){
     if(cond_first_time){
         for(int i = 0; i < COMM_NUM; i++){
             cond_list[i] = (cond_t *)kmalloc(sizeof(cond_t),pcb[operator-1].pid * 2 - 1);
@@ -183,7 +185,7 @@ long k_cond_init(int *key, int operator){
     return 0;
 }
 
-long k_cond_wait(int key, int lock_id, int operator){
+int k_cond_wait(int key, int lock_id, int operator){
     if(!cond_list[key]->cond_info.initialized){
         return -1;
     }
@@ -195,7 +197,7 @@ long k_cond_wait(int key, int lock_id, int operator){
     return 0;
 }
 
-long k_cond_signal(int key, int operator){
+int k_cond_signal(int key, int operator){
     if(!cond_list[key]->cond_info.initialized){
         return -1;
     }
@@ -206,7 +208,7 @@ long k_cond_signal(int key, int operator){
     return 0;
 }
 
-long k_cond_broadcast(int key, int operator){
+int k_cond_broadcast(int key, int operator){
     if(!cond_list[key]->cond_info.initialized){
         return -1;
     }
@@ -217,7 +219,7 @@ long k_cond_broadcast(int key, int operator){
     return 0;
 }
 
-long k_cond_destroy(int *key, int operator){
+int k_cond_destroy(int *key, int operator){
     if(!cond_list[*key - 1]->cond_info.initialized){
         return -1;
     }
@@ -226,7 +228,7 @@ long k_cond_destroy(int *key, int operator){
     return 0;
 }
 
-long k_barrier_init(int *key, int total, int operator){
+int k_barrier_init(int *key, int total, int operator){
     if(barrier_first_time){
         for(int i = 0; i < COMM_NUM; i++){
             barrier_list[i] = (barrier_t *)kmalloc(sizeof(barrier_t),pcb[operator-1].pid * 2 - 1);
@@ -248,13 +250,15 @@ long k_barrier_init(int *key, int total, int operator){
     barrier_list[barrier_i]->barrier_info.initialized = 1;
     barrier_list[barrier_i]->count = 0;
     barrier_list[barrier_i]->total = total;
+    barrier_list[barrier_i]->mutex_id = 0;
+    barrier_list[barrier_i]->cond_id = 0;
     k_mutex_lock_init(&barrier_list[barrier_i]->mutex_id,operator);
     k_cond_init(&barrier_list[barrier_i]->cond_id,operator);
     *key = barrier_i + 1;
     return 0;
 }
 
-long k_barrier_wait(int key, int operator){
+int k_barrier_wait(int key, int operator){
     if(!barrier_list[key]->barrier_info.initialized){
         return -1;
     }
@@ -270,7 +274,7 @@ long k_barrier_wait(int key, int operator){
     return 0;
 }
 
-long k_barrier_destroy(int *key, int operator){
+int k_barrier_destroy(int *key, int operator){
     if(!barrier_list[*key - 1]->barrier_info.initialized){
         return -1;
     }
@@ -281,7 +285,7 @@ long k_barrier_destroy(int *key, int operator){
     return 0;
 }
 
-long k_mbox_open(char *name, int operator){
+int k_mbox_open(char *name, int operator){
     if(mbox_first_time){
         for(int i = 0; i < COMM_NUM; i++){
             mbox_list[i] = (mbox_t *)kmalloc(sizeof(mbox_t),pcb[operator-1].pid * 2 - 1);
@@ -293,7 +297,7 @@ long k_mbox_open(char *name, int operator){
         return -2;
     }
     for(int i = 0; i < COMM_NUM; i++){
-        if(kstrcmp(mbox_list[i]->name,name) == 0){
+        if(mbox_list[i]->mailbox_info.initialized && kstrcmp(mbox_list[i]->name,name) == 0){
             mbox_list[i]->cited_pid[mbox_list[i]->cited_num++] = operator;
             pcb[operator-1].mbox_keys[pcb[operator-1].owned_mbox_num++] = i + 1;
             return i + 1;
@@ -310,6 +314,9 @@ long k_mbox_open(char *name, int operator){
     mbox_list[mbox_i]->read_head = 0;
     mbox_list[mbox_i]->write_tail = 0;
     mbox_list[mbox_i]->used_units = 0;
+    mbox_list[mbox_i]->mutex_id = 0;
+    mbox_list[mbox_i]->full_cond_id = 0;
+    mbox_list[mbox_i]->empty_cond_id = 0;
     k_mutex_lock_init(&mbox_list[mbox_i]->mutex_id,operator);
     k_cond_init(&mbox_list[mbox_i]->full_cond_id,operator);
     k_cond_init(&mbox_list[mbox_i]->empty_cond_id,operator);
@@ -320,7 +327,7 @@ long k_mbox_open(char *name, int operator){
     return mbox_i + 1;
 }
 
-long k_mbox_close(int operator){
+int k_mbox_close(int operator){
     for(int i = 0; i < pcb[operator-1].owned_mbox_num; i++){
         mbox_list[pcb[operator-1].mbox_keys[i] - 1]->cited_num--;
         if(mbox_list[pcb[operator-1].mbox_keys[i] - 1]->cited_num == 0){
@@ -333,7 +340,7 @@ long k_mbox_close(int operator){
     return 0;
 }
 
-long k_mbox_send(int key, mbox_arg_t *arg, int operator){
+int k_mbox_send(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
@@ -362,7 +369,7 @@ long k_mbox_send(int key, mbox_arg_t *arg, int operator){
     return blocked_time;
 }
 
-long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
+int k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
@@ -391,7 +398,7 @@ long k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     return blocked_time;
 }
 
-long k_mbox_try_send(int key, mbox_arg_t *arg, int operator){
+int k_mbox_try_send(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
@@ -404,7 +411,7 @@ long k_mbox_try_send(int key, mbox_arg_t *arg, int operator){
     return 0;
 }
 
-long k_mbox_try_recv(int key, mbox_arg_t *arg, int operator){
+int k_mbox_try_recv(int key, mbox_arg_t *arg, int operator){
     if(!mbox_list[key]->mailbox_info.initialized){
         return -1;
     }
