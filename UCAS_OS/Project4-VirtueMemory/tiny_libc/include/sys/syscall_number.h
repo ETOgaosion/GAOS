@@ -10,7 +10,7 @@
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- * furnisched to do so, subject to the following conditions:
+ * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
@@ -25,54 +25,49 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
 
-#ifndef INCLUDE_SYSCALL_H_
-#define INCLUDE_SYSCALL_H_
+#ifndef OS_SYSCALL_NUMBER_H_
+#define OS_SYSCALL_NUMBER_H_
 
-#include <os/syscall_number.h>
-#include <stdint.h>
-#include <os.h>
+#define IGNORE 0
+#define NUM_SYSCALLS 64
 
- 
-#define SCREEN_HEIGHT 80
- 
-pid_t sys_exec(const char *file_name, int argc, char* argv[], spawn_mode_t mode);
-void sys_show_exec();
-// the last parameter shows with/without return value
-extern long invoke_syscall(long, long, long, long);
+/* define */
+#define SYSCALL_SPAWN 0
+#define SYSCALL_EXIT 1
+#define SYSCALL_SLEEP 2
+#define SYSCALL_KILL 3
+#define SYSCALL_WAITPID 4
+#define SYSCALL_PS 5
+#define SYSCALL_GETPID 6
+#define SYSCALL_YIELD 7
+#define SYSCALL_FORK 8
+#define SYSCALL_SET_PRIORITY 9
+#define SYSCALL_TASKSET 10
+#define SYSCALL_EXEC 11
+#define SYSCALL_SHOW_EXEC 12
 
-pid_t sys_spawn(task_info_t *info, void* arg, spawn_mode_t mode);
-pid_t sys_create_thread(uintptr_t entry_point, void* arg);
-void sys_exit(void);
-void sys_sleep(long);
-int sys_kill(pid_t pid);
-int sys_waitpid(pid_t pid);
-pid_t sys_exec(const char *file_name, int argc, char* argv[], spawn_mode_t mode);
-void sys_show_exec();
-void sys_process_show(void);
-pid_t sys_getpid();
-void sys_yield();
-extern long sys_fork();
-void sys_setpriority(long);
-int sys_taskset(void *);
+#define SYSCALL_LOCKOP 13
+#define SYSCALL_SHMPGET 14
+#define SYSCALL_SHMPDT 15
+// proc comm, [0,3] is for Semaphore, [4,6] is for barrier, [7,10] is for mailbox
+#define SYSCALL_COMMOP 16
 
-int sys_lockop(int *key, int op);
-int sys_commop(int *key, int *args, int op);
-void sys_write(char *);
-char sys_serial_read();
-char sys_read_ch();
-void sys_serial_write(char ch);
-void sys_move_cursor(int, int);
-void sys_reflush();
-void sys_screen_clear(void);
-void sys_get_cursor(int *x, int *y);
-long sys_get_timebase();
-long sys_get_tick();
-long sys_get_wall_time(long *);
+#define SYSCALL_SHMPGET 17
+#define SYSCALL_SHMPDT 18
 
-#define BINSEM_OP_LOCK 0 // mutex acquire
-#define BINSEM_OP_UNLOCK 1 // mutex release
+#define SYSCALL_WRITE 20
 
-int binsemget(int key);
-int binsemop(int binsem_id, int op);
+#define SYSCALL_MOVE_CURSOR 23
+#define SYSCALL_REFLUSH 24
+#define SYSCALL_SERIAL_READ 25
+#define SYSCALL_SERIAL_WRITE 26
+#define SYSCALL_READ_SHELL_BUFF 27
+#define SYSCALL_SCREEN_CLEAR 28
+
+#define SYSCALL_GET_CURSOR 29
+
+#define SYSCALL_GET_TIMEBASE 30
+#define SYSCALL_GET_TICK 31
+#define SYSCALL_GET_WALL_TIME 32
 
 #endif

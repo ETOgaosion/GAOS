@@ -126,7 +126,7 @@ void recv_thread(void *arg)
     for (;;)
     {
         len = rand() % (MAX_MBOX_LENGTH / 4 - 2) + 1;
-        mbox_recv(mq, recv_buf, len*2);
+        mbox_recv(mq, recv_buf, len*2,0);
         for (i = 0; i < len; ++i) {
             ++bytes[recv_buf[i * 2] - 'a'];
             recv_buf[i] = recv_buf[i * 2 + 1];
@@ -167,7 +167,7 @@ void send_thread(void *arg)
             send_buf[i * 2 + 1] = send_buf[i];
             send_buf[i * 2] = id;
         }
-        mbox_send(mq[target], send_buf, 2*len);
+        mbox_send(mq[target], send_buf, 2*len,0);
         bytes[target] += len;
 
         sys_move_cursor(1, position);
@@ -197,13 +197,13 @@ int main(int argc, char* argv[])
     if (id == 'a') {
         fill_buffer();
     }
-
+    /*
     mthread_t recv;
     mthread_create(&recv, recv_thread, (void*)(unsigned long)id);
 
     // use this thread as send thread
     send_thread((void*)(unsigned long)id);
 
-    mthread_join(recv);
+    mthread_join(recv);*/
     return 0;
 }

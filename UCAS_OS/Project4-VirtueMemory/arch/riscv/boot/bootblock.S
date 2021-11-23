@@ -6,18 +6,14 @@
 .equ kn0_os_size_loc, 0x502001fa
 
 // 1. kernel address (move kernel to here ~)
-.equ kernel, 0x50201000
+.equ kernel, 0x50203000
 // .equ kernel, 0x50201000
 
 // 2. kernel main address (jmp here to start kernel main!)
-.equ kernel_main, 0x50201000
-// .equ kernel_main, 0x50201000
+.equ start, 0x50203000
+//.equ kernel_main, 0x50400000
 
-.equ kernel_stack, 0x50500000
-
-// 3. move bootblock to total_os_size
-// .equ bbl_new_addr, 0x5efff000
-// .equ bbl_new_entrance,0x5efff026
+.equ kernel_stack, 0x5e000000
 
 .text
 .global main
@@ -80,29 +76,38 @@ sum:
 	add a3,a3,t1
 	addi t0,t0,-2
 	j sum
-	
+
+	// read 64 sectors at a time
+	la a0,kernel
+	li a1,64
+	mv a2,a3
+	li t0,32768
 read_kernel:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
-	mv a2,a3
-	mv a1,a4
-	la a0,kernel
+	beqz a4,read_kernel_finish
 	SBI_CALL SBI_SD_READ
+	add a0,a0,t0
+	sub a4,a4,a1
+	add a2,a2,a1
+	j read_kernel
+
+read_kernel_finish:
 
 	fence.i
 	
-	// Jump to kernel_main
-	la a3,kernel_main
+	// Jump to start
+	la a3,start
 	jr a3
 
 
 secondary:
 	/* TODO: 
 	 * 1. Mask all interrupts
-	 * 2. let stvec pointer to kernel_main
+	 * 2. let stvec pointer to start
 	 * 3. enable software interrupt for ipi
 	 */
     csrw CSR_SIE, zero
-	la a0,kernel_main
+	la a0,start
 	csrw CSR_STVEC, a0
 	li a0, SIE_SSIE
 	csrw CSR_SIE, a0

@@ -83,6 +83,7 @@ void write_to_file(Records* self, FILE* header, FILE* source)
     fprintf(header, "#define ELF_FILE_NUM %d\n", self->size);
     fprintf(header, "extern ElfFile elf_files[%d];\n", self->size);
     fprintf(header, "extern int get_elf_file(const char *file_name, unsigned char **binary, int *length);\n");
+    fprintf(header, "extern int match_elf(char *file_name);\n");
 
     fseek(source, 0, SEEK_END);
     fprintf(source, "#include <os/string.h>\n");
@@ -95,7 +96,7 @@ void write_to_file(Records* self, FILE* header, FILE* source)
             self->record[i][0], self->record[i][1], self->record[i][2],
             i == self->size - 1 ? "" : ",");
     }
-    fprintf(source, "};\n");
+    fprintf(source, "};\n\n");
     fprintf(source, "int get_elf_file(const char *file_name, unsigned char **binary, int *length)\n");
     fprintf(source, "{\n");
     fprintf(source, "  for (int i = 0; i < %d; ++i) {\n", self->size);
@@ -107,6 +108,14 @@ void write_to_file(Records* self, FILE* header, FILE* source)
     fprintf(source, "  }\n");
     fprintf(source, "  return 0;\n");
     fprintf(source, "}\n\n");
+    fprintf(source, "int match_elf(char *file_name)\n");
+    fprintf(source, "{\n");
+    fprintf(source, "   for (int i = 1; i < 5; i++){\n");
+    fprintf(source, "       if (strcmp(file_name, elf_files[i].file_name) == 0)\n");
+    fprintf(source, "           return i;\n");
+    fprintf(source, "   }\n");
+    fprintf(source, "   return -1;\n");
+    fprintf(source, "}\n");
 }
 
 void append_record(Records* self, char* varname)

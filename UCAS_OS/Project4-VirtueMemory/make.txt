@@ -1,7 +1,14 @@
-riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0  -fno-builtin -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -Itest -Itest/test_project3 -Itiny_libc/include -nostdinc -g -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/head.S ./arch/riscv/kernel/smp.S ./arch/riscv/sbi/common.c ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./kernel/locking/lock.c  ./kernel/comm/comm.c  ./kernel/sched/sched.c ./kernel/sched/smp.c ./kernel/sched/time.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tiny_libc/syscall.c ./tiny_libc/syscall.S ./tiny_libc/time.c ./tiny_libc/mailbox.c ./tiny_libc/rand.c ./test/test.c ./test/test_project3/bubble.c ./test/test_project3/test_shell.c ./test/test_project3/test_affinity.c ./test/test_project3/test_barrier.c ./test/test_project3/test_kill.c ./test/test_project3/test_mailbox.c ./test/test_project3/test_multicore.c ./test/test_project3/test_wait.c ./test/test_project3/test_semaphore.c -Ttext=0x50201000
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
+echo "" > user_programs.c
+echo "" > user_programs.h
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf; do ./elf2char --header-only $prog >> user_programs.h; done
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf; do ./elf2char $prog >> user_programs.c; done
+./generateMapping user_programs
+mv user_programs.h include/
+mv user_programs.c kernel/
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/start.S ./arch/riscv/sbi/common.c ./arch/riscv/kernel/smp.S ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c  ./kernel/locking/lock.c  ./kernel/comm/comm.c ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/sched/smp.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c  ./kernel/user_programs.c -Ttext=0xffffffc050400000
 In file included from include/os/lock.h:32,
-                 from ./init/main.c:37:
+                 from ./init/main.c:8:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
    13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
@@ -18,74 +25,97 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-./init/main.c: At top level:
-./init/main.c:211:5: warning: 'main' takes only zero or two arguments [-Wmain]
-  211 | int main(int arg)
-      |     ^~~~
+./init/main.c: In function 'init_pcb_stack_pointer':
+./init/main.c:83:16: warning: assignment to 'PTE *' {aka 'long unsigned int *'} from 'ptr_t' {aka 'long unsigned int'} makes pointer from integer without a cast [-Wint-conversion]
+   83 |     pcb->pgdir = allocPage();
+      |                ^
+./init/main.c:84:20: warning: passing argument 1 of 'clear_pgdir' makes integer from pointer without a cast [-Wint-conversion]
+   84 |     clear_pgdir(pcb->pgdir);
+      |                 ~~~^~~~~~~
+      |                    |
+      |                    PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:39,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+arch/riscv/include/pgtable.h:147:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  147 | static inline void clear_pgdir(uintptr_t pgdir_addr)
+      |                                ~~~~~~~~~~^~~~~~~~~~
+./init/main.c:85:12: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+   85 |     memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+      |            ^~~~~~~~~~~~~~~~~~
+      |            |
+      |            char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./init/main.c:85:32: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+   85 |     memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+      |                                ^~~~~~~~~~~~~~~~~~~~~~~~
+      |                                |
+      |                                char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./init/main.c:88:88: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+   88 |     pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1);
+      |                                                                                     ~~~^~~~~~~
+      |                                                                                        |
+      |                                                                                        PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:36,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/mm.h:60:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   60 | extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode);
+      |                                                  ~~~~~~~~~~^~~~~
+./init/main.c:92:83: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+   92 |     pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0);
+      |                                                                                ~~~^~~~~~~
+      |                                                                                   |
+      |                                                                                   PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:36,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/mm.h:60:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   60 | extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode);
+      |                                                  ~~~~~~~~~~^~~~~
+./init/main.c: In function 'init_pcb':
+./init/main.c:147:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  147 |         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
+      |                                                                                                    ~~~~~~^~~~~~
+      |                                                                                                          |
+      |                                                                                                          PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:41,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
+      |                                                  ~~~~~~~~~~^~~~~
+./init/main.c:160:117: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  160 |         ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+      |                                                                                                           ~~~~~~~~~~^~~~~~
+      |                                                                                                                     |
+      |                                                                                                                     PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:41,
+                 from include/os/irq.h:31,
+                 from ./init/main.c:2:
+include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
+      |                                                  ~~~~~~~~~~^~~~~
 ./init/main.c: In function 'main':
-./init/main.c:221:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  221 |         current_running = &current_running_core_m;
+./init/main.c:228:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  228 |         current_running = &current_running_core_m;
       |                         ^
-./init/main.c:248:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  248 |         current_running = &current_running_core_s;
+./init/main.c:256:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  256 |         current_running = &current_running_core_s;
       |                         ^
-In file included from tiny_libc/include/stddef.h:4,
-                 from tiny_libc/include/stdio.h:5,
-                 from ./kernel/irq/irq.c:5:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/irq.h:30,
-                 from ./kernel/irq/irq.c:1:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/stddef.h:4,
-                 from tiny_libc/include/stdio.h:5,
-                 from ./kernel/irq/irq.c:5:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/irq.h:30,
-                 from ./kernel/irq/irq.c:1:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/stddef.h:4,
-                 from tiny_libc/include/stdio.h:5,
-                 from ./kernel/irq/irq.c:5:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/irq.h:30,
-                 from ./kernel/irq/irq.c:1:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./kernel/irq/irq.c:5:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/irq.h:30,
-                 from ./kernel/irq/irq.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from ./kernel/irq/irq.c:6:
-include/assert.h: In function '_panic':
-include/assert.h:8:5: warning: implicit declaration of function 'prints'; did you mean 'printf'? [-Wimplicit-function-declaration]
-    8 |     prints("Assertion failed at %s in %s:%d\n\r",
-      |     ^~~~~~
-      |     printf
 In file included from include/os/lock.h:32,
                  from include/os/smp.h:4,
                  from ./kernel/irq/irq.c:11:
@@ -105,23 +135,10 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/irq/irq.c: In function 'interrupt_helper':
 ./kernel/irq/irq.c:34:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
    34 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
-./kernel/irq/irq.c: In function 'handle_other':
-./kernel/irq/irq.c:78:13: warning: implicit declaration of function 'printk'; did you mean 'printf'? [-Wimplicit-function-declaration]
-   78 |             printk("%s : %016lx ",reg_name[i+j], regs->regs[i+j]);
-      |             ^~~~~~
-      |             printf
 In file included from include/os/lock.h:32,
                  from ./drivers/screen.c:5:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
@@ -140,14 +157,6 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/lock.h:32,
                  from ./kernel/locking/lock.c:1:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
@@ -165,14 +174,6 @@ arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
@@ -208,85 +209,89 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
-./kernel/comm/comm.c:351:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  351 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
-      |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                      |
-      |                                      char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:352:31: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  352 |         kmemcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
-      |                 ~~~~~~~~~~~~~~^~~~~~
-      |                               |
-      |                               char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |              ~~~~~~~~~^~~~
-./kernel/comm/comm.c:356:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  356 |         kmemcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
-      |                 ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                      |
-      |                                      char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:23: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |              ~~~~~~~~~^~~~
+./kernel/comm/comm.c:358:37: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+  358 |         memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+      |                ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                     |
+      |                                     char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./kernel/comm/comm.c:359:30: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+  359 |         memcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+      |                ~~~~~~~~~~~~~~^~~~~~
+      |                              |
+      |                              char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./kernel/comm/comm.c:363:37: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+  363 |         memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+      |                ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                     |
+      |                                     char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
 ./kernel/comm/comm.c: In function 'k_mbox_recv':
-./kernel/comm/comm.c:380:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  380 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
-      |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                               |
-      |                                               char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:381:87: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  381 |         kmemcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
-      |                                                                         ~~~~~~~~~~~~~~^~~~~~
-      |                                                                                       |
-      |                                                                                       char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |                             ~~~~~~~~~~~~~~~^~~
-./kernel/comm/comm.c:385:47: warning: pointer targets in passing argument 2 of 'kmemcpy' differ in signedness [-Wpointer-sign]
-  385 |         kmemcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
-      |                          ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                                               |
-      |                                               char *
-In file included from ./kernel/comm/comm.c:3:
-include/os/string.h:33:44: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
-   33 | void kmemcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |                             ~~~~~~~~~~~~~~~^~~
+./kernel/comm/comm.c:387:46: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  387 |         memcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+      |                         ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                              |
+      |                                              char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./kernel/comm/comm.c:388:86: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  388 |         memcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+      |                                                                        ~~~~~~~~~~~~~~^~~~~~
+      |                                                                                      |
+      |                                                                                      char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./kernel/comm/comm.c:392:46: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  392 |         memcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+      |                         ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                              |
+      |                                              char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/comm/comm.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
 ./kernel/comm/comm.c: In function 'find_free':
-./kernel/comm/comm.c:58:1: warning: control reaches end of non-void function [-Wreturn-type]
-   58 | }
+./kernel/comm/comm.c:60:1: warning: control reaches end of non-void function [-Wreturn-type]
+   60 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_commop':
-./kernel/comm/comm.c:102:1: warning: control reaches end of non-void function [-Wreturn-type]
-  102 | }
+./kernel/comm/comm.c:104:1: warning: control reaches end of non-void function [-Wreturn-type]
+  104 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_p':
-./kernel/comm/comm.c:139:1: warning: control reaches end of non-void function [-Wreturn-type]
-  139 | }
+./kernel/comm/comm.c:141:1: warning: control reaches end of non-void function [-Wreturn-type]
+  141 | }
       | ^
 ./kernel/comm/comm.c: In function 'k_semaphore_v':
-./kernel/comm/comm.c:149:1: warning: control reaches end of non-void function [-Wreturn-type]
-  149 | }
+./kernel/comm/comm.c:151:1: warning: control reaches end of non-void function [-Wreturn-type]
+  151 | }
       | ^
 In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
@@ -306,14 +311,39 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
+./kernel/sched/sched.c: In function 'k_spawn':
+./kernel/sched/sched.c:382:41: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+  382 |             memcpy(new->user_sp_kseeonly-arg_bios,argv[argi],arg_bios);
+      |                    ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+      |                                         |
+      |                                         reg_t {aka long unsigned int}
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/sched/sched.c:3:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'reg_t' {aka 'long unsigned int'}
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./kernel/sched/sched.c:382:55: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  382 |             memcpy(new->user_sp_kseeonly-arg_bios,argv[argi],arg_bios);
+      |                                                   ~~~~^~~~~~
+      |                                                       |
+      |                                                       char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/sched/sched.c:3:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./kernel/sched/sched.c:389:113: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  389 |     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+      |                                                                                                       ~~~~~~~~~~^~~~~~
+      |                                                                                                                 |
+      |                                                                                                                 PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:41,
+                 from ./kernel/sched/sched.c:3:
+include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
+      |                                                  ~~~~~~~~~~^~~~~
 In file included from ./kernel/sched/smp.c:2:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
@@ -331,24 +361,68 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-./kernel/mm/mm.c: In function 'freePage':
-./kernel/mm/mm.c:30:20: warning: passing argument 1 of 'kmemset' makes pointer from integer without a cast [-Wint-conversion]
-   30 |     kmemset(memCurr[page],0,numPage * PAGE_SIZE);
-      |             ~~~~~~~^~~~~~
-      |                    |
-      |                    ptr_t {aka long unsigned int}
-In file included from ./kernel/mm/mm.c:2:
-include/os/string.h:34:20: note: expected 'void *' but argument is of type 'ptr_t' {aka 'long unsigned int'}
-   34 | void kmemset(void *dest, uint8_t val, uint32_t len);
-      |              ~~~~~~^~~~
+./kernel/mm/mm.c: In function 'shm_page_get':
+./kernel/mm/mm.c:50:24: warning: implicit declaration of function 'get_current_cpu_id' [-Wimplicit-function-declaration]
+   50 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+      |                        ^~~~~~~~~~~~~~~~~~
+./kernel/mm/mm.c:50:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   50 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+      |                     ^
+./kernel/mm/mm.c:60:76: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+   60 |                 if (check_page_helper(begin_addr, pa2kva((*current_running)->pgdir)) == 0)
+      |                                                          ~~~~~~~~~~~~~~~~~~^~~~~~~
+      |                                                                            |
+      |                                                                            PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/mm.c:3:
+arch/riscv/include/pgtable.h:98:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   98 | static inline uintptr_t pa2kva(uintptr_t pa)
+      |                                ~~~~~~~~~~^~
+./kernel/mm/mm.c:63:81: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+   63 |             setup_shm_page(begin_addr, spage[i].paddr, pa2kva((*current_running)->pgdir));
+      |                                                               ~~~~~~~~~~~~~~~~~~^~~~~~~
+      |                                                                                 |
+      |                                                                                 PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/mm.c:3:
+arch/riscv/include/pgtable.h:98:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   98 | static inline uintptr_t pa2kva(uintptr_t pa)
+      |                                ~~~~~~~~~~^~
+./kernel/mm/mm.c:71:75: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+   71 |         if ((kva = alloc_page_helper(begin_addr, pa2kva((*current_running)->pgdir),1 )) != 0)
+      |                                                         ~~~~~~~~~~~~~~~~~~^~~~~~~
+      |                                                                           |
+      |                                                                           PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/mm.c:3:
+arch/riscv/include/pgtable.h:98:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   98 | static inline uintptr_t pa2kva(uintptr_t pa)
+      |                                ~~~~~~~~~~^~
+./kernel/mm/mm.c: In function 'shm_page_dt':
+./kernel/mm/mm.c:90:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   90 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+      |                     ^
+./kernel/mm/mm.c:102:65: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+  102 |     free_page_helper(vaddr, (uintptr_t)pa2kva((*current_running)->pgdir));
+      |                                               ~~~~~~~~~~~~~~~~~~^~~~~~~
+      |                                                                 |
+      |                                                                 PTE * {aka long unsigned int *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/mm.c:3:
+arch/riscv/include/pgtable.h:98:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   98 | static inline uintptr_t pa2kva(uintptr_t pa)
+      |                                ~~~~~~~~~~^~
+./kernel/mm/mm.c: In function 'check_page_helper':
+./kernel/mm/mm.c:222:18: warning: returning 'PTE *' {aka 'long unsigned int *'} from a function with return type 'uintptr_t' {aka 'long unsigned int'} makes integer from pointer without a cast [-Wint-conversion]
+  222 |     return ptable[0];
+      |            ~~~~~~^~~
+./kernel/mm/mm.c: In function 'free_page_helper':
+./kernel/mm/mm.c:207:1: warning: control reaches end of non-void function [-Wreturn-type]
+  207 | }
+      | ^
+./kernel/mm/mm.c:205:66: warning: 'ptable[2]' is used uninitialized in this function [-Wuninitialized]
+  205 |     PTE *ptable[] = {(PTE *)pgdir + vpn[2],(PTE *)pa2kva((*ptable[2]) << 2) + vpn[1],(PTE *)pa2kva((*ptable[1]) << 2) + vpn[0]};
+      |                                                            ~~~~~~^~~
 In file included from include/os/lock.h:32,
                  from include/os/smp.h:4,
                  from ./libs/printk.c:47:
@@ -368,798 +442,31 @@ arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
    60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
       |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
-arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
-arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/printf.c:46:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/printf.c:45:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/printf.c:46:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/printf.c:45:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/printf.c:46:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/printf.c:45:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./tiny_libc/mthread.c:2:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/stdatomic.h:6,
-                 from ./tiny_libc/mthread.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./tiny_libc/mthread.c:2:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/stdatomic.h:6,
-                 from ./tiny_libc/mthread.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./tiny_libc/mthread.c:2:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/stdatomic.h:6,
-                 from ./tiny_libc/mthread.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/syscall.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from include/sys/syscall.h:31,
-                 from ./tiny_libc/syscall.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/syscall.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from include/sys/syscall.h:31,
-                 from ./tiny_libc/syscall.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/syscall.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from include/sys/syscall.h:31,
-                 from ./tiny_libc/syscall.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-./tiny_libc/syscall.c: In function 'sys_spawn':
-./tiny_libc/syscall.c:23:41: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-   23 |     return invoke_syscall(SYSCALL_SPAWN,info,arg,mode);
-      |                                         ^~~~
-      |                                         |
-      |                                         task_info_t * {aka struct task_info *}
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'task_info_t *' {aka 'struct task_info *'}
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c:23:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-   23 |     return invoke_syscall(SYSCALL_SPAWN,info,arg,mode);
-      |                                              ^~~
-      |                                              |
-      |                                              void *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'void *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                        ^~~~
-./tiny_libc/syscall.c: In function 'sys_taskset':
-./tiny_libc/syscall.c:98:43: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-   98 |     return invoke_syscall(SYSCALL_TASKSET,arg,IGNORE,IGNORE);
-      |                                           ^~~
-      |                                           |
-      |                                           void *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'void *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c: In function 'sys_lockop':
-./tiny_libc/syscall.c:106:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  106 |     return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE);
-      |                                          ^~~
-      |                                          |
-      |                                          int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c: In function 'sys_commop':
-./tiny_libc/syscall.c:114:42: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  114 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
-      |                                          ^~~
-      |                                          |
-      |                                          int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c:114:46: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  114 |     return invoke_syscall(SYSCALL_COMMOP,key,args,op);
-      |                                              ^~~~
-      |                                              |
-      |                                              int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                        ^~~~
-./tiny_libc/syscall.c: In function 'sys_write':
-./tiny_libc/syscall.c:124:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  124 |     invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE);
-      |                                  ^~~~
-      |                                  |
-      |                                  char *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'char *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c: In function 'sys_get_cursor':
-./tiny_libc/syscall.c:194:34: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  194 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
-      |                                  ^
-      |                                  |
-      |                                  int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-./tiny_libc/syscall.c:194:36: warning: passing argument 3 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  194 |     invoke_syscall(SYSCALL_SLEEP,x,y,IGNORE);
-      |                                    ^
-      |                                    |
-      |                                    int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:40: note: expected 'long int' but argument is of type 'int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                        ^~~~
-./tiny_libc/syscall.c: In function 'sys_get_wall_time':
-./tiny_libc/syscall.c:220:49: warning: passing argument 2 of 'invoke_syscall' makes integer from pointer without a cast [-Wint-conversion]
-  220 |     return invoke_syscall(SYSCALL_GET_WALL_TIME,time_elapsed,IGNORE,IGNORE);
-      |                                                 ^~~~~~~~~~~~
-      |                                                 |
-      |                                                 long int *
-In file included from ./tiny_libc/syscall.c:1:
-include/sys/syscall.h:35:34: note: expected 'long int' but argument is of type 'long int *'
-   35 | extern long invoke_syscall(long, long, long, long);
-      |                                  ^~~~
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./tiny_libc/time.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./tiny_libc/time.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./tiny_libc/time.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./tiny_libc/time.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./tiny_libc/time.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./tiny_libc/time.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/mailbox.c:3:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/mailbox.c:2:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/mailbox.c:3:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/mailbox.c:2:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from ./tiny_libc/mailbox.c:3:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./tiny_libc/mailbox.c:2:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./test/test_project3/test_shell.c:30:
-tiny_libc/include/stdint.h:72: warning: "INT64_MIN" redefined
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from test/test.h:30,
-                 from ./test/test_project3/test_shell.c:28:
-include/type.h:58: note: this is the location of the previous definition
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./test/test_project3/test_shell.c:30:
-tiny_libc/include/stdint.h:77: warning: "INT64_MAX" redefined
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from test/test.h:30,
-                 from ./test/test_project3/test_shell.c:28:
-include/type.h:63: note: this is the location of the previous definition
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/string.h:4,
-                 from ./test/test_project3/test_shell.c:30:
-tiny_libc/include/stdint.h:83: warning: "UINT64_MAX" redefined
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from include/os/sched.h:32,
-                 from test/test.h:30,
-                 from ./test/test_project3/test_shell.c:28:
-include/type.h:69: note: this is the location of the previous definition
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/string.h:5,
-                 from ./test/test_project3/test_shell.c:30:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from test/test.h:30,
-                 from ./test/test_project3/test_shell.c:28:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_affinity.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_affinity.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_affinity.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_affinity.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_affinity.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_affinity.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_affinity.c:2:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_affinity.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_barrier.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_barrier.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_barrier.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_barrier.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_barrier.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_barrier.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_barrier.c:2:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_barrier.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_kill.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_kill.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_kill.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_kill.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_kill.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_kill.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_kill.c:4:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_kill.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./test/test_project3/test_kill.c: In function 'wait_exit_task':
-./test/test_project3/test_kill.c:56:11: warning: unused variable 'pid_task2' [-Wunused-variable]
-   56 |     pid_t pid_task2 = sys_spawn(&task2, (void*)&pid_task1,
-      |           ^~~~~~~~~
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_mailbox.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_mailbox.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_mailbox.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_mailbox.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_mailbox.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_mailbox.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from ./test/test_project3/test_mailbox.c:4:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_mailbox.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./test/test_project3/test_mailbox.c: In function 'strServer':
-./test/test_project3/test_mailbox.c:74:37: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-   74 |         uint32_t checksum = adler32(msgBuffer, header.length);
-      |                                     ^~~~~~~~~
-      |                                     |
-      |                                     char *
-./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'char *'
-   28 | uint32_t adler32(unsigned char *data, size_t len)
-      |                  ~~~~~~~~~~~~~~~^~~~
-./test/test_project3/test_mailbox.c: In function 'clientSendMsg':
-./test/test_project3/test_mailbox.c:101:32: warning: passing argument 1 of 'adler32' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  101 |     header->checksum = adler32(content, length);
-      |                                ^~~~~~~
-./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'const char *'
-   28 | uint32_t adler32(unsigned char *data, size_t len)
-      |                  ~~~~~~~~~~~~~~~^~~~
-./test/test_project3/test_mailbox.c: In function 'strGenerator':
-./test/test_project3/test_mailbox.c:143:30: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
-  143 |         generateRandomString(strBuffer, len);
-      |                              ^~~~~~~~~
-      |                              |
-      |                              int *
-./test/test_project3/test_mailbox.c:110:33: note: expected 'char *' but argument is of type 'int *'
-  110 | void generateRandomString(char* buf, int len)
-      |                           ~~~~~~^~~
-./test/test_project3/test_mailbox.c:144:38: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
-  144 |         blocked += clientSendMsg(mq, strBuffer, len, 0);
-      |                                      ^~~~~~~~~
-      |                                      |
-      |                                      int *
-./test/test_project3/test_mailbox.c:94:46: note: expected 'const char *' but argument is of type 'int *'
-   94 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int sleep_operation)
-      |                                  ~~~~~~~~~~~~^~~~~~~
-./test/test_project3/test_mailbox.c: In function 'send_recver':
-./test/test_project3/test_mailbox.c:157:42: warning: passing argument 1 of 'mbox_open' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  157 |     mailbox_t mq_m_recv = mbox_open(names[idx]);
-      |                                     ~~~~~^~~~~
-In file included from ./test/test_project3/test_mailbox.c:7:
-tiny_libc/include/mailbox.h:18:27: note: expected 'char *' but argument is of type 'const char *'
-   18 | mailbox_t mbox_open(char *name);
-      |                     ~~~~~~^~~~
-./test/test_project3/test_mailbox.c:190:35: warning: passing argument 1 of 'mbox_open' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  190 |             mq_m = mbox_open(names[send_to]);
-      |                              ~~~~~^~~~~~~~~
-In file included from ./test/test_project3/test_mailbox.c:7:
-tiny_libc/include/mailbox.h:18:27: note: expected 'char *' but argument is of type 'const char *'
-   18 | mailbox_t mbox_open(char *name);
-      |                     ~~~~~~^~~~
-./test/test_project3/test_mailbox.c:192:34: warning: passing argument 1 of 'generateRandomString' from incompatible pointer type [-Wincompatible-pointer-types]
-  192 |             generateRandomString(strBuffer, len);
-      |                                  ^~~~~~~~~
-      |                                  |
-      |                                  int *
-./test/test_project3/test_mailbox.c:110:33: note: expected 'char *' but argument is of type 'int *'
-  110 | void generateRandomString(char* buf, int len)
-      |                           ~~~~~~^~~
-./test/test_project3/test_mailbox.c:193:42: warning: passing argument 2 of 'clientSendMsg' from incompatible pointer type [-Wincompatible-pointer-types]
-  193 |             send_res = clientSendMsg(mq, strBuffer, len, 1);
-      |                                          ^~~~~~~~~
-      |                                          |
-      |                                          int *
-./test/test_project3/test_mailbox.c:94:46: note: expected 'const char *' but argument is of type 'int *'
-   94 | int clientSendMsg(mailbox_t *mq, const char* content, int length, int sleep_operation)
-      |                                  ~~~~~~~~~~~~^~~~~~~
-./test/test_project3/test_mailbox.c:226:41: warning: pointer targets in passing argument 1 of 'adler32' differ in signedness [-Wpointer-sign]
-  226 |             uint32_t checksum = adler32(msgBuffer, header.length);
-      |                                         ^~~~~~~~~
-      |                                         |
-      |                                         char *
-./test/test_project3/test_mailbox.c:28:33: note: expected 'unsigned char *' but argument is of type 'char *'
-   28 | uint32_t adler32(unsigned char *data, size_t len)
-      |                  ~~~~~~~~~~~~~~~^~~~
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_multicore.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_multicore.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_multicore.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_multicore.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_multicore.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_multicore.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_multicore.c:2:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_multicore.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_wait.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_wait.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_wait.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_wait.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_wait.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/time.h:4,
-                 from ./test/test_project3/test_wait.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_wait.c:3:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/time.h:5,
-                 from ./test/test_project3/test_wait.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./test/test_project3/test_semaphore.c:1:
-include/type.h:58: warning: "INT64_MIN" redefined
-   58 | # define INT64_MIN              (-9223372036854775807lu-1)
-      | 
-In file included from tiny_libc/include/mthread.h:30,
-                 from ./test/test_project3/test_semaphore.c:1:
-tiny_libc/include/stdint.h:72: note: this is the location of the previous definition
-   72 | # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./test/test_project3/test_semaphore.c:1:
-include/type.h:63: warning: "INT64_MAX" redefined
-   63 | # define INT64_MAX              (9223372036854775807lu)
-      | 
-In file included from tiny_libc/include/mthread.h:30,
-                 from ./test/test_project3/test_semaphore.c:1:
-tiny_libc/include/stdint.h:77: note: this is the location of the previous definition
-   77 | # define INT64_MAX              (__INT64_C(9223372036854775807))
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./test/test_project3/test_semaphore.c:1:
-include/type.h:69: warning: "UINT64_MAX" redefined
-   69 | # define UINT64_MAX             (18446744073709551615lu)
-      | 
-In file included from tiny_libc/include/mthread.h:30,
-                 from ./test/test_project3/test_semaphore.c:1:
-tiny_libc/include/stdint.h:83: note: this is the location of the previous definition
-   83 | # define UINT64_MAX             (__UINT64_C(18446744073709551615))
-      | 
-In file included from tiny_libc/include/stdio.h:5,
-                 from ./test/test_project3/test_semaphore.c:4:
-tiny_libc/include/stddef.h:10: warning: "NULL" redefined
-   10 | #define NULL ((void*)0)
-      | 
-In file included from include/os/sched.h:32,
-                 from tiny_libc/include/os.h:5,
-                 from include/sys/syscall.h:32,
-                 from tiny_libc/include/mthread.h:32,
-                 from ./test/test_project3/test_semaphore.c:1:
-include/type.h:30: note: this is the location of the previous definition
-   30 | #define NULL  (void*)0
-      | 
-./createimage --extended bootblock main
+./elf2char main > payload.c
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o kernelimage ./arch/riscv/kernel/head.S ./arch/riscv/kernel/boot.c payload.c ./libs/string.c -Ttext=0x50203000
+./createimage --extended bootblock kernelimage
 bootblock can open
 0x50200000: bootblock
 	segment 0
 		offset 0x1000		vaddr 0x50200000
-		filesz 0x157		memsz 0x157
-		writing 0x157 bytes
+		filesz 0x165		memsz 0x165
+		writing 0x165 bytes
 		padding up to 0x200
-main can open
-0x50201000: main
+kernelimage can open
+0x50203000: kernelimage
 	segment 0
-		offset 0x1000		vaddr 0x50201000
-		filesz 0xaed8		memsz 0x12108
-		writing 0xaed8 bytes
-		padding up to 0x12400
+		offset 0x1000		vaddr 0x50203000
+		filesz 0x740ac		memsz 0x740b8
+		writing 0x740ac bytes
+		padding up to 0x74400
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 145 sector(s)
+kernel_size: 929 sector(s)
 there are 1 kernel(s) in image
+dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
+65+0 records in
+65+0 records out
+33280 bytes (33 kB, 32 KiB) copied, 0.000347054 s, 95.9 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
+riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt

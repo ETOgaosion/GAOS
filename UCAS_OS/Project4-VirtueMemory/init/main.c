@@ -1,39 +1,10 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
- *            Copyright (C) 2018 Institute of Computing Technology, CAS
- *               Author : Han Shukai (email : hanshukai@ict.ac.cn)
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
- *         The kernel's entry, where most of the initialization work is done.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnisched to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
-
 #include <common.h>
 #include <os/irq.h>
 #include <os/mm.h>
 #include <os/sched.h>
 #include <screen.h>
 #include <sbi.h>
-#include <stdio.h>
 #include <os/time.h>
-#include <os/syscall.h>
-#include <test.h>
 #include <os/lock.h>
 #include <os/comm.h>
 #include <csr.h>
@@ -42,6 +13,10 @@
 #include <os/stdio.h>
 #include <os/string.h>
 #include <os/smp.h>
+#include <pgtable.h>
+#include <os/elf.h>
+#include <sys/syscall_number.h>
+#include <os/syscall.h>
 
 extern void ret_from_exception();
 extern void __global_pointer$();
@@ -51,7 +26,7 @@ long tasks_num;
 
 void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
-    pcb_t *pcb, void *arg)
+    pcb_t *pcb, int argc, char *argv[])
 {
     regs_context_t *pt_regs =
         (regs_context_t *)(kernel_stack - sizeof(regs_context_t));
@@ -68,7 +43,8 @@ void init_pcb_stack(
     pt_regs->regs[1] = entry_point;
     pt_regs->regs[3] = (reg_t)__global_pointer$;
     pt_regs->regs[4] = (reg_t)pcb;
-    pt_regs->regs[10]= (reg_t)*(int *)arg;
+    pt_regs->regs[10] = (reg_t)argc;
+    pt_regs->regs[11] = (reg_t)argv;
     pt_regs->sepc = entry_point;
     pt_regs->scause = 0;
     pt_regs->sbadaddr = 0;
@@ -103,9 +79,39 @@ void init_pcb_stack(
     }
 }
 
+void init_pcb_stack_pointer(pcb_t *pcb){
+    pcb->pgdir = allocPage();
+    clear_pgdir(pcb->pgdir);
+    memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+    // user stack
+    pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 8) - 1);
+    pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1);
+    pcb->user_stack_base = pcb->user_sp_kseeonly - PAGE_SIZE + 1;
+    pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 8) - 1);
+    // kernel stack
+    pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0);
+    pcb->kernel_stack_base = pcb->kernel_sp - PAGE_SIZE + 1;
+    pcb->kernel_sp &=  ~((((uint64_t)1) << 8) - 1);
+    // page list
+    init_list_head(&(pcb->k_plist));
+    init_list_head(&(pcb->u_plist));
+    // page info list
+    page_t *kstack = (page_t *)kmalloc(sizeof(page_t));
+    page_t *ustack = (page_t *)kmalloc(sizeof(page_t));
+    kstack->pa = kva2pa(pcb->kernel_stack_base);
+    kstack->va = pcb->kernel_stack_base;
+    kstack->atsd = 1;
+    ustack->pa = kva2pa(pcb->user_stack_base);
+    ustack->va = pcb->user_stack_base;
+    ustack->atsd = 1;
+    list_add_tail(&(kstack->list), &(pcb->k_plist));
+    list_add_tail(&(ustack->list), &(pcb->u_plist));
+}
+
 void init_pcb_block(pcb_t *pcb){
+    init_pcb_stack_pointer(pcb);
+    pcb->type = USER_THREAD;
     int init_ticks = get_ticks();
-    // use allocPage in mm.c, first time allocate 1 page only
     // user stack is below kernel stack for security
     #if !defined (USE_CLOCK_INT) // no preempt
     pcb->preempt_count = 1;
@@ -134,40 +140,27 @@ static void init_pcb(int way)
 {
     if(way == 0){
         init_list_head(&ready_queue);
-        kmemset(pcb,0,sizeof(pcb));
-        #ifdef PROJECT_3
-        #ifdef TASK_1
-            tasks = shell_tasks;
-            tasks_num = num_shell_tasks;
-        #endif
-        #endif
-        for(int i=0;i<tasks_num;i++){
-            pcb[i].user_sp = allocPage(1,2*i);
-            pcb[i].user_stack_base = pcb->user_sp - PAGE_SIZE;
-            pcb[i].kernel_sp = allocPage(1,2*i+1);
-            pcb[i].kernel_stack_base = pcb->kernel_sp - PAGE_SIZE;
-            pcb[i].pid = i+1;
-            pcb[i].type = tasks[i]->type;
-            pcb[i].core_mask = 0b11;
-            init_pcb_block(&pcb[i]);
-            init_pcb_stack(pcb[i].kernel_sp,pcb[i].user_sp,tasks[i]->entry_point,&pcb[i],NULL);
-            list_add_tail(&(pcb[i].list),&ready_queue);
-        }
+        memset(pcb,0,sizeof(pcb));
+        // page dir
+        // load ELF
+        init_pcb_block(&pcb[0]);
+        ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
+        pcb[0].pid = 1;
+        pcb[0].core_mask = 0b11;
+        init_pcb_stack(pcb[0].kernel_sp,pcb[0].user_sp_kseeonly,start_pos,&pcb[0],0,NULL);
+        list_add_tail(&(pcb[0].list),&ready_queue);
         // help initialize pid0
         switchto_context_t *stored_switchto_k_m = (switchto_context_t *) pid0_pcb_core_m.kernel_sp;
         stored_switchto_k_m->regs[1] = pid0_pcb_core_m.kernel_sp;
         current_running_core_m = &pid0_pcb_core_m;
     }
     else{
-        bubble_pcb.user_sp = bubble_stack;
-        bubble_pcb.user_stack_base = bubble_pcb.user_sp - PAGE_SIZE;
-        bubble_pcb.kernel_sp = bubble_stack + PAGE_SIZE;
-        bubble_pcb.kernel_stack_base = bubble_pcb.kernel_sp - PAGE_SIZE;
-        bubble_pcb.pid = -1;
-        bubble_pcb.type = bubble_tasks[0]->type;
-        bubble_pcb.core_mask = 0b11;
         init_pcb_block(&bubble_pcb);
-        init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp,bubble_tasks[0]->entry_point,&bubble_pcb,NULL);
+        int elf_idx = match_elf("bubble");
+        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+        bubble_pcb.pid = -1;
+        bubble_pcb.core_mask = 0b11;
+        init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp_kseeonly,start_pos,&bubble_pcb,0,NULL);
         switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
         stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
         current_running_core_s = &pid0_pcb_core_s;
@@ -193,6 +186,8 @@ static void init_syscall(void)
     syscall[SYSCALL_TASKSET]        = (long (*)())&k_taskset;
     syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
     syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
+    syscall[SYSCALL_SHMPGET]        = (long (*)())&shm_page_get;
+    syscall[SYSCALL_SHMPDT]         = (long (*)())&shm_page_dt;
     
     syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
     syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
@@ -206,6 +201,18 @@ static void init_syscall(void)
     syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
 }
 
+static void cancel_direct_map()
+{
+    uint64_t va = 0x50200000;
+    uint64_t pgdir = 0xffffffc05e000000;
+    uint64_t vpn_2 = (va >> 30) & ((((uint64_t)1) << 10) - 1);
+    uint64_t vpn_1 = (va >> 21) & ((((uint64_t)1) << 10) - 1);
+    PTE *level_2 = (PTE *)(pgdir + vpn_2);
+    PTE *map_pte = (PTE *)(pa2kva(get_pa(*level_2)) + vpn_1);
+    *level_2 = 0;
+    *map_pte = 0;
+}
+
 // jump from bootloader.
 // The beginning of everything >_< ~~~~~~~~~~~~~~
 int main(int arg)
@@ -216,7 +223,7 @@ int main(int arg)
     if(arg == 0){
         smp_init(); // only done by master core
         lock_kernel();
-
+        local_flush_tlb_all();
         init_pcb(0);
         current_running = &current_running_core_m;
         printk("> [INIT] PCB initialization succeeded.\n\r");
@@ -244,6 +251,7 @@ int main(int arg)
     }
     else{
         lock_kernel();
+        cancel_direct_map();
         init_pcb(1);
         current_running = &current_running_core_s;
         setup_exception();
@@ -251,8 +259,6 @@ int main(int arg)
         sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
         k_scheduler();
     }
-
-    // fdt_print(riscv_dtb);
 
     // TODO:
     // Setup timer interrupt and enable all interrupt

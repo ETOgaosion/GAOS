@@ -1,6 +1,6 @@
 #include <screen.h>
 #include <common.h>
-#include <stdio.h>
+#include <os/stdio.h>
 #include <os/string.h>
 #include <os/lock.h>
 #include <os/sched.h>
@@ -121,7 +121,7 @@ void screen_write(char *buff)
 {
     load_curpcb_cursor();
     int i = 0;
-    int l = kstrlen(buff);
+    int l = strlen(buff);
 
     for (i = 0; i < l; i++)
     {

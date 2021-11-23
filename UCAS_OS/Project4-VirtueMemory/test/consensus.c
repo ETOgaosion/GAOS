@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
             str_print_loc[_pos] = 0;
 
             // printf("loc : %s\n", str_print_loc);
-            sys_exec(sub_task_args[0], 2, sub_task_args, AUTO_CLEANUP_ON_EXIT);
+            sys_spawn(sub_task_args[0], 2, sub_task_args, AUTO_CLEANUP_ON_EXIT);
         }
     }
 

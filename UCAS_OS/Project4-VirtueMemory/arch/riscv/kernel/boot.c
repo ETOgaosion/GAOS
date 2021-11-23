@@ -28,13 +28,13 @@ void map_page(uint64_t va, uint64_t pa, PTE *pgdir)
     if (pgdir[vpn2] == 0) {
         // alloc a new second-level page directory
         set_pfn(&pgdir[vpn2], alloc_page() >> NORMAL_PAGE_SHIFT);
-        set_attribute(&pgdir[vpn2], _PAGE_PRESENT);
+        set_attribute(&pgdir[vpn2], _PAGE_VALID);
         clear_pgdir(get_pa(pgdir[vpn2]));
     }
     PTE *pmd = (PTE *)get_pa(pgdir[vpn2]);
     set_pfn(&pmd[vpn1], pa >> NORMAL_PAGE_SHIFT);
     set_attribute(
-        &pmd[vpn1], _PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE |
+        &pmd[vpn1], _PAGE_VALID | _PAGE_READ | _PAGE_WRITE |
                         _PAGE_EXEC | _PAGE_ACCESSED | _PAGE_DIRTY);
 }
 
@@ -56,6 +56,7 @@ void setup_vm()
     // address(kpa) kva = kpa + 0xffff_ffc0_0000_0000 use 2MB page,
     // map all physical memory
     PTE *early_pgdir = (PTE *)PGDIR_PA;
+    // this is uint64_t, unit is 1B
     for (uint64_t kva = 0xffffffc050200000lu;
          kva < 0xffffffc060000000lu; kva += 0x200000lu) {
         map_page(kva, kva2pa(kva), early_pgdir);

@@ -1,8 +1,7 @@
 #ifndef TASKS_H
 #define TASKS_H
 
-#define PROJECT_3
-#define TASK_1
+#define PROJECT_4
 
 #define USE_CLOCK_INT
 // #define INIT_WITH_PRIORITY

@@ -30,12 +30,15 @@
 #define INCLUDE_SCHEDULER_H_
  
 #include <context.h>
-
+#include <user_programs.h>
 #include <type.h>
 #include <os/list.h>
 #include <os/mm.h>
 #include <os/time.h>
 #include <asm/regs.h>
+#include <pgtable.h>
+#include <context.h>
+#include <os/elf.h>
 
 #define NUM_MAX_TASK 16
 #define MAX_LOCK_PER_PCB 20
@@ -45,25 +48,25 @@
 #define P_NO_WAIT 2
 
 /* used to save register infomation */
-typedef struct regs_context
-{
-    /* Saved main processor registers.*/
-    reg_t regs[32];
+// typedef struct regs_context
+// {
+//     /* Saved main processor registers.*/
+//     reg_t regs[32];
 
-    /* Saved special registers. */
-    reg_t sstatus;
-    reg_t sepc;
-    reg_t sbadaddr;
-    reg_t scause;
-    reg_t sie;
-} regs_context_t;
+//     /* Saved special registers. */
+//     reg_t sstatus;
+//     reg_t sepc;
+//     reg_t sbadaddr;
+//     reg_t scause;
+//     reg_t sie;
+// } regs_context_t;
 
-/* used to save register infomation in switch_to */
-typedef struct switchto_context
-{
-    /* Callee saved registers.*/
-    reg_t regs[14];
-} switchto_context_t;
+// /* used to save register infomation in switch_to */
+// typedef struct switchto_context
+// {
+//     /* Callee saved registers.*/
+//     reg_t regs[14];
+// } switchto_context_t;
 typedef struct prior
 {
     long priority;
@@ -97,7 +100,8 @@ typedef struct pcb
     /* register context */
     // this must be this order!! The order is defined in regs.h
     reg_t kernel_sp;
-    reg_t user_sp;
+    reg_t user_sp_kseeonly;
+    reg_t user_sp_useeable;
 
     ptr_t kernel_stack_base;
     ptr_t user_stack_base;
@@ -141,6 +145,13 @@ typedef struct pcb
 
     // use mask to point to schedule core
     int core_mask;
+
+    /* PGDIR */
+    PTE *pgdir;
+
+    /* owned pages */
+    list_head k_plist;
+    list_head u_plist;
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -180,23 +191,23 @@ extern pcb_t pid0_pcb_core_s;
 extern const ptr_t pid0_stack_core_s;
 
 extern pcb_t bubble_pcb;
-extern const ptr_t bubble_stack;
+extern const ptr_t bubble_kernel_stack;
 
 extern void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
-    pcb_t *pcb, void *arg);
+    pcb_t *pcb, int argc, char *argv[]);
 
 extern void init_pcb_block(pcb_t *pcb);
+extern void init_pcb_stack_pointer(pcb_t *pcb);
 
 int find_pcb(void);
+void k_free_all_page(pid_t pid);
 
-extern pid_t k_exec(const char* file_name, int argc, char* argv[], spawn_mode_t mode);
-extern void k_show_exec();
-pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode);
+pid_t k_spawn(char *name, int argc, char *argv[], spawn_mode_t mode);
 void k_exit(void);
 int k_kill(pid_t pid);
 int k_waitpid(pid_t pid);
-void k_process_show();
+int k_process_show();
 pid_t k_getpid();
 
 int k_taskset(void *arg);

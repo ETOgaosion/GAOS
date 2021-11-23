@@ -4,7 +4,7 @@
 #include <os/list.h>
 #include <os/irq.h>
 #include <screen.h>
-#include <stdio.h>
+#include <os/stdio.h>
 #include <assert.h>
 #include <os/string.h>
 #include <tasks.h>
@@ -40,12 +40,12 @@ const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
 const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 2 * PAGE_SIZE;
 pcb_t pid0_pcb_core_m = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .kernel_sp = (ptr_t)((pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 8) - 1)),
     .preempt_count = 0
 };
 pcb_t pid0_pcb_core_s = {
     .pid = 0,
-    .kernel_sp = (ptr_t)pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t),
+    .kernel_sp = (ptr_t)((pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 8) - 1)),
     .preempt_count = 0
 };
 
@@ -58,7 +58,6 @@ pcb_t * volatile current_running_core_m;
 pcb_t * volatile current_running_core_s;
 
 pcb_t bubble_pcb;
-const ptr_t bubble_stack = INIT_KERNEL_STACK + 3 * PAGE_SIZE;
 
 /* global process id */
 pid_t process_id = 1;
@@ -79,7 +78,7 @@ pcb_t *dequeue(list_head *queue, int field){
     case 2:
         ret = list_entry(queue->next,pcb_t,timer_list);
         list_del(&(ret->timer_list));
-        kmemset(&ret->timer,0,sizeof(ret->timer));
+        memset(&ret->timer,0,sizeof(ret->timer));
         list_init_with_null(&ret->timer_list);
         break;
     case 3:
@@ -168,6 +167,9 @@ switch_to_next:
         current_running_core_s = next_pcb;
         *current_running = current_running_core_s;
     }
+
+    set_satp(SATP_MODE_SV39, (*current_running)->pid, (uint64_t)((*current_running)->pgdir) >> 12);
+    local_flush_tlb_all();
     
     // restore the current_runnint's cursor_x and cursor_y
     // TODO: switch_to (*current_running)
@@ -241,8 +243,7 @@ long k_fork(void)
     // pcb_t *curr = (*current_running), *kid = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
     // pcb_t *curr = (*current_running), *kid = &pcb[tasks_num];
     pcb_t *curr = (*current_running), *kid = &pcb[pcb_i];
-    kid->user_sp = allocPage(1,2*pcb_i);
-    kid->kernel_sp = allocPage(1,2*pcb_i + 1);
+    init_pcb_stack_pointer(kid);
     kid->preempt_count = curr->preempt_count;
     init_list_head(&kid->list);
     kid->wait_parent = (*current_running);
@@ -257,7 +258,7 @@ long k_fork(void)
     kid->sched_prior.last_sched_time = 0;
     kid->sched_prior.priority = 0;
     kid->core_mask = (*current_running)->core_mask;
-    copy_pcb_stack(kid->kernel_sp,kid->user_sp,kid,curr->kernel_sp,curr->user_sp,curr);
+    copy_pcb_stack(kid->kernel_sp,kid->user_sp_kseeonly,kid,curr->kernel_sp,curr->user_sp_kseeonly,curr);
     list_add_tail(&(kid->list),&ready_queue);
     return kid->pid;
 }
@@ -274,16 +275,19 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     regs_context_t *kid_pt_regs = (regs_context_t *)(kid_kernel_stack - sizeof(regs_context_t));
     regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
     
-    kid->user_sp = kid->user_sp - src->user_sp + src_pt_regs->regs[8];
-    kmemcpy((void *)kid->user_sp, (void *)src->user_sp, (PAGE_SIZE - src->user_sp % PAGE_SIZE));
+    kid->user_sp_kseeonly = kid->user_sp_kseeonly - src->user_sp_kseeonly + src_pt_regs->regs[8];
+    memcpy((void *)kid->user_sp_kseeonly, (void *)src->user_sp_kseeonly, (PAGE_SIZE - src->user_sp_kseeonly % PAGE_SIZE));
     
+    kid->user_sp_useeable = kid->user_sp_useeable - src->user_sp_useeable + src_pt_regs->regs[8];
+    memcpy((void *)kid->user_sp_useeable, (void *)src->user_sp_useeable, (PAGE_SIZE - src->user_sp_useeable % PAGE_SIZE));
+
     // kid's ra, after do scheduler of the last task, kid shall go to ret_from_exception
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
     // kid's s0
     kid_stored_switchto_k->regs[2] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[2] % PAGE_SIZE);
     // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
-    kmemcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
+    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
     for(int i=2;i<14;i++){
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }
@@ -293,7 +297,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
         kid_pt_regs->regs[i]=src_pt_regs->regs[i];
     }
     // kid's s0
-    kid_pt_regs->regs[8] = kid->user_sp - src->user_sp + src_pt_regs->regs[8];
+    kid_pt_regs->regs[8] = kid->user_sp_useeable - src->user_sp_useeable + src_pt_regs->regs[8];
     kid_pt_regs->regs[10] = 0;
     kid_pt_regs->sepc = src_pt_regs->sepc;
     kid_pt_regs->scause = src_pt_regs->scause;
@@ -360,23 +364,32 @@ pcb_t *choose_sched_task(list_head *queue){
     return max_one;
 }
 
-pid_t k_spawn(task_info_t *task, void* arg, spawn_mode_t mode)
+pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
 {
     int pcb_i = find_pcb();
     if(pcb_i == -1){
         return -1;
     }
-    // pcb_t *new = (pcb_t *)kmalloc(sizeof(pcb_t), (*current_running)->pid * 2 - 1);
     pcb_t *new = &pcb[pcb_i];
-    new->user_sp = allocPage(1, 2*pcb_i);
-    new->user_stack_base = new->user_sp - PAGE_SIZE;
-    new->kernel_sp = allocPage(1, 2*pcb_i + 1);
-    new->kernel_stack_base = new->kernel_sp - PAGE_SIZE;
-    new->pid = pcb_i + 1;
-    new->type = task->type;
-    new->core_mask = (*current_running)->core_mask;
     init_pcb_block(new);
-    init_pcb_stack(new->kernel_sp,new->user_sp,task->entry_point,new,arg);
+    int argi = 0, arg_bios = 0;
+    while (argi < argc)
+    {
+        if(argv[argi] + arg_bios != 0){
+            arg_bios++;
+        }
+        else if(arg_bios != 0){
+            memcpy(new->user_sp_kseeonly-arg_bios,argv[argi],arg_bios);
+            new->user_sp_kseeonly -= arg_bios;
+            new->user_sp_useeable -= arg_bios;
+        }
+        argi++;
+    }
+    int elf_idx = match_elf(names);
+    ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+    new->pid = pcb_i + 1;
+    new->core_mask = (*current_running)->core_mask;
+    init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,argv);
     list_add_tail(&(new->list),&ready_queue);
     return new->pid;
 }
@@ -415,6 +428,7 @@ int k_kill(pid_t pid)
     else if(pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
         pcb[pcb_i].pid = 0;
         pcb[pcb_i].status = TASK_EXITED;
+        k_free_all_page(pid);
     }
     // give up its sons
     for(int i=0; i < NUM_MAX_TASK; i++){
@@ -454,17 +468,20 @@ int k_waitpid(pid_t pid)
     if(pcb[pcb_i].status == TASK_ZOMBIE){
         pcb[pcb_i].status = TASK_EXITED;
         pcb[pcb_i].pid = 0;
-        freePage(pcb[pcb_i].user_stack_base,2);
+        k_free_all_page(pcb_i);
     }
     return 0;
 }
 
-void k_process_show()
+int k_process_show()
 {
+    int lines = 0;
     prints("\n[Process table]:\nprocess id: 0 (shell), process status: TASK_RUNNING");
+    lines++;
     for (int i = 1; i < NUM_MAX_TASK; i++)
     {
         if(pcb[i].pid != 0 || (pcb[i].pid == 0 && pcb[i].status == TASK_EXITED)){
+            lines++;
             switch (pcb[i].status)
             {
             case TASK_BLOCKED:
@@ -487,12 +504,7 @@ void k_process_show()
             }
         }
     }
-    
-}
-
-pid_t k_getpid()
-{
-    return (*current_running)->pid;
+    return lines;
 }
 
 int k_taskset(void *arg){
@@ -503,4 +515,29 @@ int k_taskset(void *arg){
     }
     pcb[taskset_args->pid - 1].core_mask = taskset_args->mask;
     return taskset_args->pid;
+}
+
+pid_t k_getpid()
+{
+    return (*current_running)->pid;
+}
+
+
+void k_free_all_page(pid_t pid)
+{
+    list_head *head = &(pcb[pid - 1].k_plist);
+    page_t *cur = NULL;
+    while(!list_is_empty(head))
+    {
+        cur = list_entry(head->next, page_t, list);
+        freePage(cur->pa);
+        list_del(head->next);
+    }
+    head = &(pcb[pid - 1].u_plist);
+    while(!list_is_empty(head))
+    {
+        cur = list_entry(head->next, page_t, list);
+        freePage(cur->pa);
+        list_del(head->next);
+    }
 }

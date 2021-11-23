@@ -38,7 +38,6 @@
 #define INCLUDE_LIST_H_
 
 #include <type.h>
-#include <os/mm.h>
 
 // double-linked list
 //   TODO: use your own list design!!

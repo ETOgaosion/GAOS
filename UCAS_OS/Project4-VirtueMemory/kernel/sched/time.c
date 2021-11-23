@@ -69,7 +69,7 @@ void check_timer(void){
             iterator = iterator->next;
             list_del(iterator->prev);
             pcb_check->timer.timeout_func(pcb_check->timer.queue,1);
-            kmemset((void *)&pcb_check->timer,0,sizeof(pcb_check->timer));
+            memset((void *)&pcb_check->timer,0,sizeof(pcb_check->timer));
             list_init_with_null(&pcb_check->timer_list);
         }
         else{

@@ -29,7 +29,7 @@
 #define OS_SYSCALL_H_
 
 #include <os/sched.h>
-#include <os/syscall_number.h>
+#include <sys/syscall_number.h>
 
 /* syscall function pointer */
 extern long (*syscall[NUM_SYSCALLS])();

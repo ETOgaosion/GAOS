@@ -415,6 +415,7 @@ int k_kill(pid_t pid)
     else if(pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
         pcb[pcb_i].pid = 0;
         pcb[pcb_i].status = TASK_EXITED;
+        freePage(pcb[pcb_i].user_stack_base,2);
     }
     // give up its sons
     for(int i=0; i < NUM_MAX_TASK; i++){

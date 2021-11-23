@@ -68,9 +68,7 @@ static inline void set_satp(
  *       PFN      reserved for SW   D   A   G   U   X   W   R   V
  */
 
-#define _PAGE_ACCESSED_OFFSET 6
-
-#define _PAGE_PRESENT (1 << 0)
+#define _PAGE_VALID (1 << 0)
 #define _PAGE_READ (1 << 1)     /* Readable */
 #define _PAGE_WRITE (1 << 2)    /* Writable */
 #define _PAGE_EXEC (1 << 3)     /* Executable */
@@ -87,52 +85,71 @@ static inline void set_satp(
 
 #define PPN_BITS 9lu
 #define NUM_PTE_ENTRY (1 << PPN_BITS)
+#define KPA_OFFSET (uint64_t)0xffffffc000000000lu
 
 typedef uint64_t PTE;
 
 static inline uintptr_t kva2pa(uintptr_t kva)
 {
     // TODO:
+    return kva - KPA_OFFSET;
 }
 
 static inline uintptr_t pa2kva(uintptr_t pa)
 {
     // TODO:
+    return pa  + KPA_OFFSET;
 }
 
 static inline uint64_t get_pa(PTE entry)
 {
     // TODO:
+    uint64_t mask = (((uint64_t)1) << 54) - 1 - ((((uint64_t)1) << 10) - 1);
+    return (entry & mask) << 2;
 }
 
 static inline uintptr_t get_kva_of(uintptr_t va, uintptr_t pgdir_va)
 {
     // TODO:
+    PTE entry = *(uint64_t*)pgdir_va;
+    uint64_t ppn = get_pa(entry);
+    uint64_t mask = (((uint64_t)1) << 13) - 1;
+    return ppn + (va & mask);
 }
 
 /* Get/Set page frame number of the `entry` */
 static inline long get_pfn(PTE entry)
 {
     // TODO:
+    uint64_t mask = (((uint64_t)1) << 54) - 1 - ((((uint64_t)1) << 10) - 1);
+    return (entry & mask) >> 10;
 }
 static inline void set_pfn(PTE *entry, uint64_t pfn)
 {
     // TODO:
+    uint64_t mask = (((uint64_t)1) << 54) - 1 - ((((uint64_t)1) << 10) - 1);
+    pfn = pfn << 10;
+    *entry = (*entry & ~mask) | pfn;
 }
 
 /* Get/Set attribute(s) of the `entry` */
 static inline long get_attribute(PTE entry, uint64_t mask)
 {
     // TODO:
+    return entry & mask;
 }
 static inline void set_attribute(PTE *entry, uint64_t bits)
 {
     // TODO:
+    *entry = *entry | bits;
 }
 
 static inline void clear_pgdir(uintptr_t pgdir_addr)
 {
-    // TODO:
+    // TODO: clear the page directory 4KB from pgdir_addr
+    for(uint64_t i = 0; i < NORMAL_PAGE_SIZE; i += 0x8lu){
+        *((uint64_t *)(pgdir_addr+i)) = 0;
+    }
 }
 
 #endif  // PGTABLE_H

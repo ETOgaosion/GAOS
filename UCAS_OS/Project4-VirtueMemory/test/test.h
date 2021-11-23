@@ -26,8 +26,11 @@
 #ifndef INCLUDE_TEST_H_
 #define INCLUDE_TEST_H_
 
-#include "test_project3/test3.h"
-#include <os/sched.h>
+#include <os.h>
+
+void test_shell();
+
+void bubble_task();
 
 extern struct task_info *shell_tasks[16];
 extern int num_shell_tasks;

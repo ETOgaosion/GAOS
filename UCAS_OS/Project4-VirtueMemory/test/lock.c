@@ -1,20 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/syscall.h>
+#include <mthread.h>
 
-// LOCK2_BINSEM_KEY is the key of this task. You can define it as you wish.
-// We use 42 here because it is "Answer to the Ultimate Question of Life,
-// the Universe, and Everything" :)
-#define LOCK2_BINSEM_KEY 42
+static mthread_mutex_t mutex_lock = {.id = 0};
 
 static char blank[] = {"                                             "};
 
 int main(int argc, char* argv[])
 {
     int print_location = 1;
-    int binsem_id = binsemget(LOCK2_BINSEM_KEY);
+    mthread_mutex_init(&mutex_lock);
     if (argc > 1) {
-        // maybe we should implement an `atoi` in tinylibc?
-        print_location = (int) atol(argv[1]);
+        print_location = (int) atoi(argv[1]);
     }
     while (1)
     {
@@ -26,7 +24,7 @@ int main(int argc, char* argv[])
         sys_move_cursor(1, print_location);
         printf("> [TASK] Applying for a lock.\n");
 
-        binsemop(binsem_id, BINSEM_OP_LOCK);
+        mthread_mutex_lock(&mutex_lock);
 
         for (i = 0; i < 20; i++)
         {
@@ -40,7 +38,7 @@ int main(int argc, char* argv[])
         sys_move_cursor(1, print_location);
         printf("> [TASK] Has acquired lock and exited.\n");
 
-        binsemop(binsem_id, BINSEM_OP_UNLOCK);
+        mthread_mutex_unlock(&mutex_lock);
     }
 
     return 0;

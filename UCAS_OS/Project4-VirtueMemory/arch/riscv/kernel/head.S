@@ -2,12 +2,18 @@
 /*
  * Copyright (C) 2012 Regents of the University of California
  */
-
+ 
 #include <asm.h>
 #include <csr.h>
 
+/* maybe you need another stack for booting? */
+.equ boot_stack_top_base, 0x50202000
+
 .section ".entry_function","ax"
 ENTRY(_start)
+  /* TODO: */
+  /* setup C environment for boot.c */            
+
   /* Mask all interrupts */
   csrw CSR_SIE, zero
   csrw CSR_SIP, zero
@@ -17,7 +23,7 @@ ENTRY(_start)
    * floating point in kernel space
    */
   li t0, SR_FS
-  csrc CSR_SSTATUS, t0
+  csrc sstatus, t0
 
   /* Load the global pointer */
   .option push
@@ -25,10 +31,9 @@ ENTRY(_start)
   la gp, __global_pointer$
   .option pop
 
-  // find core
-  csrr t0, CSR_MHARTID
-  bnez t0, set_secondary_stack
-
+  csrr a0, CSR_MHARTID
+  bnez a0, slave_core
+  
   /* Clear BSS for flat non-ELF images */
   la a3, __bss_start
   la a4, __BSS_END__
@@ -40,20 +45,12 @@ clear_bss:
 clear_bss_done:
 
   /* setup C environment */
-  ld sp, pid0_stack_core_m
-  la tp, pid0_pcb_core_m
-  j set_env_finish
+slave_core:                     
+  li sp, boot_stack_top_base  
 
-set_secondary_stack:
-  la tp, pid0_pcb_core_s
-  ld sp, pid0_stack_core_s
-  csrw CSR_SSCRATCH, x0
-
-set_env_finish:
-  la a0, riscv_dtb
-  sd a1, (a0)
-
-  mv a0,t0
+  /* this should never return */
+  //la a0, riscv_dtb
+  //sd a1, (a0)
   call boot_kernel
 
 loop:

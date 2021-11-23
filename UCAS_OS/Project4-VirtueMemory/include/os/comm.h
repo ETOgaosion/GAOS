@@ -52,29 +52,29 @@ typedef struct mbox_arg{
     int sleep_operation;
 } mbox_arg_t;
 
-long k_commop(void *key_id, void *arg, int op);
+int k_commop(void *key_id, void *arg, int op);
 
-long k_semaphore_init(int *key, int sem, int operator);
-long k_semaphore_p(int key, int operator);
-long k_semaphore_v(int key, int operator);
-long k_semaphore_destroy(int *key, int operator);
+int k_semaphore_init(int *key, int sem, int operator);
+int k_semaphore_p(int key, int operator);
+int k_semaphore_v(int key, int operator);
+int k_semaphore_destroy(int *key, int operator);
 
-long k_cond_init(int *key, int operator);
-// long k_cond_wait(int key, int lock_id, int operator);
-long k_cond_wait(int key, int lock_id, int operator);
-long k_cond_signal(int key, int operator);
-long k_cond_broadcast(int key, int operator);
-long k_cond_destroy(int *key, int operator);
+int k_cond_init(int *key, int operator);
+// int k_cond_wait(int key, int lock_id, int operator);
+int k_cond_wait(int key, int lock_id, int operator);
+int k_cond_signal(int key, int operator);
+int k_cond_broadcast(int key, int operator);
+int k_cond_destroy(int *key, int operator);
 
-long k_barrier_init(int *key, int total, int operator);
-long k_barrier_wait(int key, int operator);
-long k_barrier_destroy(int *key, int operator);
+int k_barrier_init(int *key, int total, int operator);
+int k_barrier_wait(int key, int operator);
+int k_barrier_destroy(int *key, int operator);
 
-long k_mbox_open(char *name, int operator);
-long k_mbox_close(int operator);
-long k_mbox_send(int key, mbox_arg_t *arg, int operator);
-long k_mbox_recv(int key, mbox_arg_t *arg, int operator);
-long k_mbox_try_send(int key, mbox_arg_t *arg, int operator);
-long k_mbox_try_recv(int key, mbox_arg_t *arg, int operator);
+int k_mbox_open(char *name, int operator);
+int k_mbox_close(int operator);
+int k_mbox_send(int key, mbox_arg_t *arg, int operator);
+int k_mbox_recv(int key, mbox_arg_t *arg, int operator);
+int k_mbox_try_send(int key, mbox_arg_t *arg, int operator);
+int k_mbox_try_recv(int key, mbox_arg_t *arg, int operator);
 
 #endif

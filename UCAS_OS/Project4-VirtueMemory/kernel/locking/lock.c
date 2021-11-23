@@ -66,7 +66,7 @@ long k_mutex_lock_init(int *key, int operator)
     /* TODO */
     if(first_time){
         for(int i=0; i<LOCK_NUM; i++){
-            locks[i] = (mutex_lock_t *)kmalloc(sizeof(mutex_lock_t),pcb[operator-1].pid * 2 - 1);
+            locks[i] = (mutex_lock_t *)kmalloc(sizeof(mutex_lock_t));
             locks[i]->initialized = 0;
         }
         first_time = 0;
@@ -145,7 +145,7 @@ long k_mutex_lock_destroy(int *key, int operator){
     while(pcb[operator-1].owned_lock_num){
         pcb[operator-1].lock_keys[--(*current_running)->owned_lock_num] = 0;
     }
-    kmemset(locks[*key - 1], 0, sizeof(locks[*key]));
+    memset(locks[*key - 1], 0, sizeof(locks[*key]));
     *key = 0;
     return 0;
 }

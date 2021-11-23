@@ -26,7 +26,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
 
 #include <test.h>
-#include <test3.h>
 #include <string.h>
 #include <os.h>
 #include <sys/syscall.h>
@@ -38,10 +37,10 @@
 #define SHELL_BEGIN 25
 #define SHELL_INPUT_MAX_WORDS 100
 #define SHELL_CMD_MAX_LENGTH 20
-#define SHELL_ARG_NUM 3
+#define SHELL_ARG_NUM 5
 #define SHELL_ARG_MAX_LENGTH 20
 #define SUPPORTED_CMD_NUM 6
-#define CURRENT_TASK_NUM 8
+#define CURRENT_TASK_NUM 4
 #define MAX_CMD_IN_LINES 15
 
 #define BEGIN cmd_in_length = 0;\
@@ -49,7 +48,7 @@
     sys_move_cursor(1, SHELL_BEGIN);\
     printf("========================== Welcome Aboard ==========================");
 
-typedef int (*function)(void *arg0, void *arg1, void *arg2);
+typedef int (*function)(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
 
 int cmd_in_length = 0;
 
@@ -58,34 +57,15 @@ typedef struct sys_taskset_arg{
     int mask;
 } sys_taskset_arg_t;
 
-struct task_info task_test_waitpid = {
-    (uintptr_t)&wait_exit_task, USER_PROCESS};
-struct task_info task_test_semaphore = {
-    (uintptr_t)&semaphore_add_task1, USER_PROCESS};
-struct task_info task_test_barrier = {
-    (uintptr_t)&test_barrier, USER_PROCESS};
-    
-struct task_info strserver_task = {(uintptr_t)&strServer, USER_PROCESS};
-struct task_info strgenerator_task = {(uintptr_t)&strGenerator, USER_PROCESS};
-
-struct task_info task_test_multicore = {(uintptr_t)&test_multicore, USER_PROCESS};
-struct task_info task_test_affinity = {(uintptr_t)&test_affinity, USER_PROCESS};
-
-struct task_info task_test_mailbox_multicore = {(uintptr_t)&test_mailbox_multicore, USER_PROCESS};
-
-static struct task_info *test_tasks[16] = {&task_test_waitpid,
-                                           &task_test_semaphore,
-                                           &task_test_barrier,
-                                           &strserver_task, &strgenerator_task,
-                                           &task_test_multicore, &task_test_mailbox_multicore, &task_test_affinity};
+char *task_names[] = {"fly","consensus","lock","mailbox","rw"};
 
 void panic(char *error);
-static int shell_help(void *cmd_str, void *arg1, void*arg2);
-static int shell_exec(void *pid_str, void *mode_str, void *arg2);
-static int shell_kill(void *pid_str, void *arg1, void *arg2);
-static int shell_taskset(void *arg0, void *arg1, void *arg2);
-static void shell_ps(void *arg0, void *arg1, void *arg2);
-static void shell_clear(void *arg0, void *arg1, void *arg2);
+static int shell_help(void *cmd_str, void *arg1, void*arg2, void *arg3, void *arg4);
+static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, void *arg4);
+static int shell_kill(void *pid_str, void *arg1, void *arg2, void *arg3, void *arg4);
+static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
+static void shell_ps(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
+static void shell_clear(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
 static struct {
     char *cmd_full_name;
     char *cmd_alias;
@@ -94,12 +74,12 @@ static struct {
     function handler;
     int max_arg_num;
 } cmd_table[SUPPORTED_CMD_NUM] = {
-    {"help", "h", "Print description of command [cmd] or all supported commands(no args or error cmd)", "help ([cmd])", (int (*)(void *,void *, void *))&shell_help, 1},
-    {"exec", "spawn", "Execute task [pid](start from 1) in testset with chosen or default mode:\n\t- mode 1: ENTER_ZOMBIE_ON_EXIT\n\t- mode 2: AUTO_CLEANUP_ON_EXIT", "exec [pid] ([mode])", (int (*)(void *,void *, void *))&shell_exec, 2},
-    {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",(int (*)(void *,void *, void *))&shell_kill, 1},
-    {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",(int (*)(void *,void *, void *))&shell_taskset,3},
-    {"ps", "ps", "Display all process", "ps", (int (*)(void *,void *, void *))&shell_ps, 0},
-    {"clear", "clr", "Clear the screen", "clear", (int (*)(void *,void *, void *))&shell_clear, 0}
+    {"help", "h", "Print description of command [cmd] or all supported commands(no args or error cmd)", "help ([cmd])", (int (*)(void *,void *, void *,void *, void *))&shell_help, 1},
+    {"exec", "spawn", "Execute task [pid](start from 1) in testset with chosen or default mode:\n\t- mode 1: ENTER_ZOMBIE_ON_EXIT\n\t- mode 2: AUTO_CLEANUP_ON_EXIT", "exec [pid] ([mode])", (int (*)(void *,void *, void *,void *, void *))&shell_exec, 2},
+    {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",(int (*)(void *,void *, void *,void *, void *))&shell_kill, 1},
+    {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",(int (*)(void *,void *, void *,void *, void *))&shell_taskset,3},
+    {"ps", "ps", "Display all process", "ps", (int (*)(void *,void *, void *,void *, void *))&shell_ps, 0},
+    {"clear", "clr", "Clear the screen", "clear", (int (*)(void *,void *, void *,void *, void *))&shell_clear, 0}
 };
 
 char cmd_not_found[] = "command not found";
@@ -111,7 +91,7 @@ void panic(char *error){
     cmd_in_length++;
 }
 
-static int shell_help(void *cmd_str, void *arg1, void*arg2){
+static int shell_help(void *cmd_str, void *arg1, void*arg2, void *arg3, void *arg4){
     char *cmd = (char *)cmd_str;
     if(cmd[0] != 0){
         for (int i = 0; i < SUPPORTED_CMD_NUM; i++)
@@ -135,20 +115,26 @@ static int shell_help(void *cmd_str, void *arg1, void*arg2){
     return 0;
 }
 
-static int shell_exec(void *pid_str, void *mode_str, void *arg2)
+static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, void *arg4)
 {
-    int pid = atoi((char *)pid_str);
-    int mode = atoi((char *)mode_str);
-    if(pid < 1 || pid > CURRENT_TASK_NUM){
+    int task_found = 0;
+    for(int i = 0; i < CURRENT_TASK_NUM; i++){
+        if(strcmp((char *)pid_str,task_names[i]) == 0){
+            task_found = 1;
+        }
+    }
+    if(!task_found){
         panic(arg_num_error);
         return -1;
     }
-    printf("\ntask[%d] will be started soon!",pid);
+    int mode = atoi((char *)mode_str);
+    printf("\ntask[%s] will be started soon!",(char *)pid_str);
     cmd_in_length++;
-    return (int)sys_spawn(test_tasks[pid - 1], NULL, mode);
+    int *args[] = {(int *)arg2,(int *)arg3, (int *)arg4};
+    return (int)sys_spawn((char *)pid_str, 3, args, mode);
 }
 
-static int shell_kill(void *pid_str, void *arg1, void *arg2)
+static int shell_kill(void *pid_str, void *arg1, void *arg2, void *arg3, void *arg4)
 {
     int pid = atoi((char *)pid_str);
     if(pid < 1 || pid > CURRENT_TASK_NUM){
@@ -160,7 +146,7 @@ static int shell_kill(void *pid_str, void *arg1, void *arg2)
     return sys_kill(pid);
 }
 
-static int shell_taskset(void *arg0, void *arg1, void *arg2)
+static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4)
 {
     int mask, pid;
     if(strcmp((char *)arg0,"-p") == 0){
@@ -176,30 +162,26 @@ static int shell_taskset(void *arg0, void *arg1, void *arg2)
     }
     else{
         mask = atoi((char *)arg0);
-        pid = atoi((char *)arg1);
-        if(pid < 1 || pid > CURRENT_TASK_NUM){
-            panic(arg_num_error);
+        if(shell_exec(arg1,NULL,arg2,arg3,arg4) < 0){
             return -1;
         }
-        pid = (int)sys_spawn(test_tasks[pid - 1], NULL, 0);
-        printf("\ntask[%d] will be started soon!",pid);
         taskset_arg_t taskset_args = {.mask = mask, .pid = pid};
         printf("\ntask[%d] mask will be set soon!",pid);
         return sys_taskset((void *)&taskset_args);
     }
 }
 
-static void shell_ps(void *arg0, void *arg1, void *arg2)
+static void shell_ps(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4)
 {
-    sys_process_show();
+    cmd_in_length += sys_process_show();
 }
 
-static void shell_clear(void *arg0, void *arg1, void *arg2){
+static void shell_clear(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4){
     sys_screen_clear();
     BEGIN
 }
 
-void test_shell()
+int main()
 {
     // TODO:
     BEGIN
@@ -252,7 +234,7 @@ void test_shell()
         // symbol for calculator and pipe will be done through extra work
         char *parse = input_buffer;
         parse = strtok(cmd, parse, ' ', SHELL_CMD_MAX_LENGTH);
-        while((parse = strtok(arg[arg_idx++], parse, ' ', SHELL_ARG_MAX_LENGTH)) != NULL) ;
+        while((parse = strtok(arg[arg_idx++], parse, ' ', SHELL_ARG_MAX_LENGTH)) != NULL && arg_idx < SHELL_ARG_NUM) ;
         
         // TODO: ps, exec, kill, clear
         // check whether the command is valid
@@ -260,7 +242,7 @@ void test_shell()
         {
             if(strcmp(cmd,cmd_table[i].cmd_full_name)==0 || strcmp(cmd, cmd_table[i].cmd_alias)==0){
                 cmd_found = true;
-                cmd_res = cmd_table[i].handler(arg[0],arg[1],arg[2]);
+                cmd_res = cmd_table[i].handler(arg[0],arg[1],arg[2],arg[3],arg[4]);
                 break;
             }
         }
@@ -285,4 +267,5 @@ clear_and_next:
         cmd_res = -1;
         cmd_found = false;
     }
+    return 0;
 }
