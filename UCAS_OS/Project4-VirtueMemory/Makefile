@@ -20,7 +20,7 @@ USER_CFLAGS += -Iarch/$(ARCH)/include
 USER_LDFLAGS += $(ARCH_DIR)/crt0.o
 
 SRC_BOOT 	= $(ARCH_DIR)/boot/bootblock.S
-SRC_HEAD    = $(ARCH_DIR)/kernel/head.S $(ARCH_DIR)/kernel/boot.c payload.c ./libs/string.c
+SRC_HEAD    = $(ARCH_DIR)/kernel/head.S $(ARCH_DIR)/kernel/boot.c $(ARCH_DIR)/kernel/payload.c ./libs/string.c
 SRC_ARCH	= $(ARCH_DIR)/kernel/trap.S $(ARCH_DIR)/kernel/entry.S $(ARCH_DIR)/kernel/start.S $(ARCH_DIR)/sbi/common.c $(ARCH_DIR)/kernel/smp.S
 SRC_DRIVER	= ./drivers/screen.c #./drivers/fdt.c
 SRC_INIT 	= ./init/main.c
@@ -55,8 +55,13 @@ bootblock: $(SRC_BOOT) riscv.lds
 kernelimage: $(SRC_HEAD) riscv.lds
 	${CC} ${CFLAGS} -o kernelimage $(SRC_HEAD) -Ttext=${START_ENTRYPOINT}
 
-payload.c: elf2char main
+arch/riscv/kernel/payload.c: elf2char main
+	echo "" > payload.c
+	echo "" > payload.h
+	./elf2char --header-only main > payload.h
 	./elf2char main > payload.c
+	mv payload.h $(ARCH_DIR)/include/
+	mv payload.c $(ARCH_DIR)/kernel/
 
 user: $(SRC_USER) elf2char generateMapping
 	echo "" > user_programs.c
@@ -93,7 +98,7 @@ image: bootblock kernelimage createimage
 	dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 
 clean:
-	rm -rf bootblock image kernelimage createimage main payload.c libtiny_libc.a
+	rm -rf bootblock image kernelimage createimage main arch/$(ARCH)/kernel/payload.c libtiny_libc.a
 	rm include/user_programs.h kernel/user_programs.c
 	find . -name "*.o" -exec rm {} \;
 

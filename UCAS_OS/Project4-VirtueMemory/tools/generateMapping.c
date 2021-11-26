@@ -110,7 +110,7 @@ void write_to_file(Records* self, FILE* header, FILE* source)
     fprintf(source, "}\n\n");
     fprintf(source, "int match_elf(char *file_name)\n");
     fprintf(source, "{\n");
-    fprintf(source, "   for (int i = 1; i < 5; i++){\n");
+    fprintf(source, "   for (int i = 1; i < 7; i++){\n");
     fprintf(source, "       if (strcmp(file_name, elf_files[i].file_name) == 0)\n");
     fprintf(source, "           return i;\n");
     fprintf(source, "   }\n");

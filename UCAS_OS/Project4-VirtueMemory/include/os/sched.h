@@ -100,8 +100,8 @@ typedef struct pcb
     /* register context */
     // this must be this order!! The order is defined in regs.h
     reg_t kernel_sp;
-    reg_t user_sp_kseeonly;
     reg_t user_sp_useeable;
+    reg_t user_sp_kseeonly;
 
     ptr_t kernel_stack_base;
     ptr_t user_stack_base;

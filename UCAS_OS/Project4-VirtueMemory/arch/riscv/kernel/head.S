@@ -7,7 +7,7 @@
 #include <csr.h>
 
 /* maybe you need another stack for booting? */
-.equ boot_stack_top_base, 0x50202000
+.equ boot_stack_top_base, 0x50300000
 
 .section ".entry_function","ax"
 ENTRY(_start)
@@ -24,6 +24,9 @@ ENTRY(_start)
    */
   li t0, SR_FS
   csrc sstatus, t0
+
+  li t0, SR_SUM
+  csrs sstatus, t0
 
   /* Load the global pointer */
   .option push

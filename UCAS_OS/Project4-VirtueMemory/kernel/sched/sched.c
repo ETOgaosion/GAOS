@@ -168,7 +168,7 @@ switch_to_next:
         *current_running = current_running_core_s;
     }
 
-    set_satp(SATP_MODE_SV39, (*current_running)->pid, (uint64_t)((*current_running)->pgdir) >> 12);
+    set_satp(SATP_MODE_SV39, (*current_running)->pid, (uint64_t)(kva2pa((*current_running)->pgdir)) >> 12);
     local_flush_tlb_all();
     
     // restore the current_runnint's cursor_x and cursor_y
@@ -386,7 +386,7 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
         argi++;
     }
     int elf_idx = match_elf(names);
-    ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+    ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
     new->pid = pcb_i + 1;
     new->core_mask = (*current_running)->core_mask;
     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,argv);

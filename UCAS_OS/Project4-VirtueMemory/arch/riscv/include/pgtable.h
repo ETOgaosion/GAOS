@@ -56,7 +56,7 @@ static inline void set_satp(
     unsigned mode, unsigned asid, unsigned long ppn)
 {
     unsigned long __v =
-        (unsigned long)(((unsigned long)mode << SATP_MODE_SHIFT) | ((unsigned long)asid << SATP_ASID_SHIFT) | ppn);
+        (unsigned long)(((unsigned long)(mode & ((((uint64_t)1) << 4) - 1)) << SATP_MODE_SHIFT) | ((unsigned long)(asid & ((((uint64_t)1) << 16) - 1)) << SATP_ASID_SHIFT) | (ppn & ((((uint64_t)1) << 44) - 1)));
     __asm__ __volatile__("sfence.vma\ncsrw satp, %0" : : "rK"(__v) : "memory");
 }
 

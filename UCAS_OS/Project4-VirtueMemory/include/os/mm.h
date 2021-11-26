@@ -33,7 +33,7 @@
 #define NUM_MAX_TASK 16
 #define MEM_SIZE 32
 #define PAGE_SIZE 4096 // 4K
-#define INIT_KERNEL_STACK 0xffffffc050600000lu
+#define INIT_KERNEL_STACK 0xffffffc050500000lu
 #define FREEMEM (INIT_KERNEL_STACK + 2 * PAGE_SIZE)
 #define FREEHEAP 0xffffffc05d000000lu
 #define USER_STACK_BIOS 0xf00010000lu
@@ -57,7 +57,7 @@ extern ptr_t allocPage();
 extern void freePage(ptr_t baseAddr);
 extern void* kmalloc(size_t size);
 extern void share_pgtable(uintptr_t dest_pgdir, uintptr_t src_pgdir);
-extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode);
+extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
 extern uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
 uintptr_t shm_page_get(int key);
 void shm_page_dt(uintptr_t addr);

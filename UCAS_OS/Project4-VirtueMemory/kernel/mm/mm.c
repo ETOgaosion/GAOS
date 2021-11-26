@@ -4,6 +4,7 @@
 #include <pgtable.h>
 #include <os/string.h>
 #include <assert.h>
+#include <os/smp.h>
 
 ptr_t memCurr = FREEMEM;
 ptr_t heapCurr = FREEHEAP;
@@ -68,7 +69,7 @@ uintptr_t shm_page_get(int key)
     // Find a free pageframe
     for (;; begin_addr += 0x1000)
     {
-        if ((kva = alloc_page_helper(begin_addr, pa2kva((*current_running)->pgdir),1 )) != 0)
+        if ((kva = alloc_page_helper(begin_addr, pa2kva((*current_running)->pgdir),1 ,0)) != 0)
             break;
     }
     // Find a free spage control block
@@ -130,7 +131,7 @@ void setup_shm_page(uintptr_t va, uintptr_t pa, uintptr_t pgdir)
     // Find level 2 pgdir
     if (((*ptable[2]) & 0x1) == 0)
     {
-        ptr_t newpage = allocPage();
+        ptr_t newpage = allocPage() - PAGE_SIZE;
         *ptable[2] = (kva2pa(newpage) >> 12) << 10;
         set_attribute(ptable[2], _PAGE_VALID);
         ptable[1] = (PTE *)newpage + vpn[1];
@@ -142,7 +143,7 @@ void setup_shm_page(uintptr_t va, uintptr_t pa, uintptr_t pgdir)
     // Find level 1 pgdir
     if (((*ptable[1]) & 0x1) == 0)
     {
-        ptr_t newpage = allocPage();
+        ptr_t newpage = allocPage() - PAGE_SIZE;
         *ptable[1] = (kva2pa(newpage) >> 12) << 10;
         set_attribute(ptable[1], _PAGE_VALID);
         ptable[0] = (PTE *)newpage + vpn[0];
@@ -163,46 +164,50 @@ void setup_shm_page(uintptr_t va, uintptr_t pa, uintptr_t pgdir)
 /* allocate physical page for `va`, mapping it into `pgdir`,
    return the kernel virtual address for the page.
    */
-uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode)
+uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode)
 {
-    uint64_t vpn[] = {(va >> 12) & ((((uint64_t)1) << 10) - 1), (va >> 21) & ((((uint64_t)1) << 10) - 1), (va >> 30) & ((((uint64_t)1) << 10) - 1)};
+    uint64_t vpn_mask = ((((uint64_t)1) << 10) - 1);
+    uint64_t vpn[] = {(va >> 12) & vpn_mask, (va >> 21) & vpn_mask, (va >> 30) & vpn_mask};
     // Find PTE
     PTE *ptable[] = {NULL,NULL,(PTE *)pgdir + vpn[2]};
     for(int i = 2; i > 0; i--){
         if (((*ptable[i]) & 0x1) == 0)
         {
-            ptr_t newpage = allocPage();
-            *ptable[i] = kva2pa(newpage) >> 2;
+            ptr_t newpage = allocPage() - PAGE_SIZE;
+            *ptable[i] = (kva2pa(newpage) >> 12) << 10;
             set_attribute(ptable[i], (mode ? _PAGE_USER : 0) | _PAGE_VALID);
             ptable[i - 1] = (PTE *)newpage + vpn[i-1];
         }
         else
         {
-            ptable[1] = (PTE *)pa2kva(*ptable[i] << 2) + vpn[i-1];
+            ptable[i - 1] = (PTE *)pa2kva((*ptable[i] >> 10) << 12) + vpn[i-1];
         }
     }
     // Generate PTE
     if ((*ptable[0] & 0x1) != 0)
         return 0;
     // Set pfn
-    ptr_t newpage = allocPage();
+    ptr_t newpage = allocPage() - PAGE_SIZE;
     set_pfn(ptable[0], (uint64_t)kva2pa(newpage) >> 12);
     // Generate flags
     uint64_t pte_flags = _PAGE_READ     | _PAGE_WRITE    | _PAGE_EXEC  | _PAGE_VALID  | (mode == 1 ? _PAGE_USER : 0);
     set_attribute(ptable[0], pte_flags);
-    return newpage;    
+    if(ret_mode){
+        return newpage;
+    }
+    return newpage + PAGE_SIZE;    
 }
 
 uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir)
 {
-    return alloc_page_helper(kva, pgdir, 1);
+    return alloc_page_helper(kva, pgdir, 1, 1);
 }
 
 uintptr_t free_page_helper(uintptr_t va, uintptr_t pgdir)
 {
     uint64_t vpn[] = {(va >> 12) & ((((uint64_t)1) << 10) - 1), (va >> 21) & ((((uint64_t)1) << 10) - 1), (va >> 30) & ((((uint64_t)1) << 10) - 1)};
     // Find PTE
-    PTE *ptable[] = {(PTE *)pgdir + vpn[2],(PTE *)pa2kva((*ptable[2]) << 2) + vpn[1],(PTE *)pa2kva((*ptable[1]) << 2) + vpn[0]};
+    PTE *ptable[] = {(PTE *)pgdir + vpn[2],(PTE *)pa2kva((*ptable[2] >> 10) << 12) + vpn[1],(PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0]};
     *ptable[0] = 0;
 }
 
@@ -213,10 +218,10 @@ uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir)
     PTE *ptable[] = {(PTE *)pgdir + vpn[2],NULL,NULL};
     if (((*ptable[2]) & 0x1) == 0)
         return 0;
-    ptable[1] = (PTE *)pa2kva((*ptable[2]) << 2) + vpn[1];
+    ptable[1] = (PTE *)pa2kva((*ptable[2] >> 10) << 12) + vpn[1];
     if (((*ptable[1]) & 0x1) == 0)
         return 0;
-    ptable[0] = (PTE *)pa2kva((*ptable[1]) << 2) + vpn[0];
+    ptable[0] = (PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0];
     if (((*ptable[0]) & 0x1) == 0)
         return 0;
     return ptable[0];

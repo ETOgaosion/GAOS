@@ -1,0 +1,65 @@
+
+bubble.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000010000 <main>:
+#include <test.h>
+
+int main(){
+   10000:	1141                	addi	sp,sp,-16
+   10002:	e422                	sd	s0,8(sp)
+   10004:	0800                	addi	s0,sp,16
+    while(1);
+   10006:	a001                	j	10006 <main+0x6>
+
+0000000000010008 <sys_exit_crt0>:
+#include <asm.h>
+#include <sys/syscall_number.h>
+
+ENTRY(sys_exit_crt0)
+  li a7,SYSCALL_EXIT
+   10008:	4885                	li	a7,1
+  ecall
+   1000a:	00000073          	ecall
+  ret
+   1000e:	8082                	ret
+
+0000000000010010 <_start>:
+ENTRY(_start)
+    /* TODO: */
+    /* Load the global pointer */
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+   10010:	00001197          	auipc	gp,0x1
+   10014:	82c18193          	addi	gp,gp,-2004 # 1083c <__global_pointer$>
+    .option pop
+    /* clear bss */
+    la a3, __bss_start
+   10018:	00000697          	auipc	a3,0x0
+   1001c:	02468693          	addi	a3,a3,36 # 1003c <__DATA_BEGIN__>
+    la a4, __BSS_END__
+   10020:	80418713          	addi	a4,gp,-2044 # 10040 <__BSS_END__>
+    ble a4, a3, clear_bss_done
+   10024:	00e6d763          	bge	a3,a4,10032 <clear_bss_done>
+
+0000000000010028 <clear_bss>:
+clear_bss:
+    sd zero, (a3)
+   10028:	0006b023          	sd	zero,0(a3)
+    add a3, a3, RISCV_SZPTR
+   1002c:	06a1                	addi	a3,a3,8
+    blt a3, a4, clear_bss
+   1002e:	fee6cde3          	blt	a3,a4,10028 <clear_bss>
+
+0000000000010032 <clear_bss_done>:
+clear_bss_done:
+    /* call main */
+    call main
+   10032:	fcfff0ef          	jal	ra,10000 <main>
+    /* call sys_exit*/
+    call sys_exit_crt0
+   10036:	fd3ff0ef          	jal	ra,10008 <sys_exit_crt0>
+	...

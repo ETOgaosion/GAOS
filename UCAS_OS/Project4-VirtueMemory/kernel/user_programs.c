@@ -17596,7 +17596,7 @@ int get_elf_file(const char *file_name, unsigned char **binary, int *length)
 
 int match_elf(char *file_name)
 {
-   for (int i = 1; i < 5; i++){
+   for (int i = 1; i < 7; i++){
        if (strcmp(file_name, elf_files[i].file_name) == 0)
            return i;
    }

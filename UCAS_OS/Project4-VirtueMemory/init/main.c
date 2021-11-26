@@ -80,16 +80,16 @@ void init_pcb_stack(
 }
 
 void init_pcb_stack_pointer(pcb_t *pcb){
-    pcb->pgdir = allocPage();
+    pcb->pgdir = allocPage() - PAGE_SIZE;
     clear_pgdir(pcb->pgdir);
     memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
     // user stack
     pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 8) - 1);
-    pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1);
+    pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
     pcb->user_stack_base = pcb->user_sp_kseeonly - PAGE_SIZE + 1;
     pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 8) - 1);
     // kernel stack
-    pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0);
+    pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
     pcb->kernel_stack_base = pcb->kernel_sp - PAGE_SIZE + 1;
     pcb->kernel_sp &=  ~((((uint64_t)1) << 8) - 1);
     // page list
@@ -147,7 +147,7 @@ static void init_pcb(int way)
         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
         pcb[0].pid = 1;
         pcb[0].core_mask = 0b11;
-        init_pcb_stack(pcb[0].kernel_sp,pcb[0].user_sp_kseeonly,start_pos,&pcb[0],0,NULL);
+        init_pcb_stack(pcb[0].kernel_sp,pcb[0].user_sp_useeable,start_pos,&pcb[0],0,NULL);
         list_add_tail(&(pcb[0].list),&ready_queue);
         // help initialize pid0
         switchto_context_t *stored_switchto_k_m = (switchto_context_t *) pid0_pcb_core_m.kernel_sp;
@@ -157,10 +157,10 @@ static void init_pcb(int way)
     else{
         init_pcb_block(&bubble_pcb);
         int elf_idx = match_elf("bubble");
-        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
         bubble_pcb.pid = -1;
         bubble_pcb.core_mask = 0b11;
-        init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp_kseeonly,start_pos,&bubble_pcb,0,NULL);
+        init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp_useeable,start_pos,&bubble_pcb,0,NULL);
         switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
         stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
         current_running_core_s = &pid0_pcb_core_s;
@@ -203,14 +203,8 @@ static void init_syscall(void)
 
 static void cancel_direct_map()
 {
-    uint64_t va = 0x50200000;
-    uint64_t pgdir = 0xffffffc05e000000;
-    uint64_t vpn_2 = (va >> 30) & ((((uint64_t)1) << 10) - 1);
-    uint64_t vpn_1 = (va >> 21) & ((((uint64_t)1) << 10) - 1);
-    PTE *level_2 = (PTE *)(pgdir + vpn_2);
-    PTE *map_pte = (PTE *)(pa2kva(get_pa(*level_2)) + vpn_1);
-    *level_2 = 0;
-    *map_pte = 0;
+    uintptr_t pgdir = PGDIR_PA + 8 + KPA_OFFSET;
+    *(PTE *)pgdir = 0;
 }
 
 // jump from bootloader.
@@ -226,7 +220,7 @@ int main(int arg)
         local_flush_tlb_all();
         init_pcb(0);
         current_running = &current_running_core_m;
-        printk("> [INIT] PCB initialization succeeded.\n\r");
+        printk("\n\r> [INIT] PCB initialization succeeded.\n\r");
 
         // init interrupt (^_^)
         init_exception();

@@ -3,17 +3,18 @@
 #include <os/elf.h>
 #include <pgtable.h>
 #include <sbi.h>
+#include <payload.h>
 
 typedef void (*kernel_entry_t)(unsigned long, uintptr_t);
 
 extern unsigned char _elf_main[];
-extern unsigned _length_main;
+
+uintptr_t adder = 0;
 
 /********* setup memory mapping ***********/
 uintptr_t alloc_page()
 {
-    static uintptr_t pg_base = PGDIR_PA;
-    pg_base += 0x1000;
+    uintptr_t pg_base = PGDIR_PA + (++adder) * 0x1000;
     return pg_base;
 }
 
@@ -35,7 +36,7 @@ void map_page(uint64_t va, uint64_t pa, PTE *pgdir)
     set_pfn(&pmd[vpn1], pa >> NORMAL_PAGE_SHIFT);
     set_attribute(
         &pmd[vpn1], _PAGE_VALID | _PAGE_READ | _PAGE_WRITE |
-                        _PAGE_EXEC | _PAGE_ACCESSED | _PAGE_DIRTY);
+                    _PAGE_EXEC | _PAGE_ACCESSED | _PAGE_DIRTY);
 }
 
 void enable_vm()

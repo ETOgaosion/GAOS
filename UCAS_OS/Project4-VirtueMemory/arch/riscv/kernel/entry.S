@@ -64,8 +64,11 @@ _save_context:
    * Disable the FPU to detect illegal usage of floating point in kernel
    * space.
    */
-  li t0, SR_SUM | SR_FS
+  li t0, SR_FS
   csrrc a0,CSR_SSTATUS,t0
+
+  li t0, SR_SUM
+  csrs CSR_SSTATUS, t0
 
   /* TODO: save sstatus, sepc, stval, scause and sscratch on user stack */
   /* ERROR: 1. not user stack, but kernel stack.*/
@@ -224,6 +227,8 @@ ENDPROC(switch_to)
 ENTRY(ret_from_exception)
   call unlock_kernel
   RESTORE_CONTEXT
+  li t0, SR_SUM
+  csrs sstatus, t0
   csrw CSR_SSCRATCH,tp
   ld sp, PCB_USER_SP(tp)
   sret

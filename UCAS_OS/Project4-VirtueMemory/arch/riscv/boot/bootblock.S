@@ -78,20 +78,25 @@ sum:
 	j sum
 
 	// read 64 sectors at a time
+read_kernel:
 	la a0,kernel
+	mv a5,a0
 	li a1,64
 	mv a2,a3
 	li t0,32768
-read_kernel:
 	// 2) task2 call BIOS read kernel in SD card and jump to kernel start
-	beqz a4,read_kernel_finish
+read_kernel_loop:
+	ble a4,a1,read_remain_sectors
 	SBI_CALL SBI_SD_READ
-	add a0,a0,t0
+	add a0,a5,t0
+	mv a5,a0
 	sub a4,a4,a1
 	add a2,a2,a1
-	j read_kernel
+	j read_kernel_loop
 
-read_kernel_finish:
+read_remain_sectors:
+	mv a1,a4
+	SBI_CALL SBI_SD_READ
 
 	fence.i
 	
@@ -114,6 +119,7 @@ secondary:
 	li a0, SR_SIE
 	csrw CSR_SSTATUS, a0
 	la a0, msg2
+	SBI_CALL SBI_CONSOLE_PUTSTR
 
     fence.i
 
@@ -129,4 +135,4 @@ stop:
 .data
 
 msg: .string "Master core activated\n\rIt's a bootloader...\n\rPlease choose which kernel you hope to use, 0 ~ ";
-msg2: .string "Slave core activated\n\r"
+msg2: .string "Slave core activated, prepare to sleep\n\r"
