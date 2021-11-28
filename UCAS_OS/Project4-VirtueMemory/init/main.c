@@ -157,7 +157,7 @@ static void init_pcb(int way)
     else{
         init_pcb_block(&bubble_pcb);
         int elf_idx = match_elf("bubble");
-        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
         bubble_pcb.pid = -1;
         bubble_pcb.core_mask = 0b11;
         init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp_useeable,start_pos,&bubble_pcb,0,NULL);

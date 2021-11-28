@@ -121,6 +121,7 @@ static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, voi
     for(int i = 0; i < CURRENT_TASK_NUM; i++){
         if(strcmp((char *)pid_str,task_names[i]) == 0){
             task_found = 1;
+            break;
         }
     }
     if(!task_found){

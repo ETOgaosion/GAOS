@@ -386,7 +386,7 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
         argi++;
     }
     int elf_idx = match_elf(names);
-    ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
+    ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
     new->pid = pcb_i + 1;
     new->core_mask = (*current_running)->core_mask;
     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,argv);
