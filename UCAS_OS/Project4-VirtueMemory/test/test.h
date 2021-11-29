@@ -28,6 +28,15 @@
 
 #include <os.h>
 
+#define SHELL_BEGIN 25
+#define SHELL_INPUT_MAX_WORDS 100
+#define SHELL_CMD_MAX_LENGTH 2*8
+#define SHELL_ARG_MAX_NUM 10
+#define SHELL_ARG_MAX_LENGTH 20
+#define SUPPORTED_CMD_NUM 6
+#define CURRENT_TASK_NUM 5
+#define MAX_CMD_IN_LINES 15
+
 void test_shell();
 
 void bubble_task();

@@ -57,6 +57,8 @@ _save_context:
   SAVE(t5,T5)
   SAVE(t6,T6)
 
+  ld t0, PCB_USER_SP(tp)
+  SAVE(t0,SP)
   /*
    * Disable user-mode memory access as it should only be set in the
    * actual user copy routines.
@@ -262,7 +264,7 @@ ENTRY(exception_handler_entry)
   mv a0,sp
   addi sp,sp,-(SWITCH_TO_SIZE)
   LOAD_SWITCH(sp,SP)
-  csrr a1,CSR_STVEC
+  csrr a1,CSR_STVAL
   csrr a2,CSR_SCAUSE
   call t0,interrupt_helper
   ld sp, PCB_KERNEL_SP(tp)

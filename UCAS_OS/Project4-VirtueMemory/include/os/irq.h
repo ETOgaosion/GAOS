@@ -77,6 +77,9 @@ extern void setup_exception();
 extern void reset_irq_timer();
 extern void handle_int(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 extern void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
+extern void handle_inst_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause);
+extern void handle_load_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause);
+extern void handle_store_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause);
 extern void handle_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 extern void unknown_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause);
 

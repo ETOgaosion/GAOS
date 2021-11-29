@@ -86,6 +86,7 @@ static inline void set_satp(
 #define PPN_BITS 9lu
 #define NUM_PTE_ENTRY (1 << PPN_BITS)
 #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
+#define USER_SPACE (uint64_t)0xfffffffffffff000lu
 
 typedef uint64_t PTE;
 

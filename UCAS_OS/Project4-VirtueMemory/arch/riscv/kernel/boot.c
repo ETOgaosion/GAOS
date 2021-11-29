@@ -29,12 +29,12 @@ void map_page(uint64_t va, uint64_t pa, PTE *pgdir)
     if (pgdir[vpn2] == 0) {
         // alloc a new second-level page directory
         set_pfn(&pgdir[vpn2], alloc_page() >> NORMAL_PAGE_SHIFT);
-        set_attribute(&pgdir[vpn2], _PAGE_VALID);
+        set_attribute((PTE *)&pgdir[vpn2], _PAGE_VALID);
         clear_pgdir(get_pa(pgdir[vpn2]));
     }
     PTE *pmd = (PTE *)get_pa(pgdir[vpn2]);
     set_pfn(&pmd[vpn1], pa >> NORMAL_PAGE_SHIFT);
-    set_attribute(
+    set_attribute((PTE *)
         &pmd[vpn1], _PAGE_VALID | _PAGE_READ | _PAGE_WRITE |
                     _PAGE_EXEC | _PAGE_ACCESSED | _PAGE_DIRTY);
 }

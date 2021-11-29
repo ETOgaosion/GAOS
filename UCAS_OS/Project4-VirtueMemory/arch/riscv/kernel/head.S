@@ -4,6 +4,8 @@
  */
  
 #include <asm.h>
+#include <asm/sbidef.h>
+#include <asm/sbiasm.h>
 #include <csr.h>
 
 /* maybe you need another stack for booting? */
@@ -15,6 +17,7 @@ ENTRY(_start)
   /* setup C environment for boot.c */            
 
   /* Mask all interrupts */
+
   csrw CSR_SIE, zero
   csrw CSR_SIP, zero
 

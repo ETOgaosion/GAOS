@@ -1,4 +1,5 @@
 #include <os/string.h>
+#include <sbi.h>
 
 int strlen(const char *src)
 {
@@ -63,4 +64,36 @@ char *strcat(char *dest, const char *src)
     *dest = '\0';
 
     return tmp;
+}
+
+void itos(int i,int base, char *dest){
+    *dest-- = '\0';
+    while (i != 0)
+    {
+        if(base > 10 && (i % base > 10)){
+            *dest-- = 'a' + i % base - 10;
+        }
+        else{
+            *dest-- = '0' + i % base;
+        }
+        i /= base;
+    }  
+}
+
+void outputstr(uint64_t src){
+    uint64_t a = src;
+    if(a == 0){
+        sbi_console_putchar('0');
+    }
+    while (a > 0)
+    {
+        /* code */
+        if(a%16 >= 10){
+            sbi_console_putchar('a'+a%16 - 10);
+        }
+        else{
+            sbi_console_putchar('0' + a%16);
+        }
+        a /= 16;
+    }
 }

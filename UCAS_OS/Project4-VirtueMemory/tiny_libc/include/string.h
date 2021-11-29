@@ -14,4 +14,6 @@ char *strcat(char *dest, const char *src);
 int strlen(const char *src);
 char *strtok(char *substr, char *str, const char delim, int length);
 
+long strtol(const char *nptr, char **endptr, register int base);
+
 #endif /* STRING_H */

@@ -16,6 +16,7 @@ static inline int isspace(int x)
     else 
     return 0;
 }
+
 static inline int isdigit(int x)
 {
     if(x<='9'&&x>='0')        
@@ -25,10 +26,57 @@ static inline int isdigit(int x)
 
 }
 
-static inline long atol(const char *nptr)
+static inline int isalpha(int x)
+{
+    if((x<='f'&&x>='a') || (x<='F'&&x>='A'))        
+    return 1;
+    else
+    return 0;
+
+}
+
+static inline int isupper(int x)
+{
+	if(x>='A' && x<='Z'){
+		return 1;
+	}
+	return 0;
+}
+
+static inline long atol(const char* str)
+{
+    int base = 10;
+    if ((str[0] == '0' && str[1] == 'x') ||
+        (str[0] == '0' && str[1] == 'X')) {
+        base = 16;
+        str += 2;
+    }
+    long ret = 0;
+    while (*str != '\0') {
+        if ('0' <= *str && *str <= '9') {
+            ret = ret * base + (*str - '0');
+        } else if (base == 16) {
+            if ('a' <= *str && *str <= 'f'){
+                ret = ret * base + (*str - 'a' + 10);
+            } else if ('A' <= *str && *str <= 'F') {
+                ret = ret * base + (*str - 'A' + 10);
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        ++str;
+    }
+    return ret;
+}
+
+
+
+static inline int atoi(const char *nptr)
 {
 	int c; /* current char */
-	long total; /* current total */
+	int total; /* current total */
 	int sign; /* if ''-'', then negative, otherwise positive */
  
 	/* skip whitespace */
@@ -51,11 +99,6 @@ static inline long atol(const char *nptr)
 		return -total;
 	else
 		return total; /* return result, negated if necessary */
-}
-
-static inline int atoi(const char *nptr)
-{
-	return (int)atol(nptr);
 }
 
 #endif /* STDLIB_H */

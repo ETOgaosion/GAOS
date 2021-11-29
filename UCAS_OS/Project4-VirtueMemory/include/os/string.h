@@ -37,5 +37,8 @@ int strcmp(const char *str1, const char *str2);
 char *strcpy(char *dest, const char *src);
 char *strcat(char *dest, const char *src);
 int strlen(const char *src);
+void itos(int i,int base, char *dest);
+
+void outputstr(uint64_t src);
 
 #endif

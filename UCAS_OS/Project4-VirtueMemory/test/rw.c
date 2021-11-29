@@ -3,6 +3,7 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <stdlib.h>
+#include <test.h>
 
 int main(int argc, char* argv[])
 {
@@ -12,13 +13,13 @@ int main(int argc, char* argv[])
 	int curs = 0;
 	int i;
 	sys_move_cursor(2, 2);
-	// printf("argc = %d\n", argc);
-	// for (i = 0; i < argc; ++i) {
-	// 	printf("argv[%d] = %s\n", i, argv[i]);
-	// }
-	for (i = 1; i < argc; i++)
+	printf("argc = %d\n", argc);
+	for (i = 0; i < argc; ++i) {
+	 	printf("argv[%d] = %s\n", i, (char *)argv + i * SHELL_ARG_MAX_LENGTH);
+	}
+	for (i = 0; i < argc; i++)
 	{
-		mem1 = atol(argv[i]);
+		mem1 = atol((char *)argv);
 		// sys_move_cursor(2, curs+i);
 		mem2 = rand();
 		*(long*)mem1 = mem2;

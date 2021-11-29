@@ -9,6 +9,7 @@
 #include <csr.h>
 #include <ticks.h>
 #include <os/smp.h>
+#include <pgtable.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -59,7 +60,61 @@ void init_exception()
         exc_table[i] = &handle_other;
     }
     exc_table[EXCC_SYSCALL] = &handle_syscall;
+    exc_table[EXCC_INST_PAGE_FAULT ] = &handle_inst_pagefault;
+    exc_table[EXCC_LOAD_PAGE_FAULT ] = &handle_load_pagefault;
+    exc_table[EXCC_STORE_PAGE_FAULT] = &handle_store_pagefault;
     setup_exception();
+}
+
+void handle_inst_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause)
+{
+    printk("\n\rstore page fault\n\r");
+    uintptr_t kva;
+    if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+    {
+        set_attribute((PTE *)kva, _PAGE_ACCESSED | _PAGE_DIRTY);
+        local_flush_tlb_all();
+        return ;
+    } else {
+        printk("> Error: Inst page fault");
+        handle_other(regs,stval,cause);
+    }
+}
+
+void handle_load_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause)
+{
+    printk("\n\rstore page fault\n\r");
+    uintptr_t kva;
+    if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+    {
+        set_attribute((PTE *)kva, _PAGE_ACCESSED);
+        local_flush_tlb_all();
+        return ;
+    }
+    kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
+    page_t *np = (page_t *)kmalloc(sizeof(page_t));
+    np->pa = kva2pa(kva);
+    np->va = stval & USER_SPACE;
+    list_add_tail(&(np->list), &((*current_running)->u_plist));
+    local_flush_tlb_all();
+}
+
+void handle_store_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause)
+{
+    uintptr_t kva;
+    if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+    {
+        set_attribute((PTE *)kva, _PAGE_ACCESSED | _PAGE_DIRTY);
+        local_flush_tlb_all();
+        return ;
+    }
+    printk("\n\rstore page fault\n\r");
+    kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
+    page_t *np = (page_t *)kmalloc(sizeof(page_t));
+    np->pa = kva2pa(kva);
+    np->va = stval & USER_SPACE;
+    list_add_tail(&(np->list), &((*current_running)->u_plist));
+    local_flush_tlb_all();
 }
 
 void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
@@ -79,8 +134,8 @@ void handle_other(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
         }
         printk("\n\r");
     }
-    printk("current running pid:%d\n",(*current_running)->pid);
-    printk("current running preempt_count:%d\n",(*current_running)->preempt_count);
+    printk("current running pid:%d\n\r",(*current_running)->pid);
+    printk("current running preempt_count:%d\n\r",(*current_running)->preempt_count);
     printk("sstatus: 0x%lx sbadaddr: 0x%lx scause: %lu\n\r",
            regs->sstatus, regs->sbadaddr, regs->scause);
     printk("sepc: 0x%lx\n\r", regs->sepc);

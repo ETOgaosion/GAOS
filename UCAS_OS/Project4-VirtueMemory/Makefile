@@ -7,7 +7,7 @@ OBJDUMP = ${CROSS_PREFIX}objdump
 CFLAGS = -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding
 USER_CFLAGS = -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking
 USER_LDFLAGS = -L./ -ltiny_libc
-DISK = /dev/sdc
+DISK = /dev/sdb
 
 BOOTLOADER_ENTRYPOINT = 0x50200000
 START_ENTRYPOINT = 0x50203000
@@ -109,6 +109,11 @@ floppy:
 asm:
 	${OBJDUMP} -d main > kernel.txt
 	${OBJDUMP} -d kernelimage > kernel_boot.txt
+	${OBJDUMP} -d test/test_shell.elf > test_shell.txt
+	${OBJDUMP} -d test/rw.elf > rw.txt
+	${OBJDUMP} -d test/consensus.elf > consensus.txt
+	${OBJDUMP} -d test/lock.elf > lock.txt
+	${OBJDUMP} -d test/mailbox.elf > mailbox.txt
 
 qemu:
 	cd ${QEMU_PATH} && ./run_qemu.sh

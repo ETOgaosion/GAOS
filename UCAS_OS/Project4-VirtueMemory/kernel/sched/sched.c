@@ -11,6 +11,7 @@
 #include <os/smp.h>
 
 int cursor_x,cursor_y;
+#define SHELL_ARG_MAX_LENGTH 2*8
 
 #define print1(str) cursor_x = (*current_running)->cursor_x;\
         cursor_y = (*current_running)->cursor_y;\
@@ -40,12 +41,14 @@ const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
 const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 2 * PAGE_SIZE;
 pcb_t pid0_pcb_core_m = {
     .pid = 0,
-    .kernel_sp = (ptr_t)((pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 8) - 1)),
+    .pgdir = KPA_OFFSET + PGDIR_PA,
+    .kernel_sp = (ptr_t)((pid0_stack_core_m - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 7) - 1)),
     .preempt_count = 0
 };
 pcb_t pid0_pcb_core_s = {
     .pid = 0,
-    .kernel_sp = (ptr_t)((pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 8) - 1)),
+    .pgdir = KPA_OFFSET + PGDIR_PA,
+    .kernel_sp = (ptr_t)((pid0_stack_core_s - sizeof(regs_context_t) - sizeof(switchto_context_t)) & ~((((uint64_t)1) << 7) - 1)),
     .preempt_count = 0
 };
 
@@ -372,24 +375,14 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
     }
     pcb_t *new = &pcb[pcb_i];
     init_pcb_block(new);
-    int argi = 0, arg_bios = 0;
-    while (argi < argc)
-    {
-        if(argv[argi] + arg_bios != 0){
-            arg_bios++;
-        }
-        else if(arg_bios != 0){
-            memcpy(new->user_sp_kseeonly-arg_bios,argv[argi],arg_bios);
-            new->user_sp_kseeonly -= arg_bios;
-            new->user_sp_useeable -= arg_bios;
-        }
-        argi++;
-    }
+    new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
+    new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
+    memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
     int elf_idx = match_elf(names);
     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
-    new->pid = pcb_i + 1;
+    new->pid = pcb_i;
     new->core_mask = (*current_running)->core_mask;
-    init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,argv);
+    init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,(char *)new->user_sp_useeable);
     list_add_tail(&(new->list),&ready_queue);
     return new->pid;
 }
@@ -401,44 +394,43 @@ void k_exit(void)
 
 int k_kill(pid_t pid)
 {
-    int pcb_i = pid - 1;
-    if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
+    if(pid < 1 || pid >= NUM_MAX_TASK){
         print1("wrong pid!")
         return -1;
     }
-    if(pcb[pcb_i].pid == 0){
+    if(pcb[pid].pid == 0){
         print2("No task running on [%d]",pid)
         return -1;
     }
 
     // realease lock
-    for(int i = 0; i < pcb[pcb_i].owned_lock_num; i++){
-        k_mutex_lock_release(pcb[pcb_i].lock_keys[i] - 1, pcb[pcb_i].pid);
+    for(int i = 0; i < pcb[pid].owned_lock_num; i++){
+        k_mutex_lock_release(pcb[pid].lock_keys[i] - 1, pcb[pid].pid);
     }
-    if(pcb[pcb_i].mode == ENTER_ZOMBIE_ON_EXIT){
+    if(pcb[pid].mode == ENTER_ZOMBIE_ON_EXIT){
         // wake up parent
-        if(pcb[pcb_i].wait_parent){
-            pcb_t *parent = pcb[pcb_i].wait_parent;
+        if(pcb[pid].wait_parent){
+            pcb_t *parent = pcb[pid].wait_parent;
             if(!parent->timer.initialized){
                 k_unblock(&parent->list,1);
             }
         }
-        pcb[pcb_i].status = TASK_ZOMBIE;
+        pcb[pid].status = TASK_ZOMBIE;
     }
-    else if(pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
-        pcb[pcb_i].pid = 0;
-        pcb[pcb_i].status = TASK_EXITED;
+    else if(pcb[pid].mode == AUTO_CLEANUP_ON_EXIT){
+        pcb[pid].pid = 0;
+        pcb[pid].status = TASK_EXITED;
         k_free_all_page(pid);
     }
     // give up its sons
     for(int i=0; i < NUM_MAX_TASK; i++){
-        if(pcb[i].wait_parent == &pcb[pcb_i]){
-            pcb[i].wait_parent = pcb[pcb_i].wait_parent;
+        if(pcb[i].wait_parent == &pcb[pid]){
+            pcb[i].wait_parent = pcb[pid].wait_parent;
         }
     }
-    if(pcb[pcb_i].list.next)
-        list_del(&pcb[pcb_i].list);
-    if((*current_running)->pid == pid || (*current_running)->pid == 0 || pcb[pcb_i].mode == AUTO_CLEANUP_ON_EXIT){
+    if(pcb[pid].list.next)
+        list_del(&pcb[pid].list);
+    if((*current_running)->pid == pid || (*current_running)->pid == 0 || pcb[pid].mode == AUTO_CLEANUP_ON_EXIT){
         k_scheduler();
     }
     return 0;
@@ -446,11 +438,10 @@ int k_kill(pid_t pid)
 
 int k_waitpid(pid_t pid)
 {
-    int pcb_i = pid - 1;
-    if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
+    if(pid < 1 || pid >= NUM_MAX_TASK){
         return -1;
     }
-    if(pcb[pcb_i].pid == 0){
+    if(pcb[pid].pid == 0){
         int cursor_x = (*current_running)->cursor_x;
         int cursor_y = (*current_running)->cursor_y;
         vt100_move_cursor(1,1);
@@ -459,16 +450,16 @@ int k_waitpid(pid_t pid)
         print2("No task running on [%d]",pid)
         return -1;
     }
-    if(pcb[pcb_i].status != TASK_ZOMBIE && pcb[pcb_i].status != TASK_EXITED ){
-        pcb[pcb_i].wait_parent = (*current_running);
+    if(pcb[pid].status != TASK_ZOMBIE && pcb[pid].status != TASK_EXITED ){
+        pcb[pid].wait_parent = (*current_running);
         (*current_running)->status = TASK_BLOCKED;
         k_block(&(*current_running)->list,&blocked_queue);
         k_scheduler();
     }
-    if(pcb[pcb_i].status == TASK_ZOMBIE){
-        pcb[pcb_i].status = TASK_EXITED;
-        pcb[pcb_i].pid = 0;
-        k_free_all_page(pcb_i);
+    if(pcb[pid].status == TASK_ZOMBIE){
+        pcb[pid].status = TASK_EXITED;
+        pcb[pid].pid = 0;
+        k_free_all_page(pid);
     }
     return 0;
 }
@@ -509,7 +500,7 @@ int k_process_show()
 
 int k_taskset(void *arg){
     taskset_arg_t *taskset_args = (taskset_arg_t *)arg;
-    int pcb_i = taskset_args->pid - 1;
+    int pcb_i = taskset_args->pid;
     if(pcb_i < 1 || pcb_i >= NUM_MAX_TASK){
         return -1;
     }

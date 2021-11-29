@@ -34,21 +34,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define SHELL_BEGIN 25
-#define SHELL_INPUT_MAX_WORDS 100
-#define SHELL_CMD_MAX_LENGTH 20
-#define SHELL_ARG_NUM 5
-#define SHELL_ARG_MAX_LENGTH 20
-#define SUPPORTED_CMD_NUM 6
-#define CURRENT_TASK_NUM 4
-#define MAX_CMD_IN_LINES 15
-
 #define BEGIN cmd_in_length = 0;\
     sys_screen_clear();\
     sys_move_cursor(1, SHELL_BEGIN);\
     printf("========================== Welcome Aboard ==========================");
 
-typedef int (*function)(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
+typedef int (*function)(int argc, char *argv[]);
 
 int cmd_in_length = 0;
 
@@ -60,12 +51,19 @@ typedef struct sys_taskset_arg{
 char *task_names[] = {"fly","consensus","lock","mailbox","rw"};
 
 void panic(char *error);
-static int shell_help(void *cmd_str, void *arg1, void*arg2, void *arg3, void *arg4);
-static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, void *arg4);
-static int shell_kill(void *pid_str, void *arg1, void *arg2, void *arg3, void *arg4);
-static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
-static void shell_ps(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
-static void shell_clear(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4);
+static int shell_help(int argc, char *argv[]);
+static int shell_exec(int argc, char *argv[]);
+static int shell_kill(int argc, char *argv[]);
+static int shell_taskset(int argc, char *argv[]);
+static void shell_ps(int argc, char *argv[]);
+static void shell_clear(int argc, char *argv[]);
+
+#define HELP 0
+#define EXEC 1
+#define KILL 2
+#define TASKSET 3
+#define PS 4
+#define CLEAR 5
 static struct {
     char *cmd_full_name;
     char *cmd_alias;
@@ -73,17 +71,18 @@ static struct {
     char *format;
     function handler;
     int max_arg_num;
+    int min_arg_num;
 } cmd_table[SUPPORTED_CMD_NUM] = {
-    {"help", "h", "Print description of command [cmd] or all supported commands(no args or error cmd)", "help ([cmd])", (int (*)(void *,void *, void *,void *, void *))&shell_help, 1},
-    {"exec", "spawn", "Execute task [pid](start from 1) in testset with chosen or default mode:\n\t- mode 1: ENTER_ZOMBIE_ON_EXIT\n\t- mode 2: AUTO_CLEANUP_ON_EXIT", "exec [pid] ([mode])", (int (*)(void *,void *, void *,void *, void *))&shell_exec, 2},
-    {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",(int (*)(void *,void *, void *,void *, void *))&shell_kill, 1},
-    {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",(int (*)(void *,void *, void *,void *, void *))&shell_taskset,3},
-    {"ps", "ps", "Display all process", "ps", (int (*)(void *,void *, void *,void *, void *))&shell_ps, 0},
-    {"clear", "clr", "Clear the screen", "clear", (int (*)(void *,void *, void *,void *, void *))&shell_clear, 0}
+    {"help", "h", "Print description of command [cmd] or all supported commands(no args or error cmd)", "help ([cmd])", &shell_help, SHELL_ARG_MAX_NUM,0},
+    {"exec", "spawn", "Execute task [pid](start from 1) in testset with chosen or default mode:\n\t- mode 1: ENTER_ZOMBIE_ON_EXIT\n\t- mode 2: AUTO_CLEANUP_ON_EXIT", "exec [pid] ([-m mode]) ([-a args])", &shell_exec, SHELL_ARG_MAX_LENGTH,1},
+    {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",&shell_kill, 1, 1},
+    {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",&shell_taskset,3,3},
+    {"ps", "ps", "Display all process", "ps", &shell_ps, 0,0},
+    {"clear", "clr", "Clear the screen", "clear", &shell_clear, 0,0}
 };
 
 char cmd_not_found[] = "command not found";
-char arg_num_error[] = "arg number or format doesn't match";
+char arg_num_error[] = "arg number or format doesn't match, or we cannot find what you ask";
 char cmd_error[] = "there are errors during the execution of cmd, please check and re-enter";
 
 void panic(char *error){
@@ -91,35 +90,46 @@ void panic(char *error){
     cmd_in_length++;
 }
 
-static int shell_help(void *cmd_str, void *arg1, void*arg2, void *arg3, void *arg4){
-    char *cmd = (char *)cmd_str;
-    if(cmd[0] != 0){
+static int shell_help(int argc, char *argv[]){
+    if(argc > 0){
+        for (int i = 0; i < argc; i++)
+        {
+            char *cmd = argv[i];
+            for (int i = 0; i < SUPPORTED_CMD_NUM; i++)
+            {
+                if(strcmp(cmd, cmd_table[i].cmd_full_name)==0 || strcmp(cmd, cmd_table[i].cmd_alias)==0){
+                    printf("\ncommand: %s, alias: %s, discription: %s, format: %s, max arg number: %d;", cmd_table[i].cmd_full_name, cmd_table[i].cmd_alias, cmd_table[i].description, cmd_table[i].format, cmd_table[i].max_arg_num);
+                    cmd_in_length++;
+                    return 0;
+                }
+            }
+            panic(cmd_not_found);
+            return -1;
+        }
+        
+    }
+    else{
+        printf("\nall commands are listed below:");
+        cmd_in_length++;
         for (int i = 0; i < SUPPORTED_CMD_NUM; i++)
         {
-            if(strcmp(cmd, cmd_table[i].cmd_full_name)==0 || strcmp(cmd, cmd_table[i].cmd_alias)==0){
-                printf("\ncommand: %s, alias: %s, discription: %s, format: %s, max arg number: %d;", cmd_table[i].cmd_full_name, cmd_table[i].cmd_alias, cmd_table[i].description, cmd_table[i].format, cmd_table[i].max_arg_num);
-                cmd_in_length++;
-                return 0;
-            }
+            printf("\ncommand: %s, alias: %s, discription: %s, format: %s, max arg number: %d;", cmd_table[i].cmd_full_name, cmd_table[i].cmd_alias, cmd_table[i].description, cmd_table[i].format, cmd_table[i].max_arg_num);
+            cmd_in_length++;
         }
-        panic(cmd_not_found);
-        return -1;
-    }
-    printf("\nall commands are listed below:");
-    cmd_in_length++;
-    for (int i = 0; i < SUPPORTED_CMD_NUM; i++)
-    {
-        printf("\ncommand: %s, alias: %s, discription: %s, format: %s, max arg number: %d;", cmd_table[i].cmd_full_name, cmd_table[i].cmd_alias, cmd_table[i].description, cmd_table[i].format, cmd_table[i].max_arg_num);
-        cmd_in_length++;
     }
     return 0;
 }
 
-static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, void *arg4)
+static int shell_exec(int argc, char *argv[])
 {
+    if(argc < cmd_table[EXEC].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
     int task_found = 0;
+    char *first_arg = (char *)argv;
     for(int i = 0; i < CURRENT_TASK_NUM; i++){
-        if(strcmp((char *)pid_str,task_names[i]) == 0){
+        if(strcmp(first_arg,task_names[i]) == 0){
             task_found = 1;
             break;
         }
@@ -128,16 +138,52 @@ static int shell_exec(void *pid_str, void *mode_str, void *arg2, void *arg3, voi
         panic(arg_num_error);
         return -1;
     }
-    int mode = atoi((char *)mode_str);
-    printf("\ntask[%s] will be started soon!",(char *)pid_str);
+    int mode;
+    if(argc == 1){
+        mode = 0;
+        return (int)sys_spawn(first_arg, 0, NULL, mode);
+    }
+    char *second_arg = (char *)argv +SHELL_ARG_MAX_LENGTH;
+    if(!second_arg || strcmp(second_arg,"-a") == 0){
+        mode = ENTER_ZOMBIE_ON_EXIT;
+    }
+    else if(second_arg == "-m"){
+        if(argc <3){
+            panic(arg_num_error);
+            return -1;
+        }
+        mode = strtol((char *)argv + 2*SHELL_ARG_MAX_LENGTH,NULL,10);
+    }
+    if(mode != 0 && mode != 1){
+        panic(arg_num_error);
+        return -1;
+    }
+    printf("\ntask[%s] will be started soon!",first_arg);
     cmd_in_length++;
-    int *args[] = {(int *)arg2,(int *)arg3, (int *)arg4};
-    return (int)sys_spawn((char *)pid_str, 3, args, mode);
+    if(strcmp(second_arg,"-a") == 0){
+        argc -= 2;
+        return (int)sys_spawn(first_arg, argc, (char *)argv + 2 * SHELL_ARG_MAX_LENGTH, mode);
+    }
+    else if(strcmp(second_arg,"-m") == 0){
+        if(strcmp(((char *)argv + 3 * SHELL_ARG_MAX_LENGTH),"-a") == 0){
+            argc -= 4;
+            return (int)sys_spawn(first_arg, argc, (char *)argv + 4 * SHELL_ARG_MAX_LENGTH, mode);
+        }
+    }
+    else{
+        panic(arg_num_error);
+        return -1;
+    }
 }
 
-static int shell_kill(void *pid_str, void *arg1, void *arg2, void *arg3, void *arg4)
+static int shell_kill(int argc, char *argv[])
 {
-    int pid = atoi((char *)pid_str);
+    if(argc < cmd_table[KILL].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *first_arg = (char *)argv;
+    int pid = strtol(first_arg,NULL,10);
     if(pid < 1 || pid > CURRENT_TASK_NUM){
         panic(arg_num_error);
         return -1;
@@ -147,12 +193,19 @@ static int shell_kill(void *pid_str, void *arg1, void *arg2, void *arg3, void *a
     return sys_kill(pid);
 }
 
-static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4)
+static int shell_taskset(int argc, char *argv[])
 {
+    if(argc < cmd_table[TASKSET].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
     int mask, pid;
-    if(strcmp((char *)arg0,"-p") == 0){
-        mask = atoi((char *)arg1);
-        pid = atoi((char *)arg2);
+    char *first_arg = (char *)argv;
+    char *second_arg = (char *)argv + SHELL_ARG_MAX_LENGTH;
+    char *third_arg = (char *)argv + 2*SHELL_ARG_MAX_LENGTH;
+    if(strcmp(first_arg,"-p") == 0){
+        mask = strtol(second_arg,NULL,16);
+        pid = strtol(third_arg,NULL,10);
         if(pid < 1 || pid > CURRENT_TASK_NUM){
             panic(arg_num_error);
             return -1;
@@ -162,8 +215,8 @@ static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *a
         return sys_taskset((void *)&taskset_args);
     }
     else{
-        mask = atoi((char *)arg0);
-        if(shell_exec(arg1,NULL,arg2,arg3,arg4) < 0){
+        mask = strtol(first_arg,NULL,16);
+        if(shell_exec(argc - 1,argv + strlen(first_arg)) < 0){
             return -1;
         }
         taskset_arg_t taskset_args = {.mask = mask, .pid = pid};
@@ -172,12 +225,12 @@ static int shell_taskset(void *arg0, void *arg1, void *arg2, void *arg3, void *a
     }
 }
 
-static void shell_ps(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4)
+static void shell_ps(int argc, char *argv[])
 {
     cmd_in_length += sys_process_show();
 }
 
-static void shell_clear(void *arg0, void *arg1, void *arg2, void *arg3, void *arg4){
+static void shell_clear(int argc, char *argv[]){
     sys_screen_clear();
     BEGIN
 }
@@ -188,8 +241,8 @@ int main()
     BEGIN
     char input_buffer[SHELL_INPUT_MAX_WORDS] = {0};
     char cmd[SHELL_CMD_MAX_LENGTH] = {0};
-    char arg[SHELL_ARG_NUM][SHELL_ARG_MAX_LENGTH] = {0};
-    memset(arg,0,SHELL_ARG_NUM * SHELL_ARG_MAX_LENGTH);
+    char arg[SHELL_ARG_MAX_NUM][SHELL_ARG_MAX_LENGTH] = {0};
+    memset(arg,0,SHELL_ARG_MAX_NUM * SHELL_ARG_MAX_LENGTH);
     char ch;
     int input_length = 0, arg_idx = 0, cmd_res = -1;
     bool cmd_found = false;
@@ -235,7 +288,7 @@ int main()
         // symbol for calculator and pipe will be done through extra work
         char *parse = input_buffer;
         parse = strtok(cmd, parse, ' ', SHELL_CMD_MAX_LENGTH);
-        while((parse = strtok(arg[arg_idx++], parse, ' ', SHELL_ARG_MAX_LENGTH)) != NULL && arg_idx < SHELL_ARG_NUM) ;
+        while((parse = strtok(arg[arg_idx++], parse, ' ', SHELL_ARG_MAX_LENGTH)) != NULL && arg_idx < SHELL_ARG_MAX_NUM) ;
         
         // TODO: ps, exec, kill, clear
         // check whether the command is valid
@@ -243,7 +296,7 @@ int main()
         {
             if(strcmp(cmd,cmd_table[i].cmd_full_name)==0 || strcmp(cmd, cmd_table[i].cmd_alias)==0){
                 cmd_found = true;
-                cmd_res = cmd_table[i].handler(arg[0],arg[1],arg[2],arg[3],arg[4]);
+                cmd_res = cmd_table[i].handler(arg_idx - 1,arg);
                 break;
             }
         }
@@ -262,7 +315,7 @@ clear_and_next:
         }
         memset(input_buffer,0,sizeof(input_buffer));
         memset(cmd,0,sizeof(cmd));
-        memset(arg,0,SHELL_ARG_NUM * SHELL_ARG_MAX_LENGTH);
+        memset(arg,0,SHELL_ARG_MAX_NUM * SHELL_ARG_MAX_LENGTH);
         input_length = 0;
         arg_idx = 0;
         cmd_res = -1;

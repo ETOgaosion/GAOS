@@ -84,14 +84,14 @@ void init_pcb_stack_pointer(pcb_t *pcb){
     clear_pgdir(pcb->pgdir);
     memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
     // user stack
-    pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 8) - 1);
+    pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
     pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
     pcb->user_stack_base = pcb->user_sp_kseeonly - PAGE_SIZE + 1;
-    pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 8) - 1);
+    pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 7) - 1);
     // kernel stack
     pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
     pcb->kernel_stack_base = pcb->kernel_sp - PAGE_SIZE + 1;
-    pcb->kernel_sp &=  ~((((uint64_t)1) << 8) - 1);
+    pcb->kernel_sp &=  ~((((uint64_t)1) << 7) - 1);
     // page list
     init_list_head(&(pcb->k_plist));
     init_list_head(&(pcb->u_plist));
@@ -212,6 +212,7 @@ static void cancel_direct_map()
 int main(int arg)
 {
     // find current core
+    sbi_console_putstr("jump to main\n\r");
 
     // init Process Control Block (-_-!)
     if(arg == 0){
