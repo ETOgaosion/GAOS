@@ -37,7 +37,7 @@ SRC_LIBC	= ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tin
 SRC_LIBC_ASM	= $(filter %.S %.s,$(SRC_LIBC))
 SRC_LIBC_C	= $(filter %.c,$(SRC_LIBC))
 
-SRC_USER	= ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf
+SRC_USER	= ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf
 
 SRC_MAIN	= ${SRC_ARCH} ${SRC_INIT} ${SRC_INT} ${SRC_DRIVER} ${SRC_LOCK} ${SRC_COMM} ${SRC_SCHED} ${SRC_MM} ${SRC_SYSCALL} ${SRC_LIBS}
 
@@ -114,6 +114,7 @@ asm:
 	${OBJDUMP} -d test/consensus.elf > consensus.txt
 	${OBJDUMP} -d test/lock.elf > lock.txt
 	${OBJDUMP} -d test/mailbox.elf > mailbox.txt
+	${OBJDUMP} -d test/swap_page.elf > swap_page.txt
 
 qemu:
 	cd ${QEMU_PATH} && ./run_qemu.sh

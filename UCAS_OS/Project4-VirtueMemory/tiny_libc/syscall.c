@@ -54,6 +54,11 @@ int sys_taskset(void *arg){
     return invoke_syscall(SYSCALL_TASKSET,arg,IGNORE,IGNORE,IGNORE);
 }
 
+
+int sys_mthread_create(int *thread, void (*start_routine)(void*), void *arg){
+    return invoke_syscall(SYSCALL_MTHREAD_CREATE,thread,start_routine,arg,IGNORE);
+}
+
 int sys_lockop(int *key, int op)
 {
     return invoke_syscall(SYSCALL_LOCKOP,key,op,IGNORE,IGNORE);

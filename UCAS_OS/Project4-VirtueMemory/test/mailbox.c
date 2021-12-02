@@ -57,6 +57,7 @@ void put_str_into_ring_buffer(char* buf, int len)
 
 void display_usage()
 {
+    sys_move_cursor(1,1);
     printf("Usage: mailbox <id>\n");
     printf("  <id> : the id of this instance.\n");
     printf("         valid value: a, b, c\n");
@@ -110,12 +111,14 @@ void fill_buffer()
     }
 }
 
-void recv_thread(void *arg)
+void recv_thread(int argc, char *argv[])
 {
-    char id = (unsigned long) arg;
+    char *id_str = (char *)argv;
+    char id = id_str[0];
     int position = output_position(id, 1);
     char recv_buf[MAX_MBOX_LENGTH] = {0};
-    mailbox_t *mq = mbox_open(my_mailbox_id);
+    mailbox_t mq_m = mbox_open(my_mailbox_id);
+    mailbox_t *mq = &mq_m;
     long bytes[3] = {0};
     int len, i;
 
@@ -149,9 +152,10 @@ void send_thread(void *arg)
     long bytes[2] = {0};
     char send_buf[MAX_MBOX_LENGTH] = {0};
 
-    mailbox_t *mq[2] = {0};
+    mailbox_t mq_m[2] = {0};
+    mailbox_t *mq[2] = {&mq_m[0],&mq_m[1]};
     for (i = 0; i < 2; ++i) {
-        mq[i] = mbox_open(other_mailbox_id[i]);
+        mq_m[i] = mbox_open(other_mailbox_id[i]);
     }
 
     sys_move_cursor(1, position);
@@ -180,12 +184,12 @@ void send_thread(void *arg)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 2) {
+    if (argc != 1) {
         display_usage();
         return -1;
     }
-
-    char id = argv[1][0];
+    char *id_str = (char *)argv;
+    char id = id_str[0];
     if (id != 'a' && id != 'b' && id != 'c') {
         display_usage();
         return -1;
@@ -197,13 +201,12 @@ int main(int argc, char* argv[])
     if (id == 'a') {
         fill_buffer();
     }
-    /*
     mthread_t recv;
     mthread_create(&recv, recv_thread, (void*)(unsigned long)id);
 
     // use this thread as send thread
     send_thread((void*)(unsigned long)id);
 
-    mthread_join(recv);*/
+    mthread_join(recv);
     return 0;
 }

@@ -13,13 +13,15 @@ extern unsigned char _elf___test_mailbox_elf[];
 int _length___test_mailbox_elf;
 extern unsigned char _elf___test_bubble_elf[];
 int _length___test_bubble_elf;
+extern unsigned char _elf___test_swap_page_elf[];
+int _length___test_swap_page_elf;
 typedef struct ElfFile {
   char *file_name;
   unsigned char* file_content;
   int* file_length;
 } ElfFile;
 
-#define ELF_FILE_NUM 7
-extern ElfFile elf_files[7];
+#define ELF_FILE_NUM 8
+extern ElfFile elf_files[8];
 extern int get_elf_file(const char *file_name, unsigned char **binary, int *length);
 extern int match_elf(char *file_name);

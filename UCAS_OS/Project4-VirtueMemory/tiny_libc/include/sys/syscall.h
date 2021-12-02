@@ -44,6 +44,7 @@ extern void sys_yield();
 extern long sys_fork();
 extern void sys_setpriority(long);
 extern int sys_taskset(void *);
+extern int sys_mthread_create(int *thread, void (*start_routine)(void*), void *arg);
 extern int sys_lockop(int *key, int op);
 extern int sys_commop(int *key, int *args, int op);
 extern void sys_write(char *);

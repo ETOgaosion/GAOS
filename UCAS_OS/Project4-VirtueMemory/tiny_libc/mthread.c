@@ -93,3 +93,12 @@ int mthread_barrier_destroy(void* handle)
     return barrier_op((mthread_barrier_t *)handle,2);
 }
 
+int mthread_create(mthread_t *thread, void (*start_routine)(void*), void *arg)
+{
+    return sys_mthread_create((int *)thread, start_routine, arg);
+}
+
+int mthread_join(mthread_t thread)
+{
+    return 0;
+}

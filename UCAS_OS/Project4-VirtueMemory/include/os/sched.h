@@ -41,6 +41,7 @@
 #include <os/elf.h>
 
 #define NUM_MAX_TASK 16
+#define MAX_THREAD_NUM 16
 #define MAX_LOCK_PER_PCB 20
 
 #define P_OVERLAY 0
@@ -116,6 +117,11 @@ typedef struct pcb
     task_status_t status;
     spawn_mode_t mode;
 
+    // threads owned
+    int thread_num;
+    list_head thread_list;
+    pid_t parent_pid;
+
     /* cursor position */
     int cursor_x;
     int cursor_y;
@@ -150,6 +156,7 @@ typedef struct pcb
     PTE *pgdir;
 
     /* owned pages */
+    int owned_page_num;
     list_head k_plist;
     list_head u_plist;
 } pcb_t;
@@ -190,14 +197,15 @@ extern const ptr_t pid0_stack_core_m;
 extern pcb_t pid0_pcb_core_s;
 extern const ptr_t pid0_stack_core_s;
 
-extern pcb_t bubble_pcb;
+extern pcb_t bubble_pcb_m;
+extern pcb_t bubble_pcb_s;
 extern const ptr_t bubble_kernel_stack;
 
 extern void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
     pcb_t *pcb, int argc, char *argv[]);
 
-extern void init_pcb_block(pcb_t *pcb);
+extern void init_pcb_block(pcb_t *pcb, task_type_t pcb_type);
 extern void init_pcb_stack_pointer(pcb_t *pcb);
 
 int find_pcb(void);
@@ -211,6 +219,9 @@ int k_process_show();
 pid_t k_getpid();
 
 int k_taskset(void *arg);
+pid_t k_mthread_create(int32_t *thread,
+                   void (*start_routine)(void*),
+                   void *arg);
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
 void k_scheduler();

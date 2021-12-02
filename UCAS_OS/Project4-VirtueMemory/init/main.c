@@ -41,7 +41,13 @@ void init_pcb_stack(
         pt_regs->regs[i]=0;
     }
     pt_regs->regs[1] = entry_point;
-    pt_regs->regs[3] = (reg_t)__global_pointer$;
+    if(pcb->type == USER_PROCESS || KERNEL_PROCESS){
+        pt_regs->regs[3] = (reg_t)__global_pointer$;
+    }
+    else{
+        regs_context_t *pr_regs = (regs_context_t *)((*current_running)->kernel_sp + sizeof(switchto_context_t));
+        pt_regs->regs[3] = pr_regs->regs[3];
+    }
     pt_regs->regs[4] = (reg_t)pcb;
     pt_regs->regs[10] = (reg_t)argc;
     pt_regs->regs[11] = (reg_t)argv;
@@ -80,16 +86,33 @@ void init_pcb_stack(
 }
 
 void init_pcb_stack_pointer(pcb_t *pcb){
-    pcb->pgdir = allocPage() - PAGE_SIZE;
-    clear_pgdir(pcb->pgdir);
-    memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
-    // user stack
-    pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
-    pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
+    if(pcb->type == USER_PROCESS || pcb->type == KERNEL_PROCESS){
+        pcb->pgdir = allocPage() - PAGE_SIZE;
+        clear_pgdir(pcb->pgdir);
+        memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+        // user stack
+        pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
+        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
+        // kernel stack
+        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
+    }
+    else{
+        pcb->pgdir = (*current_running)->pgdir;
+        // user stack
+        pcb->user_sp_useeable = (USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 1)) & ~((((uint64_t)1) << 7) - 1);
+        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 2), pcb->pgdir, 1, 0);
+        // kernel stack
+        int current_running_kpage_num = 0;
+        list_head *curr = (*current_running)->k_plist.next;
+        while (curr != &(*current_running)->k_plist)
+        {
+            current_running_kpage_num++;
+            curr = curr->next;
+        }
+        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)(KERNEL_STACK_BIOS + (current_running_kpage_num + (*current_running)->thread_num + 1) * PAGE_SIZE), pcb->pgdir, 0, 0);
+    }
     pcb->user_stack_base = pcb->user_sp_kseeonly - PAGE_SIZE + 1;
     pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 7) - 1);
-    // kernel stack
-    pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
     pcb->kernel_stack_base = pcb->kernel_sp - PAGE_SIZE + 1;
     pcb->kernel_sp &=  ~((((uint64_t)1) << 7) - 1);
     // page list
@@ -100,17 +123,17 @@ void init_pcb_stack_pointer(pcb_t *pcb){
     page_t *ustack = (page_t *)kmalloc(sizeof(page_t));
     kstack->pa = kva2pa(pcb->kernel_stack_base);
     kstack->va = pcb->kernel_stack_base;
-    kstack->atsd = 1;
     ustack->pa = kva2pa(pcb->user_stack_base);
     ustack->va = pcb->user_stack_base;
-    ustack->atsd = 1;
     list_add_tail(&(kstack->list), &(pcb->k_plist));
     list_add_tail(&(ustack->list), &(pcb->u_plist));
+    pcb->owned_page_num++;
 }
 
-void init_pcb_block(pcb_t *pcb){
+void init_pcb_block(pcb_t *pcb, task_type_t pcb_type){
+    pcb->type = pcb_type;
     init_pcb_stack_pointer(pcb);
-    pcb->type = USER_THREAD;
+    init_list_head(&pcb->thread_list);
     int init_ticks = get_ticks();
     // user stack is below kernel stack for security
     #if !defined (USE_CLOCK_INT) // no preempt
@@ -143,7 +166,7 @@ static void init_pcb(int way)
         memset(pcb,0,sizeof(pcb));
         // page dir
         // load ELF
-        init_pcb_block(&pcb[0]);
+        init_pcb_block(&pcb[0],USER_PROCESS);
         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
         pcb[0].pid = 1;
         pcb[0].core_mask = 0b11;
@@ -155,12 +178,18 @@ static void init_pcb(int way)
         current_running_core_m = &pid0_pcb_core_m;
     }
     else{
-        init_pcb_block(&bubble_pcb);
+        init_pcb_block(&bubble_pcb_m,USER_PROCESS);
         int elf_idx = match_elf("bubble");
-        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb.pgdir,alloc_page_helper_user);
-        bubble_pcb.pid = -1;
-        bubble_pcb.core_mask = 0b11;
-        init_pcb_stack(bubble_pcb.kernel_sp,bubble_pcb.user_sp_useeable,start_pos,&bubble_pcb,0,NULL);
+        ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_m.pgdir,alloc_page_helper_user);
+        bubble_pcb_m.pid = -1;
+        bubble_pcb_m.core_mask = 0b11;
+        init_pcb_stack(bubble_pcb_m.kernel_sp,bubble_pcb_m.user_sp_useeable,start_pos,&bubble_pcb_m,0,NULL);
+        init_pcb_block(&bubble_pcb_s,USER_PROCESS);
+        elf_idx = match_elf("bubble");
+        start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_s.pgdir,alloc_page_helper_user);
+        bubble_pcb_s.pid = -1;
+        bubble_pcb_s.core_mask = 0b11;
+        init_pcb_stack(bubble_pcb_s.kernel_sp,bubble_pcb_s.user_sp_useeable,start_pos,&bubble_pcb_s,0,NULL);
         switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
         stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
         current_running_core_s = &pid0_pcb_core_s;
@@ -184,6 +213,7 @@ static void init_syscall(void)
     syscall[SYSCALL_FORK]           = (long (*)())&k_fork;
     syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
     syscall[SYSCALL_TASKSET]        = (long (*)())&k_taskset;
+    syscall[SYSCALL_MTHREAD_CREATE] = (long (*)())&k_mthread_create;
     syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
     syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
     syscall[SYSCALL_SHMPGET]        = (long (*)())&shm_page_get;
@@ -212,7 +242,6 @@ static void cancel_direct_map()
 int main(int arg)
 {
     // find current core
-    sbi_console_putstr("jump to main\n\r");
 
     // init Process Control Block (-_-!)
     if(arg == 0){

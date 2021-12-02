@@ -7,13 +7,9 @@ static mthread_mutex_t mutex_lock = {.id = 0};
 
 static char blank[] = {"                                             "};
 
-int main(int argc, char* argv[])
-{
-    int print_location = 1;
-    mthread_mutex_init(&mutex_lock);
-    if (argc > 1) {
-        print_location = (int) atoi(argv[1]);
-    }
+void try_lock(int argc, char *argv[]){
+    int print_location = *(int *)argv;
+
     while (1)
     {
         int i;
@@ -41,5 +37,22 @@ int main(int argc, char* argv[])
         mthread_mutex_unlock(&mutex_lock);
     }
 
+}
+
+int main(int argc, char* argv[])
+{
+    int print_location = 1;
+    mthread_mutex_init(&mutex_lock);
+    if (argc >= 1) {
+        print_location = (int) atoi((char *)argv);
+    }
+
+    mthread_t lock[3];
+    for(int i = 0; i < 3; i++){
+        mthread_create(&lock[i], try_lock, print_location++);
+    }
+    while (1) ;
+    
+    
     return 0;
 }

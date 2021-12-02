@@ -29,13 +29,6 @@ int cursor_x,cursor_y;
         printk(str, val);\
         vt100_move_cursor(cursor_x,cursor_y);
 
-#define no_task_to_schedule (*current_running) = &bubble_pcb;\
-        if(kernel_lock.flag == LOCKED){\
-            unlock_kernel();\
-        }\
-        switch_to(curr,(*current_running));\
-        return;
-
 pcb_t pcb[NUM_MAX_TASK];
 const ptr_t pid0_stack_core_m = INIT_KERNEL_STACK + PAGE_SIZE;
 const ptr_t pid0_stack_core_s = INIT_KERNEL_STACK + 2 * PAGE_SIZE;
@@ -60,7 +53,8 @@ pcb_t ** volatile current_running;
 pcb_t * volatile current_running_core_m;
 pcb_t * volatile current_running_core_s;
 
-pcb_t bubble_pcb;
+pcb_t bubble_pcb_m;
+pcb_t bubble_pcb_s;
 
 /* global process id */
 pid_t process_id = 1;
@@ -107,6 +101,18 @@ void k_scheduler()
     else{
         curr = current_running_core_s;
     }
+    if (!list_is_empty(&blocked_queue))
+    {
+        check_timer();
+    }
+
+    if(list_is_empty(&ready_queue) && curr->pid != 0 && curr->status == TASK_RUNNING){
+        return;
+    }
+    else if(list_is_empty(&ready_queue) && curr->pid == 0){
+        next_pcb = current_core == 0 ? &bubble_pcb_m : &bubble_pcb_s;
+        goto switch_to_next;
+    }
     if(curr->status == TASK_RUNNING && curr->pid != 0 && curr->pid != -1){
         if(list_is_empty(&ready_queue) || curr->sched_prior.priority == 0){
             list_add_tail(&(curr->list), &ready_queue);
@@ -117,16 +123,9 @@ void k_scheduler()
         }
         curr->status = TASK_READY;
     }
-    if(list_is_empty(&ready_queue) && curr->pid == -1){
-        return;
-    }
     if(list_is_empty(&ready_queue)){
-        next_pcb = &bubble_pcb;
+        next_pcb = current_core == 0 ? &bubble_pcb_m : &bubble_pcb_s;
         goto switch_to_next;
-    }
-    if (!list_is_empty(&blocked_queue))
-    {
-        check_timer();
     }
     #ifdef SCHED_WITH_PRIORITY
     next_pcb = list_entry(ready_queue.next,pcb_t,list);
@@ -147,11 +146,7 @@ void k_scheduler()
     while((next_pcb->core_mask & (1 << current_core)) == 0){
         next_pcb = list_entry(next_pcb->list.next,pcb_t,list);
         if(next_pcb->list.next == &ready_queue){
-            if(curr->pid == -1){
-                return;
-            }
-            next_pcb = &bubble_pcb;
-            goto switch_to_next;
+            return;
         }
     }
     next_pcb = dequeue(next_pcb->list.prev,0);
@@ -170,7 +165,6 @@ switch_to_next:
         current_running_core_s = next_pcb;
         *current_running = current_running_core_s;
     }
-
     set_satp(SATP_MODE_SV39, (*current_running)->pid, (uint64_t)(kva2pa((*current_running)->pgdir)) >> 12);
     local_flush_tlb_all();
     
@@ -195,7 +189,7 @@ void k_sleep(uint32_t sleep_time)
 void k_block(list_node_t *pcb_node, list_head *queue)
 {
     // TODO: block the pcb task into the block queue
-    list_add(pcb_node,queue);
+    list_add_tail(pcb_node,queue);
     (*current_running)->status = TASK_BLOCKED;
 }
 
@@ -211,7 +205,7 @@ void k_unblock(list_head *queue, int way)
         break;
     case 2:
         fetch_pcb = dequeue(queue->prev,0);
-        list_add(&fetch_pcb->list,&ready_queue);
+        list_add_tail(&fetch_pcb->list,&ready_queue);
         break;
     case 3:
         fetch_pcb = dequeue(queue->prev,0);
@@ -250,7 +244,7 @@ long k_fork(void)
     kid->preempt_count = curr->preempt_count;
     init_list_head(&kid->list);
     kid->wait_parent = (*current_running);
-    kid->pid = pcb_i;
+    kid->pid = pcb_i + 1;
     kid->owned_lock_num = 0;
     kid->owned_mbox_num = 0;
     kid->type = curr->type;
@@ -264,6 +258,27 @@ long k_fork(void)
     copy_pcb_stack(kid->kernel_sp,kid->user_sp_kseeonly,kid,curr->kernel_sp,curr->user_sp_kseeonly,curr);
     list_add_tail(&(kid->list),&ready_queue);
     return kid->pid;
+}
+
+pid_t k_mthread_create(int32_t *thread, void (*start_routine)(void*), void *arg)
+{
+    int pcb_i = find_pcb();
+    if(pcb_i == -1){
+        return -1;
+    }
+    pcb_t *new = &pcb[pcb_i];
+    init_pcb_block(new,USER_THREAD);
+    (*current_running)->thread_num++;
+    list_add_tail(&new->thread_list,&(*current_running)->thread_list);
+    new->pid = pcb_i + 1;
+    new->core_mask = (*current_running)->core_mask;
+    new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - 8;
+    new->user_sp_useeable = (char *)new->user_sp_useeable - 8;
+    *(char *)new->user_sp_kseeonly = (char *)arg;
+    init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
+    list_add_tail(&(new->list),&ready_queue);
+    *thread = new->pid;
+    return new->pid;
 }
 
 void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr_t src_kernel_stack, ptr_t src_user_stack, pcb_t *src)
@@ -374,13 +389,13 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
         return -1;
     }
     pcb_t *new = &pcb[pcb_i];
-    init_pcb_block(new);
+    init_pcb_block(new,USER_PROCESS);
     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
     new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
     int elf_idx = match_elf(names);
     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
-    new->pid = pcb_i;
+    new->pid = pcb_i + 1;
     new->core_mask = (*current_running)->core_mask;
     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,(char *)new->user_sp_useeable);
     list_add_tail(&(new->list),&ready_queue);
@@ -394,6 +409,7 @@ void k_exit(void)
 
 int k_kill(pid_t pid)
 {
+    pid -= 1;
     if(pid < 1 || pid >= NUM_MAX_TASK){
         print1("wrong pid!")
         return -1;
@@ -438,6 +454,7 @@ int k_kill(pid_t pid)
 
 int k_waitpid(pid_t pid)
 {
+    pid -= 1;
     if(pid < 1 || pid >= NUM_MAX_TASK){
         return -1;
     }

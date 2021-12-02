@@ -34,6 +34,12 @@
 #define MEM_SIZE 32
 #define PAGE_SIZE 4096 // 4K
 #define INIT_KERNEL_STACK 0xffffffc050500000lu
+#define TOP_USABLE_SPACE 0xffffffc05d000000lu
+#define MAX_PAGE_NUM_PER_PCB 5
+#define PAGE_LIMIT 0x9500
+#define WATER_MASK PAGE_SIZE * PAGE_LIMIT
+#define DELETE_PAGE_NUM_ONCE 8
+#define FREEPAGE_THRESHOLD DELETE_PAGE_NUM_ONCE
 #define FREEMEM (INIT_KERNEL_STACK + 2 * PAGE_SIZE)
 #define FREEHEAP 0xffffffc05d000000lu
 #define USER_STACK_BIOS 0xf00010000lu
@@ -43,26 +49,29 @@
 #define ROUND(a, n)     (((((uint64_t)(a))+(n)-1)) & ~((n)-1))
 #define ROUNDDOWN(a, n) (((uint64_t)(a)) & ~((n)-1))
 
+#define SD_SWAP 1024
+
 extern ptr_t memCurr;
 typedef struct {
     uintptr_t pa;
     uintptr_t va;
-    int atsd;
-    int block;
-    uintptr_t pte;
     list_node_t list;
 } page_t;
 
-extern ptr_t allocPage();
-extern void freePage(ptr_t baseAddr);
-extern void* kmalloc(size_t size);
-extern void share_pgtable(uintptr_t dest_pgdir, uintptr_t src_pgdir);
-extern uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
-extern uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
+void swap_page_with_sd(uint64_t va, int op, int type);
+ptr_t allocPage();
+void freePage(ptr_t baseAddr);
+void* kmalloc(size_t size);
+void share_pgtable(uintptr_t dest_pgdir, uintptr_t src_pgdir);
+void setup_shm_page(uintptr_t va, uintptr_t pa, uintptr_t pgdir);
 uintptr_t shm_page_get(int key);
 void shm_page_dt(uintptr_t addr);
+uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
+uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
 uintptr_t free_page_helper(uintptr_t va, uintptr_t pgdir);
-void setup_shm_page(uintptr_t va, uintptr_t pa, uintptr_t pgdir);
 uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir);
+uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir);
+void swap_page_helper(int swap_page_num);
+void adjust_page_list_helper(uintptr_t kva, uintptr_t va);
 
 #endif /* MM_H */
