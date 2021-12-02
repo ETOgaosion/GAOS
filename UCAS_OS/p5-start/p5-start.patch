@@ -1,0 +1,171 @@
+diff -rupdEZbB include/os/syscall_number.h include/os/syscall_number.h
+--- include/os/syscall_number.h	2021-11-28 10:16:53.391880924 +0800
++++ include/os/syscall_number.h	2020-11-30 10:32:19.000000000 +0800
+@@ -100,2 +100,5 @@
++#define SYSCALL_NET_RECV 43
++#define SYSCALL_NET_SEND 44
++#define SYSCALL_NET_IRQ_MODE 45
+ 
+ #endif
+diff -rupdEZbB include/sys/syscall.h include/sys/syscall.h
+--- include/sys/syscall.h	2021-11-28 10:16:53.391880924 +0800
++++ include/sys/syscall.h	2020-11-30 10:32:19.000000000 +0800
+@@ -100,2 +100,5 @@
++long sys_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength);
++void sys_net_send(uintptr_t addr, size_t length);
++void sys_net_irq_mode(int mode);
+ 
+ #endif
+diff -rupdEZbB include/type.h include/type.h
+--- include/type.h	2021-11-28 10:16:53.391880924 +0800
++++ include/type.h	2020-11-30 10:32:19.000000000 +0800
+@@ -35,6 +35,11 @@
+ 	#define FALSE 	0
+ #endif
+ 
++#ifndef true
++	#define true 	1
++	#define false 	0
++#endif
++
+ typedef unsigned __attribute__((__mode__(QI))) int8_t;
+ typedef unsigned __attribute__((__mode__(QI))) uint8_t;
+ typedef int      __attribute__((__mode__(HI))) int16_t;
+@@ -44,13 +49,24 @@ typedef unsigned __attribute__((__mode__
+ typedef int      __attribute__((__mode__(DI))) int64_t;
+ typedef unsigned __attribute__((__mode__(DI))) uint64_t;
+ 
++typedef uint8_t bool;
++
+ typedef int32_t pid_t;
+ typedef uint64_t reg_t;
+ typedef uint64_t ptr_t;
+ typedef uint64_t uintptr_t;
+ typedef int64_t intptr_t;
+ typedef uint64_t size_t;
++typedef uintptr_t ptrdiff_t;
+ 
++typedef uint8_t  u8;
++typedef uint16_t u16;
++typedef uint32_t u32;
++typedef uint64_t u64;
++typedef uint8_t  s8;
++typedef uint16_t u16;
++typedef uint32_t u32;
++typedef uint64_t u64;
+ 
+ /* Minimum of signed integral types.  */
+ # define INT8_MIN               (-128)
+diff -rupdEZbB init/main.c init/main.c
+--- init/main.c	2021-11-28 10:16:53.391880924 +0800
++++ init/main.c	2020-12-05 15:22:34.000000000 +0800
+@@ -30,3 +30,6 @@
++#include <plic.h>
++#include <emacps/xemacps_example.h>
++#include <net.h>
+ 
+ static void init_pcb()
+ {
+@@ -50,1 +50,46 @@
+     time_base = sbi_read_fdt(TIMEBASE);
++    uint32_t slcr_bade_addr = 0, ethernet_addr = 0;
++
++    // get_prop_u32(_dtb, "/soc/slcr/reg", &slcr_bade_addr);
++    slcr_bade_addr = sbi_read_fdt(SLCR_BADE_ADDR);
++    printk("[slcr] phy: 0x%x\n\r", slcr_bade_addr);
++
++    // get_prop_u32(_dtb, "/soc/ethernet/reg", &ethernet_addr);
++    ethernet_addr = sbi_read_fdt(ETHERNET_ADDR);
++    printk("[ethernet] phy: 0x%x\n\r", ethernet_addr);
++
++    uint32_t plic_addr = 0;
++    // get_prop_u32(_dtb, "/soc/interrupt-controller/reg", &plic_addr);
++    plic_addr = sbi_read_fdt(PLIC_ADDR);
++    printk("[plic] plic: 0x%x\n\r", plic_addr);
++
++    uint32_t nr_irqs = sbi_read_fdt(NR_IRQS);
++    // get_prop_u32(_dtb, "/soc/interrupt-controller/riscv,ndev", &nr_irqs);
++    printk("[plic] nr_irqs: 0x%x\n\r", nr_irqs);
++
++    XPS_SYS_CTRL_BASEADDR =
++        (uintptr_t)ioremap((uint64_t)slcr_bade_addr, NORMAL_PAGE_SIZE);
++    xemacps_config.BaseAddress =
++        (uintptr_t)ioremap((uint64_t)ethernet_addr, NORMAL_PAGE_SIZE);
++    uintptr_t _plic_addr =
++        (uintptr_t)ioremap((uint64_t)plic_addr, 0x4000*NORMAL_PAGE_SIZE);
++    // XPS_SYS_CTRL_BASEADDR = slcr_bade_addr;
++    // xemacps_config.BaseAddress = ethernet_addr;
++    xemacps_config.DeviceId        = 0;
++    xemacps_config.IsCacheCoherent = 0;
++
++    printk(
++        "[slcr_bade_addr] phy:%x virt:%lx\n\r", slcr_bade_addr,
++        XPS_SYS_CTRL_BASEADDR);
++    printk(
++        "[ethernet_addr] phy:%x virt:%lx\n\r", ethernet_addr,
++        xemacps_config.BaseAddress);
++    printk("[plic_addr] phy:%x virt:%lx\n\r", plic_addr, _plic_addr);
++    plic_init(_plic_addr, nr_irqs);
++    
++    long status = EmacPsInit(&EmacPsInstance);
++    if (status != XST_SUCCESS) {
++        printk("Error: initialize ethernet driver failed!\n\r");
++        assert(0);
++    }
++
+@@ -150,2 +200,5 @@
+     init_syscall();
+     printk("> [INIT] System call initialized successfully.\n\r");
++ 
++    net_poll_mode = 1;
++    // xemacps_example_main();
+diff -rupdEZbB kernel/irq/irq.c kernel/irq/irq.c
+--- kernel/irq/irq.c	2021-11-28 10:16:53.392880920 +0800
++++ kernel/irq/irq.c	2020-12-05 15:05:26.000000000 +0800
+@@ -3,6 +3,9 @@
+ #include <assert.h>
+ #include <sbi.h>
+ #include <screen.h>
+ 
++#include <emacps/xemacps_example.h>
++#include <plic.h>
++
+ handler_t irq_table[IRQC_COUNT];
+ handler_t exc_table[EXCC_COUNT];
+@@ -50,2 +50,9 @@
++void handle_irq(regs_context_t *regs, int irq)
++{
++    // TODO: 
++    // handle external irq from network device
++    // let PLIC know that handle_irq has been finished
++}
++
+ void init_exception()
+ {
+diff -rupdEZbB tiny_libc/include/os.h tiny_libc/include/os.h
+--- tiny_libc/include/os.h	2021-11-28 10:16:53.395880907 +0800
++++ tiny_libc/include/os.h	2020-11-30 10:32:19.000000000 +0800
+@@ -30,3 +30,23 @@
+ typedef int32_t pid_t;
+ 
++/* The next few constants help upper layers determine the size of memory
++ * pools used for Ethernet buffers and descriptor lists.
++ */
++#define XEMACPS_MAC_ADDR_SIZE   6U	/* size of Ethernet header */
++
++#define XEMACPS_MTU             1500U	/* max MTU size of Ethernet frame */
++#define XEMACPS_MTU_JUMBO       10240U	/* max MTU size of jumbo frame */
++#define XEMACPS_HDR_SIZE        14U	/* size of Ethernet header */
++#define XEMACPS_HDR_VLAN_SIZE   18U	/* size of Ethernet header with VLAN */
++#define XEMACPS_TRL_SIZE        4U	/* size of Ethernet trailer (FCS) */
++#define XEMACPS_MAX_FRAME_SIZE       (XEMACPS_MTU + XEMACPS_HDR_SIZE + \
++        XEMACPS_TRL_SIZE)
++#define XEMACPS_MAX_VLAN_FRAME_SIZE  (XEMACPS_MTU + XEMACPS_HDR_SIZE + \
++        XEMACPS_HDR_VLAN_SIZE + XEMACPS_TRL_SIZE)
++#define XEMACPS_MAX_VLAN_FRAME_SIZE_JUMBO  (XEMACPS_MTU_JUMBO + XEMACPS_HDR_SIZE + \
++        XEMACPS_HDR_VLAN_SIZE + XEMACPS_TRL_SIZE)
++
++typedef char EthernetFrame[XEMACPS_MAX_FRAME_SIZE]
++	__attribute__ ((aligned(64)));
++
+ #endif // OS_H
