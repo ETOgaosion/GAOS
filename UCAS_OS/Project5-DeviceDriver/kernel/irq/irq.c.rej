@@ -1,0 +1,12 @@
+--- kernel/irq/irq.c	2021-11-28 10:16:53.392880920 +0800
++++ kernel/irq/irq.c	2020-12-05 15:05:26.000000000 +0800
+@@ -3,6 +3,9 @@
+ #include <assert.h>
+ #include <sbi.h>
+ #include <screen.h>
+ 
++#include <emacps/xemacps_example.h>
++#include <plic.h>
++
+ handler_t irq_table[IRQC_COUNT];
+ handler_t exc_table[EXCC_COUNT];
