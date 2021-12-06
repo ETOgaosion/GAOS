@@ -24,6 +24,23 @@ extern void kp_ret_from_exception();
 task_info_t **tasks;
 long tasks_num;
 
+static void cancel_direct_map()
+{
+    uint64_t va = 0x50000000;
+    uint64_t pgdir = 0xffffffc05e000000;
+    
+    uint64_t vpn2 = 
+        va >> (NORMAL_PAGE_SHIFT + PPN_BITS + PPN_BITS);
+    uint64_t vpn1 = (vpn2 << PPN_BITS) ^
+                    (va >> (NORMAL_PAGE_SHIFT + PPN_BITS));
+    PTE *fst_pg = (PTE *)pgdir + vpn2;
+    if(*fst_pg){
+        PTE *snd_pte = (PTE *)pa2kva(get_pa(*fst_pg)) + vpn1;
+        *fst_pg = 0;
+        *snd_pte = 0;
+    }
+}
+
 void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
     pcb_t *pcb, int argc, char *argv[])
@@ -89,6 +106,7 @@ void init_pcb_stack_pointer(pcb_t *pcb){
     if(pcb->type == USER_PROCESS || pcb->type == KERNEL_PROCESS){
         pcb->pgdir = allocPage() - PAGE_SIZE;
         clear_pgdir(pcb->pgdir);
+        cancel_direct_map();
         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
         // user stack
         pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
@@ -229,12 +247,6 @@ static void init_syscall(void)
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
     syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
     syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
-}
-
-static void cancel_direct_map()
-{
-    uintptr_t pgdir = PGDIR_PA + 8 + KPA_OFFSET;
-    *(PTE *)pgdir = 0;
 }
 
 // jump from bootloader.

@@ -15,11 +15,11 @@ int main(int argc, char* argv[])
 	sys_move_cursor(2, 2);
 	printf("argc = %d\n", argc);
 	for (i = 0; i < argc; ++i) {
-	 	printf("argv[%d] = %s\n", i, (char *)argv + i * SHELL_ARG_MAX_LENGTH);
+	 	printf("argv[%d] = %s\n", i, (char *)argv + i * 16);
 	}
 	for (i = 0; i < argc; i++)
 	{
-		mem1 = atol((char *)argv + i * SHELL_ARG_MAX_LENGTH);
+		mem1 = atol((char *)argv + i * 16);
 		// sys_move_cursor(2, curs+i);
 		mem2 = rand();
 		*(long*)mem1 = mem2;
@@ -31,6 +31,5 @@ int main(int argc, char* argv[])
 	//Only input address.
 	//Achieving input r/w command is recommended but not required.
 	printf("Success!\n");
-	// while(1);
 	return 0;
 }

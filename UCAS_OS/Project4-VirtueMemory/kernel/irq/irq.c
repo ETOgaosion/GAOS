@@ -87,7 +87,7 @@ void handle_load_store_pagefault(regs_context_t *regs, uint64_t stval, uint64_t 
     } 
     uintptr_t kva;
     kva = search_last_page_helper(stval,(*current_running)->pgdir);
-    if(*(PTE *)kva == 0){
+    if(kva == 0 || *(PTE *)kva == 0){
         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
         adjust_page_list_helper(kva,stval & USER_SPACE);
     }

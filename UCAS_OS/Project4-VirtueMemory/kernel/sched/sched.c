@@ -390,6 +390,7 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
     }
     pcb_t *new = &pcb[pcb_i];
     init_pcb_block(new,USER_PROCESS);
+    *((PTE *)pcb[pcb_i].pgdir + 1) = 0;
     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
     new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
@@ -446,7 +447,7 @@ int k_kill(pid_t pid)
     }
     if(pcb[pid].list.next)
         list_del(&pcb[pid].list);
-    if((*current_running)->pid == pid || (*current_running)->pid == 0 || pcb[pid].mode == AUTO_CLEANUP_ON_EXIT){
+    if((*current_running)->pid == pid + 1 || (*current_running)->pid == 0 || pcb[pid].mode == AUTO_CLEANUP_ON_EXIT){
         k_scheduler();
     }
     return 0;
