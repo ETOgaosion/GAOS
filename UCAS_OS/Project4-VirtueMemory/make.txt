@@ -1,5 +1,9 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/swap_page.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/swap_page.elf
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/rw.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/rw.elf
+test/rw.c: In function 'main':
+test/rw.c:13:6: warning: unused variable 'curs' [-Wunused-variable]
+   13 |  int curs = 0;
+      |      ^~~~
 echo "" > user_programs.c
 echo "" > user_programs.h
 for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf; do ./elf2char --header-only $prog >> user_programs.h; done
@@ -665,8 +669,8 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0x8af2c		memsz 0x8af40
-		writing 0x8af2c bytes
+		filesz 0x8af5c		memsz 0x8af70
+		writing 0x8af5c bytes
 		padding up to 0x8b200
 	segment 1
 		offset 0x0		vaddr 0x0
@@ -676,7 +680,7 @@ there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.00253958 s, 13.1 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000423374 s, 78.6 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt

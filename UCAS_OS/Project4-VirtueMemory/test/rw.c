@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 	}
 	for (i = 0; i < argc; i++)
 	{
-		mem1 = atol((char *)argv);
+		mem1 = atol((char *)argv + i * SHELL_ARG_MAX_LENGTH);
 		// sys_move_cursor(2, curs+i);
 		mem2 = rand();
 		*(long*)mem1 = mem2;
