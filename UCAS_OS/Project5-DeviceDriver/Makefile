@@ -22,13 +22,14 @@ USER_LDFLAGS += $(ARCH_DIR)/crt0.o
 SRC_BOOT 	= $(ARCH_DIR)/boot/bootblock.S
 SRC_HEAD    = $(ARCH_DIR)/kernel/head.S $(ARCH_DIR)/kernel/boot.c $(ARCH_DIR)/kernel/payload.c ./libs/string.c
 SRC_ARCH	= $(ARCH_DIR)/kernel/trap.S $(ARCH_DIR)/kernel/entry.S $(ARCH_DIR)/kernel/start.S $(ARCH_DIR)/sbi/common.c $(ARCH_DIR)/kernel/smp.S
-SRC_DRIVER	= ./drivers/screen.c #./drivers/fdt.c
+SRC_DRIVER	= ./drivers/screen.c ./drivers/net.c ./drivers/plic.c #./drivers/fdt.c 
+SRC_NETWORK = ./drivers/emacps/xemacps_bdring.c ./drivers/emacps/xemacps_control.c ./drivers/emacps/xemacps_example_util.c ./drivers/emacps/xemacps_g.c ./drivers/emacps/xemacps_hw.c ./drivers/emacps/xemacps_intr.c ./drivers/emacps/xemacps_main.c  ./drivers/emacps/xemacps.c
 SRC_INIT 	= ./init/main.c
 SRC_INT		= ./kernel/irq/irq.c
 SRC_LOCK	= ./kernel/locking/lock.c #./kernel/locking/futex.c
 SRC_COMM	= ./kernel/comm/comm.c
 SRC_SCHED	= ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/sched/smp.c
-SRC_MM	= ./kernel/mm/mm.c
+SRC_MM	= ./kernel/mm/mm.c ./kernel/mm/ioremap.c
 SRC_SYSCALL	= ./kernel/syscall/syscall.c
 SRC_LIBS	= ./libs/string.c ./libs/printk.c
 
@@ -37,9 +38,9 @@ SRC_LIBC	= ./tiny_libc/printf.c ./tiny_libc/string.c ./tiny_libc/mthread.c ./tin
 SRC_LIBC_ASM	= $(filter %.S %.s,$(SRC_LIBC))
 SRC_LIBC_C	= $(filter %.c,$(SRC_LIBC))
 
-SRC_USER	= ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf
+SRC_USER	= ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf
 
-SRC_MAIN	= ${SRC_ARCH} ${SRC_INIT} ${SRC_INT} ${SRC_DRIVER} ${SRC_LOCK} ${SRC_COMM} ${SRC_SCHED} ${SRC_MM} ${SRC_SYSCALL} ${SRC_LIBS}
+SRC_MAIN	= ${SRC_ARCH} ${SRC_INIT} ${SRC_INT} ${SRC_DRIVER} ${SRC_NETWORK} ${SRC_LOCK} ${SRC_COMM} ${SRC_SCHED} ${SRC_MM} ${SRC_SYSCALL} ${SRC_LIBS}
 
 SRC_IMAGE	= ./tools/createimage.c
 SRC_ELF2CHAR	= ./tools/elf2char.c
@@ -115,6 +116,8 @@ asm:
 	${OBJDUMP} -d test/lock.elf > lock.txt
 	${OBJDUMP} -d test/mailbox.elf > mailbox.txt
 	${OBJDUMP} -d test/swap_page.elf > swap_page.txt
+	${OBJDUMP} -d test/send.elf > send.txt
+	${OBJDUMP} -d test/recv.elf > recv.txt
 
 qemu:
 	cd ${QEMU_PATH} && ./run_qemu.sh

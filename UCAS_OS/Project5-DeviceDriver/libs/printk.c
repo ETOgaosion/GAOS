@@ -44,8 +44,8 @@
 #include <screen.h>
 #include <stdarg.h>
 #include <os/sched.h>
-#include <os/smp.h>
 #include <os/irq.h>
+#include <os/smp.h>
 
 static unsigned int mini_strlen(const char *s)
 {
@@ -80,7 +80,7 @@ static unsigned int mini_itoa(
         }
         *(pbuffer++) =
             (digit < 10 ? '0' + digit :
-             (uppercase ? 'A' : 'a') + digit - 10);
+                          (uppercase ? 'A' : 'a') + digit - 10);
         if (unsig) {
             value = (unsigned long) value / (unsigned) radix;
         } else {
@@ -228,7 +228,7 @@ end:
 }
 
 static int _vprint(const char* fmt, va_list _va,
-                   void (*output)(char*), int from)
+                   void (*output)(char*))
 {
     va_list va;
     va_copy(va, _va);
@@ -241,27 +241,28 @@ static int _vprint(const char* fmt, va_list _va,
     buff[ret] = '\0';
 
     output(buff);
-    if(from == 0){
-        for (int i = 0; i < ret; ++i) {
-            if (buff[i] == '\n') {
-                (*current_running)->cursor_x = 1;
-                (*current_running)->cursor_y++;
-            } else if (buff[i] == '\r') {
-                (*current_running)->cursor_x = 1;
-            } else if (buff[i] == '\t') {
-                (*current_running)->cursor_x += TAB_LENGTH;
-            } else {
-                (*current_running)->cursor_x++;
-            }
-        }
-    }
 
     return ret;
 }
 
+static void port_write_wrapper(char* str)
+{
+    port_write(str);
+    current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+    for (char* p = str; *p != '\0'; ++p) {
+        if (*p == '\n') {
+            (*current_running)->cursor_y++;
+        } else if (*p == '\r') {
+            (*current_running)->cursor_x = 1;
+        } else {
+            (*current_running)->cursor_x++;
+        }
+    }
+}
+
 int vprintk(const char *fmt, va_list _va)
 {
-    return _vprint(fmt, _va, port_write,0);
+    return _vprint(fmt, _va, port_write_wrapper);
 }
 
 int printk(const char *fmt, ...)
@@ -278,7 +279,7 @@ int printk(const char *fmt, ...)
 
 int vprints(const char *fmt, va_list _va)
 {
-    return _vprint(fmt, _va, screen_write,1);
+    return _vprint(fmt, _va, screen_write);
 }
 
 int prints(const char *fmt, ...)

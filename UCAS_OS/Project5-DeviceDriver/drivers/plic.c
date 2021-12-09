@@ -19,7 +19,7 @@
 #include <io.h>
 #include <csr.h>
 #include <os/irq.h>
-
+#include <os/stdio.h>
 #include <plic.h>
 
 #define MAX_DEVICES			1024

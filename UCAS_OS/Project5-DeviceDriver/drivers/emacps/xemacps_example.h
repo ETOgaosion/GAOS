@@ -102,6 +102,7 @@ typedef char EthernetFrame[ROUND(XEMACPS_MAX_FRAME_SIZE,64)] __attribute__ ((ali
 /*
  * Utility functions implemented in xemacps_example_util.c
  */
+u32 XEmacPsDetectPHY(XEmacPs * EmacPsInstancePtr);
 void EmacPsUtilSetupUart(void);
 void EmacPsUtilFrameHdrFormatMAC(EthernetFrame * FramePtr, char *DestAddr);
 void EmacPsUtilFrameHdrFormatType(EthernetFrame * FramePtr, u16 FrameType);
@@ -115,10 +116,13 @@ void EmacPsUtilstrncpy(char *Destination, const char *Source, u32 n);
 void EmacPsUtilErrorTrap(const char *Message);
 void EmacpsDelay(u32 delay);
 LONG EmacPsInit(XEmacPs *EmacPsInstancePtr);
+LONG EmacPsIRQMode(XEmacPs *EmacPsInstancePtr, int mode);
 LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t length);
 LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
 LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen);
+LONG EmacPsResetTxBD(XEmacPs *EmacPsInstancePtr);
+LONG EmacPsResetRxBD(XEmacPs *EmacPsInstancePtr);
 
 /************************** Variable Definitions ****************************/
 
@@ -129,5 +133,7 @@ extern char DestMAC[];
 extern u32 Platform;
 extern uintptr_t XPS_SYS_CTRL_BASEADDR;
 extern XEmacPs_Config xemacps_config;
+extern u8 bd_space[0x200000];
+
 
 #endif /* XEMACPS_EXAMPLE_H */

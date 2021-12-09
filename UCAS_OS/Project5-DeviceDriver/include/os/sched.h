@@ -179,6 +179,10 @@ extern void __global_pointer$();
 /* ready queue to run */
 extern list_head ready_queue;
 extern list_head blocked_queue;
+/* recv_queue to wait for revieved packet*/
+extern list_head recv_queue;
+/* send_queue to wait for sent packet*/
+extern list_head send_queue;
 
 extern task_info_t **tasks;
 extern long tasks_num;
@@ -239,7 +243,5 @@ uint64_t cal_priority(uint64_t cur_time, uint64_t idle_time, long priority);
 pcb_t *choose_sched_task(list_head *queue);
 
 pcb_t *dequeue(list_head *queue, int field);
-extern pid_t do_exec(const char* file_name, int argc, char* argv[], spawn_mode_t mode);
-extern void do_show_exec();
  
 #endif

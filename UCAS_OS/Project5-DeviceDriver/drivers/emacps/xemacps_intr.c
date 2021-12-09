@@ -164,7 +164,7 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
 			   RegISR);
 
 	/* Receive complete interrupt */
-	if ((RegISR & XEMACPS_IXR_FRAMERX_MASK) != 0x00000000U) {
+	if ((RegISR & XEMACPS_IXR_FRAMERX_MASK) != XEMACPS_NULL) {
         /* Clear RX status register RX complete indication but preserve
 		 * error bits if there is any */
 		XEmacPs_WriteReg(InstancePtr->Config.BaseAddress,
@@ -175,7 +175,7 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
 	}
 
 	/* Transmit complete interrupt */
-	if ((RegISR & XEMACPS_IXR_TXCOMPL_MASK) != 0x00000000U) {
+	if ((RegISR & XEMACPS_IXR_TXCOMPL_MASK) != XEMACPS_NULL) {
 		/* Clear TX status register TX complete indication but preserve
 		 * error bits if there is any */
 		XEmacPs_WriteReg(InstancePtr->Config.BaseAddress,
@@ -186,7 +186,7 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
 	}
 
 	/* Receive error conditions interrupt */
-	if ((RegISR & XEMACPS_IXR_RX_ERR_MASK) != 0x00000000U) {
+	if ((RegISR & XEMACPS_IXR_RX_ERR_MASK) != XEMACPS_NULL) {
 		/* Clear RX status register */
 		RegSR = XEmacPs_ReadReg(InstancePtr->Config.BaseAddress,
 					  XEMACPS_RXSR_OFFSET);
@@ -196,7 +196,7 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
 		/* Fix for CR # 692702. Write to bit 18 of net_ctrl
 		 * register to flush a packet out of Rx SRAM upon
 		 * an error for receive buffer not available. */
-		if ((RegISR & XEMACPS_IXR_RXUSED_MASK) != 0x00000000U) {
+		if ((RegISR & XEMACPS_IXR_RXUSED_MASK) != XEMACPS_NULL) {
 			RegCtrl =
 			XEmacPs_ReadReg(InstancePtr->Config.BaseAddress,
 						XEMACPS_NWCTRL_OFFSET);
@@ -217,8 +217,8 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
      */
 
     /* Transmit error conditions interrupt */
-    if (((RegISR & XEMACPS_IXR_TX_ERR_MASK) != 0x00000000U) &&
-        (!(RegISR & XEMACPS_IXR_TXCOMPL_MASK) != 0x00000000U)) {
+    if (((RegISR & XEMACPS_IXR_TX_ERR_MASK) != XEMACPS_NULL) &&
+        (!(RegISR & XEMACPS_IXR_TXCOMPL_MASK) != XEMACPS_NULL)) {
         /* Clear TX status register */
         RegSR = XEmacPs_ReadReg(
             InstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);

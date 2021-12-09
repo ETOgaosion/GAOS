@@ -349,6 +349,7 @@ extern "C" {
 #include "xemacps_bd.h"
 #include "xemacps_bdring.h"
 #include "xil_utils.h"
+#include <os/stdio.h>
 
 /************************** Constant Definitions ****************************/
 
@@ -371,6 +372,8 @@ extern "C" {
  *
  * @{
  */
+
+#define XEMACPS_NULL						 0x00000000U
 
 #define XEMACPS_PROMISC_OPTION               0x00000001U
 /**< Accept all incoming packets.

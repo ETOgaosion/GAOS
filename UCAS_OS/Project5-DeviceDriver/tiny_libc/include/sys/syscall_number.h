@@ -46,13 +46,11 @@
 #define SYSCALL_MTHREAD_CREATE 11
 
 #define SYSCALL_LOCKOP 13
-#define SYSCALL_SHMPGET 14
-#define SYSCALL_SHMPDT 15
 // proc comm, [0,3] is for Semaphore, [4,6] is for barrier, [7,10] is for mailbox
-#define SYSCALL_COMMOP 16
+#define SYSCALL_COMMOP 14
 
-#define SYSCALL_SHMPGET 17
-#define SYSCALL_SHMPDT 18
+#define SYSCALL_SHMPGET 15
+#define SYSCALL_SHMPDT 16
 
 #define SYSCALL_WRITE 20
 
@@ -68,5 +66,9 @@
 #define SYSCALL_GET_TIMEBASE 30
 #define SYSCALL_GET_TICK 31
 #define SYSCALL_GET_WALL_TIME 32
+
+#define SYSCALL_NET_RECV 43
+#define SYSCALL_NET_SEND 44
+#define SYSCALL_NET_IRQ_MODE 45
 
 #endif

@@ -178,7 +178,7 @@ void XEmacPs_Start(XEmacPs *InstancePtr)
 			   XEMACPS_IXR_ALL_MASK);
 
 	/* Enable transmitter if not already enabled */
-	if ((InstancePtr->Options & (u32)XEMACPS_TRANSMITTER_ENABLE_OPTION)!=0x00000000U) {
+	if ((InstancePtr->Options & (u32)XEMACPS_TRANSMITTER_ENABLE_OPTION)!=XEMACPS_NULL) {
 		Reg = XEmacPs_ReadReg(InstancePtr->Config.BaseAddress,
 					XEMACPS_NWCTRL_OFFSET);
 		if ((!(Reg & XEMACPS_NWCTRL_TXEN_MASK))==TRUE) {
@@ -189,7 +189,7 @@ void XEmacPs_Start(XEmacPs *InstancePtr)
 	}
 
 	/* Enable receiver if not already enabled */
-	if ((InstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) != 0x00000000U) {
+	if ((InstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) != XEMACPS_NULL) {
 		Reg = XEmacPs_ReadReg(InstancePtr->Config.BaseAddress,
 					XEMACPS_NWCTRL_OFFSET);
 		if ((!(Reg & XEMACPS_NWCTRL_RXEN_MASK))==TRUE) {
@@ -386,7 +386,7 @@ void XEmacPs_Reset(XEmacPs *InstancePtr)
 
 	for (i = 1U; i < 5U; i++) {
 		(void)XEmacPs_SetMacAddress(InstancePtr, EmacPs_zero_MAC, i);
-		(void)XEmacPs_SetTypeIdCheck(InstancePtr, 0x00000000U, i);
+		(void)XEmacPs_SetTypeIdCheck(InstancePtr, XEMACPS_NULL, i);
 	}
 
 	/* clear all counters */

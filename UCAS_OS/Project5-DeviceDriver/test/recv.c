@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/syscall.h>
+#include <test.h>
 
 #include <os.h>
 
@@ -28,19 +29,19 @@ int main(int argc, char *argv[])
     // for(;;);
     int mode = 0;
     int size = 1;
-    if(argc > 1) {
-        size = atol(argv[1]);
+    sys_move_cursor(1, 1);
+    if(argc > 0) {
+        size = atol((char *)argv);
         printf("%d \n", size);
     }
-    if(argc > 2) {        
-        if (strcmp(argv[2], "1") == 0) {
+    if(argc > 1) {        
+        if (strcmp((char *)argv + SHELL_ARG_MAX_LENGTH, "1") == 0) {
             mode = 1;
         }
     }
 
     sys_net_irq_mode(mode);
 
-    sys_move_cursor(1, 1);
     printf("[RECV TASK] start recv(%d):                    ", size);
 
     int ret = sys_net_recv(recv_buffer, size * sizeof(EthernetFrame), size, recv_length);

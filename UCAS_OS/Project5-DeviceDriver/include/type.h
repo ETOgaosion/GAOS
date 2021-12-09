@@ -8,7 +8,7 @@
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- * furnisched to do so, subject to the following conditions:
+ * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
@@ -49,12 +49,24 @@ typedef unsigned __attribute__((__mode__(SI))) uint32_t;
 typedef int      __attribute__((__mode__(DI))) int64_t;
 typedef unsigned __attribute__((__mode__(DI))) uint64_t;
 
+typedef uint8_t bool;
+
 typedef int32_t pid_t;
 typedef uint64_t reg_t;
 typedef uint64_t ptr_t;
 typedef uint64_t uintptr_t;
 typedef int64_t intptr_t;
 typedef uint64_t size_t;
+typedef uintptr_t ptrdiff_t;
+
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef uint8_t  s8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 /* Minimum of signed integral types.  */
 # define INT8_MIN               (-128)

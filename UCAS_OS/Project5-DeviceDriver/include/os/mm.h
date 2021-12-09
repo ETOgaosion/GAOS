@@ -35,7 +35,7 @@
 #define PAGE_SIZE 4096 // 4K
 #define INIT_KERNEL_STACK 0xffffffc050500000lu
 #define TOP_USABLE_SPACE 0xffffffc05d000000lu
-#define MAX_PAGE_NUM_PER_PCB 5
+#define MAX_PAGE_NUM_PER_PCB 0x1000
 #define PAGE_LIMIT 0x9500
 #define WATER_MASK PAGE_SIZE * PAGE_LIMIT
 #define DELETE_PAGE_NUM_ONCE 8
@@ -58,6 +58,7 @@ typedef struct {
     list_node_t list;
 } page_t;
 
+void cancel_direct_map(uint64_t va);
 void swap_page_with_sd(uint64_t va, int op, int type);
 ptr_t allocPage();
 void freePage(ptr_t baseAddr);

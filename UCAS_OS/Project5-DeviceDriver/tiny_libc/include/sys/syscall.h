@@ -29,6 +29,8 @@
 #define INCLUDE_SYSCALL_H_
 
 #include <os.h>
+#include <stdint.h>
+#include <stddef.h>
 
 // the last parameter shows with/without return value
 extern long invoke_syscall(long, long, long, long, long);
@@ -59,6 +61,10 @@ extern long sys_get_timebase();
 extern long sys_get_tick();
 extern long sys_get_wall_time(long *);
 
+
+extern long sys_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength);
+extern void sys_net_send(uintptr_t addr, size_t length);
+extern void sys_net_irq_mode(int mode);
 
 
 #endif

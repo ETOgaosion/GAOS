@@ -3,6 +3,7 @@
 
 #include <type.h>
 #include <sbi.h>
+#include <io.h>
 
 #define SATP_MODE_SV39 8
 #define SATP_MODE_SV48 9
@@ -35,6 +36,11 @@ static inline void local_flush_icache_all(void)
     asm volatile ("fence.i" ::: "memory");
 }
 
+static inline void local_flush_dcache_all(void)
+{
+    dmb();
+}
+
 static inline void flush_icache_all(void)
 {
     local_flush_icache_all();
@@ -61,6 +67,7 @@ static inline void set_satp(
 }
 
 #define PGDIR_PA 0x5e000000lu  // use bootblock's page as PGDIR
+#define PGDIR_KVA 0xffffffc05e000000lu  // use bootblock's page as PGDIR
 
 /*
  * PTE format:

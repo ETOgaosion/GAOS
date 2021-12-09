@@ -130,7 +130,7 @@ extern "C" {
 						   failed */
 #define XST_DMA_RESET_REGISTER_ERROR    512L	/* self test, a register value
 						   was invalid after reset */
-#define XST_DMA_SG_LIST_EMPTY           513L	/* scatter gather list contains
+#define XST_DMA_SG_list_is_empty           513L	/* scatter gather list contains
 						   no buffer descriptors ready
 						   to be processed */
 #define XST_DMA_SG_IS_STARTED           514L	/* scatter gather not stopped */

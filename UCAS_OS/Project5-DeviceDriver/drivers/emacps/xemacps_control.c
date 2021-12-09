@@ -536,58 +536,58 @@ LONG XEmacPs_SetOptions(XEmacPs *InstancePtr, u32 Options)
         /*
          * It is configured to max 1536.
          */
-        if ((Options & XEMACPS_FRAME1536_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_FRAME1536_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= (XEMACPS_NWCFG_1536RXEN_MASK);
         }
 
         /* Turn on VLAN packet only, only VLAN tagged will be
          * accepted */
-        if ((Options & XEMACPS_VLAN_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_VLAN_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_NVLANDISC_MASK;
         }
 
         /* Turn on FCS stripping on receive packets */
-        if ((Options & XEMACPS_FCS_STRIP_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_FCS_STRIP_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_FCSREM_MASK;
         }
 
         /* Turn on length/type field checking on receive packets */
         if ((Options & XEMACPS_LENTYPE_ERR_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_LENERRDSCRD_MASK;
         }
 
         /* Turn on flow control */
         if ((Options & XEMACPS_FLOW_CONTROL_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_PAUSEEN_MASK;
         }
 
         /* Turn on promiscuous frame filtering (all frames are
          * received) */
-        if ((Options & XEMACPS_PROMISC_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_PROMISC_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_COPYALLEN_MASK;
         }
 
         /* Allow broadcast address reception */
-        if ((Options & XEMACPS_BROADCAST_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_BROADCAST_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_BCASTDI_MASK);
         }
 
         /* Allow multicast address filtering */
-        if ((Options & XEMACPS_MULTICAST_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_MULTICAST_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_MCASTHASHEN_MASK;
         }
 
         /* enable RX checksum offload */
         if ((Options & XEMACPS_RX_CHKSUM_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_RXCHKSUMEN_MASK;
         }
 
         /* Enable jumbo frames */
         if (((Options & XEMACPS_JUMBO_ENABLE_OPTION) !=
-             0x00000000U) &&
+             XEMACPS_NULL) &&
             (InstancePtr->Version > 2)) {
             RegNewNetCfg |= XEMACPS_NWCFG_JUMBO_MASK;
             XEmacPs_WriteReg(
@@ -620,7 +620,7 @@ LONG XEmacPs_SetOptions(XEmacPs *InstancePtr, u32 Options)
         }
 
         if (((Options & XEMACPS_SGMII_ENABLE_OPTION) !=
-             0x00000000U) &&
+             XEMACPS_NULL) &&
             (InstancePtr->Version > 2)) {
             RegNewNetCfg |=
                 (XEMACPS_NWCFG_SGMIIEN_MASK |
@@ -638,7 +638,7 @@ LONG XEmacPs_SetOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Enable TX checksum offload */
         if ((Options & XEMACPS_TX_CHKSUM_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_DMACR_OFFSET);
@@ -650,7 +650,7 @@ LONG XEmacPs_SetOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Enable transmitter */
         if ((Options & XEMACPS_TRANSMITTER_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_NWCTRL_OFFSET);
@@ -662,7 +662,7 @@ LONG XEmacPs_SetOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Enable receiver */
         if ((Options & XEMACPS_RECEIVER_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_NWCTRL_OFFSET);
@@ -731,59 +731,59 @@ LONG XEmacPs_ClearOptions(XEmacPs *InstancePtr, u32 Options)
          * It is configured in two different length, upto 1536 and
          * 10240 bytes
          */
-        if ((Options & XEMACPS_FRAME1536_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_FRAME1536_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_1536RXEN_MASK);
         }
 
         /* Turn off VLAN packet only */
-        if ((Options & XEMACPS_VLAN_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_VLAN_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_NVLANDISC_MASK);
         }
 
         /* Turn off FCS stripping on receive packets */
-        if ((Options & XEMACPS_FCS_STRIP_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_FCS_STRIP_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_FCSREM_MASK);
         }
 
         /* Turn off length/type field checking on receive packets
          */
         if ((Options & XEMACPS_LENTYPE_ERR_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_LENERRDSCRD_MASK);
         }
 
         /* Turn off flow control */
         if ((Options & XEMACPS_FLOW_CONTROL_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_PAUSEEN_MASK);
         }
 
         /* Turn off promiscuous frame filtering (all frames are
          * received) */
-        if ((Options & XEMACPS_PROMISC_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_PROMISC_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_COPYALLEN_MASK);
         }
 
         /* Disallow broadcast address filtering => broadcast
          * reception */
-        if ((Options & XEMACPS_BROADCAST_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_BROADCAST_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg |= XEMACPS_NWCFG_BCASTDI_MASK;
         }
 
         /* Disallow multicast address filtering */
-        if ((Options & XEMACPS_MULTICAST_OPTION) != 0x00000000U) {
+        if ((Options & XEMACPS_MULTICAST_OPTION) != XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_MCASTHASHEN_MASK);
         }
 
         /* Disable RX checksum offload */
         if ((Options & XEMACPS_RX_CHKSUM_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_RXCHKSUMEN_MASK);
         }
 
         /* Disable jumbo frames */
         if (((Options & XEMACPS_JUMBO_ENABLE_OPTION) !=
-             0x00000000U) &&
+             XEMACPS_NULL) &&
             (InstancePtr->Version > 2)) {
             RegNewNetCfg &= (u32)(~XEMACPS_NWCFG_JUMBO_MASK);
             Reg = XEmacPs_ReadReg(
@@ -811,7 +811,7 @@ LONG XEmacPs_ClearOptions(XEmacPs *InstancePtr, u32 Options)
         }
 
         if (((Options & XEMACPS_SGMII_ENABLE_OPTION) !=
-             0x00000000U) &&
+             XEMACPS_NULL) &&
             (InstancePtr->Version > 2)) {
             RegNewNetCfg &= (u32)(
                 ~(XEMACPS_NWCFG_SGMIIEN_MASK |
@@ -829,7 +829,7 @@ LONG XEmacPs_ClearOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Disable TX checksum offload */
         if ((Options & XEMACPS_TX_CHKSUM_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_DMACR_OFFSET);
@@ -841,7 +841,7 @@ LONG XEmacPs_ClearOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Disable transmitter */
         if ((Options & XEMACPS_TRANSMITTER_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_NWCTRL_OFFSET);
@@ -853,7 +853,7 @@ LONG XEmacPs_ClearOptions(XEmacPs *InstancePtr, u32 Options)
 
         /* Disable receiver */
         if ((Options & XEMACPS_RECEIVER_ENABLE_OPTION) !=
-            0x00000000U) {
+            XEMACPS_NULL) {
             Reg = XEmacPs_ReadReg(
                 InstancePtr->Config.BaseAddress,
                 XEMACPS_NWCTRL_OFFSET);
@@ -964,10 +964,10 @@ u16 XEmacPs_GetOperatingSpeed(XEmacPs *InstancePtr)
     Reg = XEmacPs_ReadReg(
         InstancePtr->Config.BaseAddress, XEMACPS_NWCFG_OFFSET);
 
-    if ((Reg & XEMACPS_NWCFG_1000_MASK) != 0x00000000U) {
+    if ((Reg & XEMACPS_NWCFG_1000_MASK) != XEMACPS_NULL) {
         Status = (u16)(1000);
     } else {
-        if ((Reg & XEMACPS_NWCFG_100_MASK) != 0x00000000U) {
+        if ((Reg & XEMACPS_NWCFG_100_MASK) != XEMACPS_NULL) {
             Status = (u16)(100);
         } else {
             Status = (u16)(10);
@@ -1160,7 +1160,7 @@ LONG XEmacPs_PhyRead(
                 XEMACPS_NWSR_OFFSET);
             IpReadTemp = Ipisr;
         } while ((IpReadTemp & XEMACPS_NWSR_MDIOIDLE_MASK) ==
-                 0x00000000U);
+                 XEMACPS_NULL);
 
         /* Read data */
         *PhyDataPtr = (u16)XEmacPs_ReadReg(
@@ -1253,7 +1253,7 @@ LONG XEmacPs_PhyWrite(
                 XEMACPS_NWSR_OFFSET);
             IpWriteTemp = Ipisr;
         } while ((IpWriteTemp & XEMACPS_NWSR_MDIOIDLE_MASK) ==
-                 0x00000000U);
+                 XEMACPS_NULL);
 
         Status = (LONG)(XST_SUCCESS);
     }

@@ -17,15 +17,17 @@
 #include <os/elf.h>
 #include <sys/syscall_number.h>
 #include <os/syscall.h>
+#include <plic.h>
+#include <emacps/xemacps_example.h>
+#include <net.h>
+#include <os/ioremap.h>
+#include <assert.h>
 
 extern void ret_from_exception();
 extern void __global_pointer$();
 extern void kp_ret_from_exception();
 task_info_t **tasks;
 long tasks_num;
-#include <plic.h>
-#include <emacps/xemacps_example.h>
-#include <net.h>
 
 void init_pcb_stack(
     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
@@ -47,51 +49,6 @@ void init_pcb_stack(
     if(pcb->type == USER_PROCESS || KERNEL_PROCESS){
         pt_regs->regs[3] = (reg_t)__global_pointer$;
     }
-    uint32_t slcr_bade_addr = 0, ethernet_addr = 0;
-
-    // get_prop_u32(_dtb, "/soc/slcr/reg", &slcr_bade_addr);
-    slcr_bade_addr = sbi_read_fdt(SLCR_BADE_ADDR);
-    printk("[slcr] phy: 0x%x\n\r", slcr_bade_addr);
-
-    // get_prop_u32(_dtb, "/soc/ethernet/reg", &ethernet_addr);
-    ethernet_addr = sbi_read_fdt(ETHERNET_ADDR);
-    printk("[ethernet] phy: 0x%x\n\r", ethernet_addr);
-
-    uint32_t plic_addr = 0;
-    // get_prop_u32(_dtb, "/soc/interrupt-controller/reg", &plic_addr);
-    plic_addr = sbi_read_fdt(PLIC_ADDR);
-    printk("[plic] plic: 0x%x\n\r", plic_addr);
-
-    uint32_t nr_irqs = sbi_read_fdt(NR_IRQS);
-    // get_prop_u32(_dtb, "/soc/interrupt-controller/riscv,ndev", &nr_irqs);
-    printk("[plic] nr_irqs: 0x%x\n\r", nr_irqs);
-
-    XPS_SYS_CTRL_BASEADDR =
-        (uintptr_t)ioremap((uint64_t)slcr_bade_addr, NORMAL_PAGE_SIZE);
-    xemacps_config.BaseAddress =
-        (uintptr_t)ioremap((uint64_t)ethernet_addr, NORMAL_PAGE_SIZE);
-    uintptr_t _plic_addr =
-        (uintptr_t)ioremap((uint64_t)plic_addr, 0x4000*NORMAL_PAGE_SIZE);
-    // XPS_SYS_CTRL_BASEADDR = slcr_bade_addr;
-    // xemacps_config.BaseAddress = ethernet_addr;
-    xemacps_config.DeviceId        = 0;
-    xemacps_config.IsCacheCoherent = 0;
-
-    printk(
-        "[slcr_bade_addr] phy:%x virt:%lx\n\r", slcr_bade_addr,
-        XPS_SYS_CTRL_BASEADDR);
-    printk(
-        "[ethernet_addr] phy:%x virt:%lx\n\r", ethernet_addr,
-        xemacps_config.BaseAddress);
-    printk("[plic_addr] phy:%x virt:%lx\n\r", plic_addr, _plic_addr);
-    plic_init(_plic_addr, nr_irqs);
-    
-    long status = EmacPsInit(&EmacPsInstance);
-    if (status != XST_SUCCESS) {
-        printk("Error: initialize ethernet driver failed!\n\r");
-        assert(0);
-    }
-
     else{
         regs_context_t *pr_regs = (regs_context_t *)((*current_running)->kernel_sp + sizeof(switchto_context_t));
         pt_regs->regs[3] = pr_regs->regs[3];
@@ -135,20 +92,21 @@ void init_pcb_stack(
 
 void init_pcb_stack_pointer(pcb_t *pcb){
     if(pcb->type == USER_PROCESS || pcb->type == KERNEL_PROCESS){
-        pcb->pgdir = allocPage() - PAGE_SIZE;
-        clear_pgdir(pcb->pgdir);
+        pcb->pgdir = (PTE *)(allocPage() - PAGE_SIZE);
+        clear_pgdir((uintptr_t)pcb->pgdir);
+        cancel_direct_map(0x50000000);
         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
         // user stack
         pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
-        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
+        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, (uintptr_t)pcb->pgdir, 1, 0);
         // kernel stack
-        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
+        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, (uintptr_t)pcb->pgdir, 0, 0);
     }
     else{
         pcb->pgdir = (*current_running)->pgdir;
         // user stack
         pcb->user_sp_useeable = (USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 1)) & ~((((uint64_t)1) << 7) - 1);
-        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 2), pcb->pgdir, 1, 0);
+        pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 2), (uintptr_t)pcb->pgdir, 1, 0);
         // kernel stack
         int current_running_kpage_num = 0;
         list_head *curr = (*current_running)->k_plist.next;
@@ -157,7 +115,7 @@ void init_pcb_stack_pointer(pcb_t *pcb){
             current_running_kpage_num++;
             curr = curr->next;
         }
-        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)(KERNEL_STACK_BIOS + (current_running_kpage_num + (*current_running)->thread_num + 1) * PAGE_SIZE), pcb->pgdir, 0, 0);
+        pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)(KERNEL_STACK_BIOS + (current_running_kpage_num + (*current_running)->thread_num + 1) * PAGE_SIZE), (uintptr_t)pcb->pgdir, 0, 0);
     }
     pcb->user_stack_base = pcb->user_sp_kseeonly - PAGE_SIZE + 1;
     pcb->user_sp_kseeonly &= ~((((uint64_t)1) << 7) - 1);
@@ -193,9 +151,6 @@ void init_pcb_block(pcb_t *pcb, task_type_t pcb_type){
     init_list_head(&pcb->list);
     pcb->wait_parent = NULL;
     pcb->owned_lock_num = 0;
- 
-    net_poll_mode = 1;
-    // xemacps_example_main();
     pcb->owned_mbox_num = 0;
     pcb->status = TASK_READY;
     pcb->cursor_x = 0;
@@ -280,53 +235,117 @@ static void init_syscall(void)
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
     syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
     syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
+
+    syscall[SYSCALL_NET_RECV]       = (long (*)())&k_net_recv;
+    syscall[SYSCALL_NET_SEND]       = (long (*)())&k_net_send;
+    syscall[SYSCALL_NET_IRQ_MODE]   = (long (*)())&k_net_irq_mode;
 }
 
-static void cancel_direct_map()
+void setup_network()
 {
-    uintptr_t pgdir = PGDIR_PA + 8 + KPA_OFFSET;
-    *(PTE *)pgdir = 0;
+    // network card
+    uint32_t slcr_bade_addr = 0, ethernet_addr = 0;
+
+    // get_prop_u32(_dtb, "/soc/slcr/reg", &slcr_bade_addr);
+    slcr_bade_addr = sbi_read_fdt(SLCR_BADE_ADDR);
+    printk("[slcr] phy: 0x%x\n\r", slcr_bade_addr);
+
+    // get_prop_u32(_dtb, "/soc/ethernet/reg", &ethernet_addr);
+    ethernet_addr = sbi_read_fdt(ETHERNET_ADDR);
+    printk("[ethernet] phy: 0x%x\n\r", ethernet_addr);
+
+    uint32_t plic_addr = 0;
+    // get_prop_u32(_dtb, "/soc/interrupt-controller/reg", &plic_addr);
+    plic_addr = sbi_read_fdt(PLIC_ADDR);
+    printk("[plic] plic: 0x%x\n\r", plic_addr);
+
+    uint32_t nr_irqs = sbi_read_fdt(NR_IRQS);
+    // get_prop_u32(_dtb, "/soc/interrupt-controller/riscv,ndev", &nr_irqs);
+    printk("[plic] nr_irqs: 0x%x\n\r", nr_irqs);
+
+    XPS_SYS_CTRL_BASEADDR =
+        (uintptr_t)ioremap((uint64_t)slcr_bade_addr, NORMAL_PAGE_SIZE);
+    xemacps_config.BaseAddress =
+    #ifdef QEMU
+        (uintptr_t)ioremap((uint64_t)ethernet_addr, 9 * NORMAL_PAGE_SIZE);
+        xemacps_config.BaseAddress = (uint64_t)xemacps_config.BaseAddress + 0x8000;
+    #endif
+    #ifndef QEMU
+        (uintptr_t)ioremap((uint64_t)ethernet_addr, NORMAL_PAGE_SIZE);
+    #endif
+    uintptr_t _plic_addr =
+        (uintptr_t)ioremap((uint64_t)plic_addr, 0x4000*NORMAL_PAGE_SIZE);
+    // XPS_SYS_CTRL_BASEADDR = slcr_bade_addr;
+    // xemacps_config.BaseAddress = ethernet_addr;
+    xemacps_config.DeviceId        = 0;
+    xemacps_config.IsCacheCoherent = 0;
+
+    printk(
+        "[slcr_bade_addr] phy:%x virt:%lx\n\r", slcr_bade_addr,
+        XPS_SYS_CTRL_BASEADDR);
+    printk(
+        "[ethernet_addr] phy:%x virt:%lx\n\r", ethernet_addr,
+        xemacps_config.BaseAddress);
+    printk("[plic_addr] phy:%x virt:%lx\n\r", plic_addr, _plic_addr);
+    plic_init(_plic_addr, nr_irqs);
+    
+    long status = EmacPsInit(&EmacPsInstance);
+    if (status != XST_SUCCESS) {
+        printk("Error: initialize ethernet driver failed!\n\r");
+        assert(0);
+    }
+
+    net_poll_mode = 1;
+    // xemacps_example_main();
+}
+
+void boot_first_core(uintptr_t _dtb){
+    smp_init(); // only done by master core
+    lock_kernel();
+    local_flush_tlb_all();
+    init_pcb(0);
+    current_running = &current_running_core_m;
+    printk("\n\r> [INIT] PCB initialization succeeded.\n\r");
+
+    // init interrupt (^_^)
+    init_exception();
+    printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
+
+    // init system call table (0_0)
+    init_syscall();
+    printk("> [INIT] System call initialized successfully.\n\r");
+
+    // init screen (QAQ)
+    init_screen();
+    printk("> [INIT] SCREEN initialization succeeded.\n\r");
+
+    // read CPU frequency
+    time_base = sbi_read_fdt(TIMEBASE);
+    printk("time_base:%d\n",time_base);
+
+    // network card
+    setup_network();
+
+    // wake up slave
+    wakeup_other_hart();
+
+    printk("> [READY] Master core ready to launch!\n\r");
+
 }
 
 // jump from bootloader.
 // The beginning of everything >_< ~~~~~~~~~~~~~~
-int main(int arg)
+int main(unsigned long mhartid, uintptr_t _dtb)
 {
     // find current core
 
     // init Process Control Block (-_-!)
-    if(arg == 0){
-        smp_init(); // only done by master core
-        lock_kernel();
-        local_flush_tlb_all();
-        init_pcb(0);
-        current_running = &current_running_core_m;
-        printk("\n\r> [INIT] PCB initialization succeeded.\n\r");
-
-        // init interrupt (^_^)
-        init_exception();
-        printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
-
-        // init system call table (0_0)
-        init_syscall();
-        printk("> [INIT] System call initialized successfully.\n\r");
-
-        // init screen (QAQ)
-        init_screen();
-        printk("> [INIT] SCREEN initialization succeeded.\n\r");
-
-        // read CPU frequency
-        time_base = sbi_read_fdt(TIMEBASE);
-        printk("time_base:%d\n",time_base);
-
-        // wake up slave
-        wakeup_other_hart();
-
-        printk("> [READY] Master core ready to launch!\n\r");
+    if(mhartid == 0){
+        boot_first_core(_dtb);
     }
     else{
         lock_kernel();
-        cancel_direct_map();
+        cancel_direct_map(0x50000000);
         init_pcb(1);
         current_running = &current_running_core_s;
         setup_exception();

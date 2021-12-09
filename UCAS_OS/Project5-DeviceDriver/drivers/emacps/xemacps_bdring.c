@@ -65,6 +65,7 @@
 #include "xemacps_hw.h"
 #include "xemacps_bd.h"
 #include "xemacps_bdring.h"
+#include "xemacps.h"
 
 /************************** Constant Definitions *****************************/
 
@@ -218,7 +219,7 @@ LONG XEmacPs_BdRingCreate(XEmacPs_BdRing * RingPtr, UINTPTR PhysAddr,
 	}
 
 	/* Make sure Alignment is a power of 2 */
-	if (((Alignment - 0x00000001U) & Alignment)!=0x00000000U) {
+	if (((Alignment - 0x00000001U) & Alignment)!=XEMACPS_NULL) {
 		return (LONG)(XST_INVALID_PARAM);
 	}
 
@@ -228,7 +229,7 @@ LONG XEmacPs_BdRingCreate(XEmacPs_BdRing * RingPtr, UINTPTR PhysAddr,
 	}
 
 	/* Is BdCount reasonable? */
-	if (BdCount == 0x00000000U) {
+	if (BdCount == XEMACPS_NULL) {
 		return (LONG)(XST_INVALID_PARAM);
 	}
 
@@ -306,7 +307,7 @@ LONG XEmacPs_BdRingClone(XEmacPs_BdRing * RingPtr, XEmacPs_Bd * SrcBdPtr,
 	UINTPTR CurBd;
 
 	/* Can't do this function if there isn't a ring */
-	if (RingPtr->AllCnt == 0x00000000U) {
+	if (RingPtr->AllCnt == XEMACPS_NULL) {
 		return (LONG)(XST_DMA_SG_NO_LIST);
 	}
 
@@ -658,7 +659,7 @@ u32 XEmacPs_BdRingFromHwTx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
 	BdPartialCount = 0U;
 
 	/* If no BDs in work group, then there's nothing to search */
-	if (RingPtr->HwCnt == 0x00000000U) {
+	if (RingPtr->HwCnt == XEMACPS_NULL) {
 		*BdSetPtr = NULL;
 		Status = 0U;
 		// printk("1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1\\n\r");
@@ -678,8 +679,8 @@ u32 XEmacPs_BdRingFromHwTx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
                 BdStr = XEmacPs_BdRead(CurBdPtr, XEMACPS_BD_STAT_OFFSET);
             }
 
-            if ((Sop == 0x00000000U) &&
-                ((BdStr & XEMACPS_TXBUF_USED_MASK) != 0x00000000U)) {
+            if ((Sop == XEMACPS_NULL) &&
+                ((BdStr & XEMACPS_TXBUF_USED_MASK) != XEMACPS_NULL)) {
                 Sop = 1U;
             }
             if (Sop == 0x00000001U) {
@@ -692,7 +693,7 @@ u32 XEmacPs_BdRingFromHwTx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
              * packet. Keep a count of these partial packet BDs.
              */
             if ((Sop == 0x00000001U) &&
-                ((BdStr & XEMACPS_TXBUF_LAST_MASK) != 0x00000000U)) {
+                ((BdStr & XEMACPS_TXBUF_LAST_MASK) != XEMACPS_NULL)) {
                 Sop            = 0U;
                 BdPartialCount = 0U;
             }
@@ -707,7 +708,7 @@ u32 XEmacPs_BdRingFromHwTx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
         /* If BdCount is non-zero then BDs were found to return. Set return
          * parameters, update pointers and counters, return success
          */
-        if (BdCount > 0x00000000U) {
+        if (BdCount > XEMACPS_NULL) {
             *BdSetPtr = RingPtr->HwHead;
             RingPtr->HwCnt -= BdCount;
             RingPtr->PostCnt += BdCount;
@@ -805,7 +806,7 @@ u32 XEmacPs_BdRingFromHwRx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
 	BdPartialCount = 0U;
 
 	/* If no BDs in work group, then there's nothing to search */
-	if (RingPtr->HwCnt == 0x00000000U) {
+	if (RingPtr->HwCnt == XEMACPS_NULL) {
 		*BdSetPtr = NULL;
 		Status = 0U;
 	} else {
@@ -831,7 +832,7 @@ u32 XEmacPs_BdRingFromHwRx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
          * it is clear, then there are more BDs for the current packet.
          * Keep a count of these partial packet BDs.
          */
-        if ((BdStr & XEMACPS_RXBUF_EOF_MASK) != 0x00000000U) {
+        if ((BdStr & XEMACPS_RXBUF_EOF_MASK) != XEMACPS_NULL) {
             BdPartialCount = 0U;
         } else {
             BdPartialCount++;
@@ -847,7 +848,7 @@ u32 XEmacPs_BdRingFromHwRx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
 	/* If BdCount is non-zero then BDs were found to return. Set return
 	 * parameters, update pointers and counters, return success
 	 */
-	if (BdCount > 0x00000000U) {
+	if (BdCount > XEMACPS_NULL) {
 		*BdSetPtr = RingPtr->HwHead;
 		RingPtr->HwCnt -= BdCount;
 		RingPtr->PostCnt += BdCount;
@@ -888,7 +889,7 @@ LONG XEmacPs_BdRingFree(XEmacPs_BdRing * RingPtr, u32 NumBd,
 {
     LONG Status;
     /* if no bds to process, simply return. */
-    if (0x00000000U == NumBd) {
+    if (XEMACPS_NULL == NumBd) {
         Status = (LONG)(XST_SUCCESS);
     } else {
         /* Make sure we are in sync with XEmacPs_BdRingFromHw() */
@@ -944,7 +945,7 @@ LONG XEmacPs_BdRingCheck(XEmacPs_BdRing * RingPtr, u8 Direction)
 	}
 
 	/* Is the list created */
-	if (RingPtr->AllCnt == 0x00000000U) {
+	if (RingPtr->AllCnt == XEMACPS_NULL) {
 		return (LONG)(XST_DMA_SG_NO_LIST);
 	}
 

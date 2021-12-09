@@ -25,6 +25,22 @@ typedef struct {
 } shm_page_t;
 shm_page_t spage[16];
 
+void cancel_direct_map(uint64_t va)
+{
+    uint64_t pgdir = PGDIR_KVA;
+    
+    uint64_t vpn2 = 
+        va >> (NORMAL_PAGE_SHIFT + PPN_BITS + PPN_BITS);
+    uint64_t vpn1 = (vpn2 << PPN_BITS) ^
+                    (va >> (NORMAL_PAGE_SHIFT + PPN_BITS));
+    PTE *fst_pg = (PTE *)pgdir + vpn2;
+    if(*fst_pg){
+        PTE *snd_pte = (PTE *)pa2kva(get_pa(*fst_pg)) + vpn1;
+        *fst_pg = 0;
+        *snd_pte = 0;
+    }
+}
+
 void swap_page_with_sd(uint64_t va, int op, int type){
     switch (op)
     {
@@ -271,7 +287,7 @@ uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir)
     ptable[0] = (PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0];
     if (((*ptable[0]) & _PAGE_VALID) == 0)
         return 0;
-    return ptable[0];
+    return (uintptr_t)ptable[0];
 }
 
 uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir)
@@ -286,7 +302,7 @@ uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir)
     if (((*ptable[1]) & _PAGE_VALID) == 0)
         return 0;
     ptable[0] = (PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0];
-    return ptable[0];
+    return (uintptr_t)ptable[0];
 }
 
 void swap_page_helper(int swap_page_num){

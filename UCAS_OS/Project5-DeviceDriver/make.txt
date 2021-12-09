@@ -1,48 +1,15 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/swap_page.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/swap_page.elf
 echo "" > user_programs.c
 echo "" > user_programs.h
-for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf; do ./elf2char --header-only $prog >> user_programs.h; done
-for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf; do ./elf2char $prog >> user_programs.c; done
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf; do ./elf2char --header-only $prog >> user_programs.h; done
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf; do ./elf2char $prog >> user_programs.c; done
 ./generateMapping user_programs
 mv user_programs.h include/
 mv user_programs.c kernel/
-riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/start.S ./arch/riscv/sbi/common.c ./arch/riscv/kernel/smp.S ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c  ./kernel/locking/lock.c  ./kernel/comm/comm.c ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/sched/smp.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c  ./kernel/user_programs.c -Ttext=0xffffffc050400000
-In file included from include/os/lock.h:32,
-                 from ./init/main.c:8:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/start.S ./arch/riscv/sbi/common.c ./arch/riscv/kernel/smp.S ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c ./drivers/net.c ./drivers/plic.c  ./drivers/emacps/xemacps_bdring.c ./drivers/emacps/xemacps_control.c ./drivers/emacps/xemacps_example_util.c ./drivers/emacps/xemacps_g.c ./drivers/emacps/xemacps_hw.c ./drivers/emacps/xemacps_intr.c ./drivers/emacps/xemacps_main.c  ./drivers/emacps/xemacps.c ./kernel/locking/lock.c  ./kernel/comm/comm.c ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/sched/smp.c ./kernel/mm/mm.c ./kernel/mm/ioremap.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c  ./kernel/user_programs.c -Ttext=0xffffffc050400000
 ./init/main.c: In function 'init_pcb_stack_pointer':
-./init/main.c:90:20: warning: assignment to 'PTE *' {aka 'long unsigned int *'} from 'ptr_t' {aka 'long unsigned int'} makes pointer from integer without a cast [-Wint-conversion]
-   90 |         pcb->pgdir = allocPage() - PAGE_SIZE;
-      |                    ^
-./init/main.c:91:24: warning: passing argument 1 of 'clear_pgdir' makes integer from pointer without a cast [-Wint-conversion]
-   91 |         clear_pgdir(pcb->pgdir);
-      |                     ~~~^~~~~~~
-      |                        |
-      |                        PTE * {aka long unsigned int *}
-In file included from include/os/sched.h:39,
-                 from include/os/irq.h:31,
-                 from ./init/main.c:2:
-arch/riscv/include/pgtable.h:148:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-  148 | static inline void clear_pgdir(uintptr_t pgdir_addr)
-      |                                ~~~~~~~~~~^~~~~~~~~~
-./init/main.c:92:16: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
-   92 |         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+./init/main.c:98:16: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+   98 |         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
       |                ^~~~~~~~~~~~~~~~~~
       |                |
       |                char *
@@ -53,8 +20,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./init/main.c:92:36: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-   92 |         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+./init/main.c:98:36: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+   98 |         memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
       |                                    ^~~~~~~~~~~~~~~~~~~~~~~~
       |                                    |
       |                                    char *
@@ -65,53 +32,9 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./init/main.c:95:92: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-   95 |         pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, pcb->pgdir, 1, 0);
-      |                                                                                         ~~~^~~~~~~
-      |                                                                                            |
-      |                                                                                            PTE * {aka long unsigned int *}
-In file included from include/os/sched.h:36,
-                 from include/os/irq.h:31,
-                 from ./init/main.c:2:
-include/os/mm.h:69:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   69 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
-      |                                           ~~~~~~~~~~^~~~~
-./init/main.c:97:87: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-   97 |         pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)KERNEL_STACK_BIOS, pcb->pgdir, 0, 0);
-      |                                                                                    ~~~^~~~~~~
-      |                                                                                       |
-      |                                                                                       PTE * {aka long unsigned int *}
-In file included from include/os/sched.h:36,
-                 from include/os/irq.h:31,
-                 from ./init/main.c:2:
-include/os/mm.h:69:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   69 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
-      |                                           ~~~~~~~~~~^~~~~
-./init/main.c:103:143: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  103 |         pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS - PAGE_SIZE * ((*current_running)->thread_num + 2), pcb->pgdir, 1, 0);
-      |                                                                                                                                            ~~~^~~~~~~
-      |                                                                                                                                               |
-      |                                                                                                                                               PTE * {aka long unsigned int *}
-In file included from include/os/sched.h:36,
-                 from include/os/irq.h:31,
-                 from ./init/main.c:2:
-include/os/mm.h:69:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   69 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
-      |                                           ~~~~~~~~~~^~~~~
-./init/main.c:112:168: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  112 |         pcb->kernel_sp = (uint64_t)alloc_page_helper((uintptr_t)(KERNEL_STACK_BIOS + (current_running_kpage_num + (*current_running)->thread_num + 1) * PAGE_SIZE), pcb->pgdir, 0, 0);
-      |                                                                                                                                                                     ~~~^~~~~~~
-      |                                                                                                                                                                        |
-      |                                                                                                                                                                        PTE * {aka long unsigned int *}
-In file included from include/os/sched.h:36,
-                 from include/os/irq.h:31,
-                 from ./init/main.c:2:
-include/os/mm.h:69:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   69 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
-      |                                           ~~~~~~~~~~^~~~~
 ./init/main.c: In function 'init_pcb':
-./init/main.c:170:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  170 |         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
+./init/main.c:176:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  176 |         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
       |                                                                                                    ~~~~~~^~~~~~
       |                                                                                                          |
       |                                                                                                          PTE * {aka long unsigned int *}
@@ -121,8 +44,8 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
-./init/main.c:183:119: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  183 |         ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_m.pgdir,alloc_page_helper_user);
+./init/main.c:189:119: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  189 |         ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_m.pgdir,alloc_page_helper_user);
       |                                                                                                           ~~~~~~~~~~~~^~~~~~
       |                                                                                                                       |
       |                                                                                                                       PTE * {aka long unsigned int *}
@@ -132,8 +55,8 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
-./init/main.c:189:113: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  189 |         start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_s.pgdir,alloc_page_helper_user);
+./init/main.c:195:113: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  195 |         start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_s.pgdir,alloc_page_helper_user);
       |                                                                                                     ~~~~~~~~~~~~^~~~~~
       |                                                                                                                 |
       |                                                                                                                 PTE * {aka long unsigned int *}
@@ -143,107 +66,196 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
+./init/main.c: In function 'boot_first_core':
+./init/main.c:307:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  307 |     current_running = &current_running_core_m;
+      |                     ^
 ./init/main.c: In function 'main':
-./init/main.c:252:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  252 |         current_running = &current_running_core_m;
+./init/main.c:350:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  350 |         current_running = &current_running_core_s;
       |                         ^
-./init/main.c:280:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  280 |         current_running = &current_running_core_s;
-      |                         ^
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./kernel/irq/irq.c:11:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/irq/irq.c: In function 'interrupt_helper':
-./kernel/irq/irq.c:35:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-   35 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+./kernel/irq/irq.c:40:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   40 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
 ./kernel/irq/irq.c: In function 'handle_inst_pagefault':
-./kernel/irq/irq.c:71:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-   71 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+./kernel/irq/irq.c:121:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  121 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
       |                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                          |
       |                                                          PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:36,
                  from include/os/irq.h:31,
                  from ./kernel/irq/irq.c:1:
-include/os/mm.h:72:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   72 | uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir);
+include/os/mm.h:73:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   73 | uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                           ~~~~~~~~~~^~~~~
 ./kernel/irq/irq.c: In function 'handle_load_store_pagefault':
-./kernel/irq/irq.c:89:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-   89 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
+./kernel/irq/irq.c:139:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  139 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
       |                                         ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                           |
       |                                                           PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:36,
                  from include/os/irq.h:31,
                  from ./kernel/irq/irq.c:1:
-include/os/mm.h:73:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   73 | uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir);
+include/os/mm.h:74:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   74 | uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
-./kernel/irq/irq.c:91:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
-   91 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
+./kernel/irq/irq.c:141:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
+  141 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
       |                                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                          |
       |                                                                          PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:36,
                  from include/os/irq.h:31,
                  from ./kernel/irq/irq.c:1:
-include/os/mm.h:70:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   70 | uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
+include/os/mm.h:71:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   71 | uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
-In file included from include/os/lock.h:32,
-                 from ./drivers/screen.c:5:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-In file included from include/os/lock.h:32,
-                 from ./kernel/locking/lock.c:1:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
+./drivers/net.c: In function 'k_net_recv':
+./drivers/net.c:29:44: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   29 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+      |                                            ^~~~~~~~~~
+      |                                            |
+      |                                            char (*)[1536]
+In file included from drivers/emacps/xil_utils.h:5,
+                 from drivers/emacps/xemacps_hw.h:72,
+                 from drivers/emacps/xemacps.h:348,
+                 from drivers/emacps/xemacps_example.h:66,
+                 from ./drivers/net.c:4:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./drivers/net.c:29:37: warning: passing argument 2 of 'EmacPsRecv' makes pointer from integer without a cast [-Wint-conversion]
+   29 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+      |                                     ^~~~~~~~~~~~~~~~~~
+      |                                     |
+      |                                     uintptr_t {aka long unsigned int}
+In file included from ./drivers/net.c:4:
+drivers/emacps/xemacps_example.h:122:60: note: expected 'char (*)[1536]' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
+  122 | LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
+      |                                             ~~~~~~~~~~~~~~~^~~~~~~
+./drivers/net.c:33:20: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   33 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+      |                    ^~~~
+      |                    |
+      |                    uintptr_t {aka long unsigned int}
+In file included from ./drivers/net.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./drivers/net.c:33:37: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   33 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+      |                          ~~~~~~~~~~~^~~
+      |                                     |
+      |                                     char (*)[1536]
+In file included from ./drivers/net.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char (*)[1536]'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./drivers/net.c: In function 'k_net_send':
+./drivers/net.c:49:12: warning: passing argument 1 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   49 |     memcpy(&tx_buffer, addr, length);
+      |            ^~~~~~~~~~
+      |            |
+      |            char (*)[1536]
+In file included from ./drivers/net.c:2:
+include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char (*)[1536]'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |             ~~~~~~~~~^~~~
+./drivers/net.c:49:24: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   49 |     memcpy(&tx_buffer, addr, length);
+      |                        ^~~~
+      |                        |
+      |                        uintptr_t {aka long unsigned int}
+In file included from ./drivers/net.c:2:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./drivers/net.c:51:40: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   51 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+      |                                        ^~~~~~~~~~
+      |                                        |
+      |                                        char (*)[1536]
+In file included from drivers/emacps/xil_utils.h:5,
+                 from drivers/emacps/xemacps_hw.h:72,
+                 from drivers/emacps/xemacps.h:348,
+                 from drivers/emacps/xemacps_example.h:66,
+                 from ./drivers/net.c:4:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./drivers/net.c:51:33: warning: passing argument 2 of 'EmacPsSend' makes pointer from integer without a cast [-Wint-conversion]
+   51 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+      |                                 ^~~~~~~~~~~~~~~~~~
+      |                                 |
+      |                                 uintptr_t {aka long unsigned int}
+In file included from ./drivers/net.c:4:
+drivers/emacps/xemacps_example.h:120:60: note: expected 'char (*)[1536]' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
+  120 | LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t length);
+      |                                             ~~~~~~~~~~~~~~~^~~~~~~
+./drivers/plic.c:81:13: warning: 'plic_irq_mask' defined but not used [-Wunused-function]
+   81 | static void plic_irq_mask(int hwirq)
+      |             ^~~~~~~~~~~~~
+./drivers/emacps/xemacps_bdring.c: In function 'XEmacPs_BdRingClone':
+./drivers/emacps/xemacps_bdring.c:333:31: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+  333 |         memcpy((void *)CurBd, SrcBdPtr, sizeof(XEmacPs_Bd));
+      |                               ^~~~~~~~
+      |                               |
+      |                               u32 (*)[2] {aka unsigned int (*)[2]}
+In file included from ./drivers/emacps/xemacps_bd.h:85,
+                 from ./drivers/emacps/xemacps_bdring.c:66:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'u32 (*)[2]' {aka 'unsigned int (*)[2]'}
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./drivers/emacps/xemacps_example_util.c: In function 'EmacPsUtilFrameVerify':
+./drivers/emacps/xemacps_example_util.c:208:6: warning: unused variable 'Index' [-Wunused-variable]
+  208 |  u32 Index;
+      |      ^~~~~
+./drivers/emacps/xemacps_example_util.c:204:8: warning: unused variable 'CheckPtr' [-Wunused-variable]
+  204 |  char *CheckPtr = (char *) CheckFrame;
+      |        ^~~~~~~~
+./drivers/emacps/xemacps_main.c: In function 'EmacPsResetTxBD':
+./drivers/emacps/xemacps_main.c:714:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  714 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
+      |                                                    ^~~~~~~~~~~~
+      |                                                    |
+      |                                                    u8 * {aka unsigned char *}
+In file included from ./drivers/emacps/xil_utils.h:5,
+                 from ./drivers/emacps/xemacps_hw.h:72,
+                 from ./drivers/emacps/xemacps.h:348,
+                 from ./drivers/emacps/xemacps_example.h:66,
+                 from ./drivers/emacps/xemacps_main.c:116:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'u8 *' {aka 'unsigned char *'}
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./drivers/emacps/xemacps_main.c: In function 'EmacPsResetRxBD':
+./drivers/emacps/xemacps_main.c:759:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  759 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
+      |                                                    ^~~~~~~~~~~~
+      |                                                    |
+      |                                                    u8 * {aka unsigned char *}
+In file included from ./drivers/emacps/xil_utils.h:5,
+                 from ./drivers/emacps/xemacps_hw.h:72,
+                 from ./drivers/emacps/xemacps.h:348,
+                 from ./drivers/emacps/xemacps_example.h:66,
+                 from ./drivers/emacps/xemacps_main.c:116:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'u8 *' {aka 'unsigned char *'}
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./drivers/emacps/xemacps_main.c: In function 'EmacPsDmaSingleFrameIntrExample':
+./drivers/emacps/xemacps_main.c:846:10: warning: unused variable 'Status' [-Wunused-variable]
+  846 |     LONG Status;
+      |          ^~~~~~
+./drivers/emacps/xemacps_main.c: In function 'XEmacPsSendHandler':
+./drivers/emacps/xemacps_main.c:1083:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1083 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+      |              ^~~~~~~~~~~~~~~~~
+./drivers/emacps/xemacps_main.c: In function 'XEmacPsRecvHandler':
+./drivers/emacps/xemacps_main.c:1123:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1123 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+      |              ^~~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
    13 |     return atomic_swap_d(LOCKED,&lock->flag);
@@ -259,25 +271,6 @@ arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned in
 ./kernel/locking/lock.c:61:1: warning: control reaches end of non-void function [-Wreturn-type]
    61 | }
       | ^
-In file included from include/os/lock.h:32,
-                 from include/os/comm.h:5,
-                 from ./kernel/comm/comm.c:1:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
 ./kernel/comm/comm.c:358:37: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
   358 |         memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
@@ -362,47 +355,28 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
 ./kernel/comm/comm.c:151:1: warning: control reaches end of non-void function [-Wreturn-type]
   151 | }
       | ^
-In file included from include/os/lock.h:32,
-                 from ./kernel/sched/sched.c:2:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/sched.h:39,
                  from ./kernel/sched/sched.c:3:
-./kernel/sched/sched.c: At top level:
-arch/riscv/include/pgtable.h:88:20: warning: initialization of 'PTE *' {aka 'long unsigned int *'} from 'long unsigned int' makes pointer from integer without a cast [-Wint-conversion]
-   88 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
+arch/riscv/include/pgtable.h:95:20: warning: initialization of 'PTE *' {aka 'long unsigned int *'} from 'long unsigned int' makes pointer from integer without a cast [-Wint-conversion]
+   95 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
       |                    ^
 ./kernel/sched/sched.c:37:14: note: in expansion of macro 'KPA_OFFSET'
    37 |     .pgdir = KPA_OFFSET + PGDIR_PA,
       |              ^~~~~~~~~~
-arch/riscv/include/pgtable.h:88:20: note: (near initialization for 'pid0_pcb_core_m.pgdir')
-   88 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
+arch/riscv/include/pgtable.h:95:20: note: (near initialization for 'pid0_pcb_core_m.pgdir')
+   95 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
       |                    ^
 ./kernel/sched/sched.c:37:14: note: in expansion of macro 'KPA_OFFSET'
    37 |     .pgdir = KPA_OFFSET + PGDIR_PA,
       |              ^~~~~~~~~~
-arch/riscv/include/pgtable.h:88:20: warning: initialization of 'PTE *' {aka 'long unsigned int *'} from 'long unsigned int' makes pointer from integer without a cast [-Wint-conversion]
-   88 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
+arch/riscv/include/pgtable.h:95:20: warning: initialization of 'PTE *' {aka 'long unsigned int *'} from 'long unsigned int' makes pointer from integer without a cast [-Wint-conversion]
+   95 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
       |                    ^
 ./kernel/sched/sched.c:43:14: note: in expansion of macro 'KPA_OFFSET'
    43 |     .pgdir = KPA_OFFSET + PGDIR_PA,
       |              ^~~~~~~~~~
-arch/riscv/include/pgtable.h:88:20: note: (near initialization for 'pid0_pcb_core_s.pgdir')
-   88 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
+arch/riscv/include/pgtable.h:95:20: note: (near initialization for 'pid0_pcb_core_s.pgdir')
+   95 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
       |                    ^
 ./kernel/sched/sched.c:43:14: note: in expansion of macro 'KPA_OFFSET'
    43 |     .pgdir = KPA_OFFSET + PGDIR_PA,
@@ -415,8 +389,8 @@ arch/riscv/include/pgtable.h:88:20: note: (near initialization for 'pid0_pcb_cor
       |                                                                                           PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/sched/sched.c:3:
-arch/riscv/include/pgtable.h:93:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   93 | static inline uintptr_t kva2pa(uintptr_t kva)
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./kernel/sched/sched.c: In function 'k_mthread_create':
 ./kernel/sched/sched.c:275:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
@@ -434,8 +408,8 @@ arch/riscv/include/pgtable.h:93:42: note: expected 'uintptr_t' {aka 'long unsign
       |                                                         |
       |                                                         void (*)(void *)
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:205:49: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'void (*)(void *)'
-  205 |     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
+include/os/sched.h:209:49: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'void (*)(void *)'
+  209 |     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
       |                                           ~~~~~~^~~~~~~~~~~
 ./kernel/sched/sched.c:278:80: warning: passing argument 6 of 'init_pcb_stack' makes pointer from integer without a cast [-Wint-conversion]
   278 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
@@ -443,8 +417,8 @@ include/os/sched.h:205:49: note: expected 'ptr_t' {aka 'long unsigned int'} but 
       |                                                                                |
       |                                                                                reg_t {aka long unsigned int}
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:206:33: note: expected 'char **' but argument is of type 'reg_t' {aka 'long unsigned int'}
-  206 |     pcb_t *pcb, int argc, char *argv[]);
+include/os/sched.h:210:33: note: expected 'char **' but argument is of type 'reg_t' {aka 'long unsigned int'}
+  210 |     pcb_t *pcb, int argc, char *argv[]);
       |                           ~~~~~~^~~~~~
 ./kernel/sched/sched.c: In function 'k_spawn':
 ./kernel/sched/sched.c:393:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
@@ -491,161 +465,106 @@ include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} bu
       |                                                                            |
       |                                                                            char *
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:206:33: note: expected 'char **' but argument is of type 'char *'
-  206 |     pcb_t *pcb, int argc, char *argv[]);
+include/os/sched.h:210:33: note: expected 'char **' but argument is of type 'char *'
+  210 |     pcb_t *pcb, int argc, char *argv[]);
       |                           ~~~~~~^~~~~~
-In file included from ./kernel/sched/smp.c:2:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./kernel/mm/mm.c:7:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/mm/mm.c: In function 'swap_page_with_sd':
-./kernel/mm/mm.c:33:34: warning: passing argument 1 of 'get_pa' makes integer from pointer without a cast [-Wint-conversion]
-   33 |         uintptr_t paddr = get_pa(kva);
+./kernel/mm/mm.c:49:34: warning: passing argument 1 of 'get_pa' makes integer from pointer without a cast [-Wint-conversion]
+   49 |         uintptr_t paddr = get_pa(kva);
       |                                  ^~~
       |                                  |
       |                                  PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:105:35: note: expected 'PTE' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-  105 | static inline uint64_t get_pa(PTE entry)
+arch/riscv/include/pgtable.h:112:35: note: expected 'PTE' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  112 | static inline uint64_t get_pa(PTE entry)
       |                               ~~~~^~~~~
-./kernel/mm/mm.c:44:69: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-   44 |         uintptr_t kva_new = alloc_page_helper(va, (*current_running)->pgdir, 1, 1);
+./kernel/mm/mm.c:60:69: warning: passing argument 2 of 'alloc_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+   60 |         uintptr_t kva_new = alloc_page_helper(va, (*current_running)->pgdir, 1, 1);
       |                                                   ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                     |
       |                                                                     PTE * {aka long unsigned int *}
 In file included from ./kernel/mm/mm.c:2:
-include/os/mm.h:69:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   69 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
+include/os/mm.h:70:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+   70 | uintptr_t alloc_page_helper(uintptr_t va, uintptr_t pgdir, int mode, int ret_mode);
       |                                           ~~~~~~~~~~^~~~~
-./kernel/mm/mm.c:47:23: warning: passing argument 1 of 'set_attribute' makes pointer from integer without a cast [-Wint-conversion]
-   47 |         set_attribute(kva_new, _PAGE_ACCESSED | (type ? _PAGE_DIRTY : 0));
+./kernel/mm/mm.c:63:23: warning: passing argument 1 of 'set_attribute' makes pointer from integer without a cast [-Wint-conversion]
+   63 |         set_attribute(kva_new, _PAGE_ACCESSED | (type ? _PAGE_DIRTY : 0));
       |                       ^~~~~~~
       |                       |
       |                       uintptr_t {aka long unsigned int}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:142:39: note: expected 'PTE *' {aka 'long unsigned int *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
-  142 | static inline void set_attribute(PTE *entry, uint64_t bits)
+arch/riscv/include/pgtable.h:149:39: note: expected 'PTE *' {aka 'long unsigned int *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
+  149 | static inline void set_attribute(PTE *entry, uint64_t bits)
       |                                  ~~~~~^~~~~
 ./kernel/mm/mm.c: In function 'shm_page_get':
-./kernel/mm/mm.c:94:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-   94 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+./kernel/mm/mm.c:110:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  110 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
-./kernel/mm/mm.c:104:76: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
-  104 |                 if (check_page_helper(begin_addr, pa2kva((*current_running)->pgdir)) == 0)
+./kernel/mm/mm.c:120:76: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+  120 |                 if (check_page_helper(begin_addr, pa2kva((*current_running)->pgdir)) == 0)
       |                                                          ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                            |
       |                                                                            PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:99:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   99 | static inline uintptr_t pa2kva(uintptr_t pa)
+arch/riscv/include/pgtable.h:106:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  106 | static inline uintptr_t pa2kva(uintptr_t pa)
       |                                ~~~~~~~~~~^~
-./kernel/mm/mm.c:107:81: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
-  107 |             setup_shm_page(begin_addr, spage[i].paddr, pa2kva((*current_running)->pgdir));
+./kernel/mm/mm.c:123:81: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+  123 |             setup_shm_page(begin_addr, spage[i].paddr, pa2kva((*current_running)->pgdir));
       |                                                               ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                                 |
       |                                                                                 PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:99:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   99 | static inline uintptr_t pa2kva(uintptr_t pa)
+arch/riscv/include/pgtable.h:106:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  106 | static inline uintptr_t pa2kva(uintptr_t pa)
       |                                ~~~~~~~~~~^~
-./kernel/mm/mm.c:115:75: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
-  115 |         if ((kva = alloc_page_helper(begin_addr, pa2kva((*current_running)->pgdir),1 ,0)) != 0)
+./kernel/mm/mm.c:131:75: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+  131 |         if ((kva = alloc_page_helper(begin_addr, pa2kva((*current_running)->pgdir),1 ,0)) != 0)
       |                                                         ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                           |
       |                                                                           PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:99:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   99 | static inline uintptr_t pa2kva(uintptr_t pa)
+arch/riscv/include/pgtable.h:106:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  106 | static inline uintptr_t pa2kva(uintptr_t pa)
       |                                ~~~~~~~~~~^~
 ./kernel/mm/mm.c: In function 'shm_page_dt':
-./kernel/mm/mm.c:134:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  134 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+./kernel/mm/mm.c:150:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  150 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
-./kernel/mm/mm.c:146:65: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
-  146 |     free_page_helper(vaddr, (uintptr_t)pa2kva((*current_running)->pgdir));
+./kernel/mm/mm.c:162:65: warning: passing argument 1 of 'pa2kva' makes integer from pointer without a cast [-Wint-conversion]
+  162 |     free_page_helper(vaddr, (uintptr_t)pa2kva((*current_running)->pgdir));
       |                                               ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                 |
       |                                                                 PTE * {aka long unsigned int *}
 In file included from include/os/sched.h:39,
                  from ./kernel/mm/mm.c:3:
-arch/riscv/include/pgtable.h:99:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
-   99 | static inline uintptr_t pa2kva(uintptr_t pa)
+arch/riscv/include/pgtable.h:106:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
+  106 | static inline uintptr_t pa2kva(uintptr_t pa)
       |                                ~~~~~~~~~~^~
-./kernel/mm/mm.c: In function 'check_page_helper':
-./kernel/mm/mm.c:274:18: warning: returning 'PTE *' {aka 'long unsigned int *'} from a function with return type 'uintptr_t' {aka 'long unsigned int'} makes integer from pointer without a cast [-Wint-conversion]
-  274 |     return ptable[0];
-      |            ~~~~~~^~~
-./kernel/mm/mm.c: In function 'search_last_page_helper':
-./kernel/mm/mm.c:289:18: warning: returning 'PTE *' {aka 'long unsigned int *'} from a function with return type 'uintptr_t' {aka 'long unsigned int'} makes integer from pointer without a cast [-Wint-conversion]
-  289 |     return ptable[0];
-      |            ~~~~~~^~~
 ./kernel/mm/mm.c: In function 'allocPage':
-./kernel/mm/mm.c:73:1: warning: control reaches end of non-void function [-Wreturn-type]
-   73 | }
+./kernel/mm/mm.c:89:1: warning: control reaches end of non-void function [-Wreturn-type]
+   89 | }
       | ^
 ./kernel/mm/mm.c: In function 'free_page_helper':
-./kernel/mm/mm.c:258:1: warning: control reaches end of non-void function [-Wreturn-type]
-  258 | }
+./kernel/mm/mm.c:274:1: warning: control reaches end of non-void function [-Wreturn-type]
+  274 | }
       | ^
-./kernel/mm/mm.c:255:44: warning: 'ptable[1]' is used uninitialized in this function [-Wuninitialized]
-  255 |     PTE *ptable[] = {(PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0],(PTE *)pa2kva((*ptable[2] >> 10) << 12) + vpn[1],(PTE *)pgdir + vpn[2]};
+./kernel/mm/mm.c:271:44: warning: 'ptable[1]' is used uninitialized in this function [-Wuninitialized]
+  271 |     PTE *ptable[] = {(PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0],(PTE *)pa2kva((*ptable[2] >> 10) << 12) + vpn[1],(PTE *)pgdir + vpn[2]};
       |                                      ~~~~~~^~~
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./libs/printk.c:47:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
+./kernel/mm/ioremap.c: In function 'ioremap':
+./kernel/mm/ioremap.c:14:9: warning: unused variable 'flag' [-Wunused-variable]
+   14 |     int flag = 0;
+      |         ^~~~
+./libs/printk.c: In function 'port_write_wrapper':
+./libs/printk.c:251:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  251 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
+      |                     ^
 echo "" > payload.c
 echo "" > payload.h
 ./elf2char --header-only main > payload.h
@@ -665,18 +584,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0x8af2c		memsz 0x8af40
-		writing 0x8af2c bytes
-		padding up to 0x8b200
+		filesz 0xcc89c		memsz 0xcc8b0
+		writing 0xcc89c bytes
+		padding up to 0xccc00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 1112 sector(s)
+kernel_size: 1637 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.00253958 s, 13.1 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000345541 s, 96.3 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt
@@ -685,3 +604,5 @@ riscv64-unknown-linux-gnu-objdump -d test/consensus.elf > consensus.txt
 riscv64-unknown-linux-gnu-objdump -d test/lock.elf > lock.txt
 riscv64-unknown-linux-gnu-objdump -d test/mailbox.elf > mailbox.txt
 riscv64-unknown-linux-gnu-objdump -d test/swap_page.elf > swap_page.txt
+riscv64-unknown-linux-gnu-objdump -d test/send.elf > send.txt
+riscv64-unknown-linux-gnu-objdump -d test/recv.elf > recv.txt

@@ -149,3 +149,15 @@ void sys_sleep(long time)
     // TODO:
     invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE,IGNORE);
 }
+
+long sys_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength){
+    return invoke_syscall(SYSCALL_NET_RECV,addr,length,num_packet,frLength);
+}
+
+void sys_net_send(uintptr_t addr, size_t length){
+    invoke_syscall(SYSCALL_NET_SEND,addr,length,IGNORE,IGNORE);
+}
+
+void sys_net_irq_mode(int mode){
+    invoke_syscall(SYSCALL_NET_IRQ_MODE,mode,IGNORE,IGNORE,IGNORE);
+}

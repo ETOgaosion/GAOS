@@ -1,6 +1,8 @@
 #ifndef ARCH_IO_H
 #define ARCH_IO_H
 
+#include <os/stdio.h>
+
 #define RISCV_FENCE(p, s) \
         __asm__ __volatile__ ("fence " #p "," #s : : : "memory")
 
