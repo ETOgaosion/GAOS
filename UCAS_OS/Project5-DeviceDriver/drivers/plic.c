@@ -140,7 +140,7 @@ int plic_init(uintptr_t plic_regs_addr, u32 nr_irqs)
 
     handler = &plic_handlers;
     if (handler->present) {
-        printk("handler already present.\n");
+        printk("handler already present.\n\r");
         threshold = 0xffffffff;
         goto done;
     }

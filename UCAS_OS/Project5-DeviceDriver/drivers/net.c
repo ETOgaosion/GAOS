@@ -46,6 +46,7 @@ void k_net_send(uintptr_t addr, size_t length)
     // send all packet
     // maybe you need to call drivers' send function multiple times ?
     // Copy to `buffer'
+    printk("start send\n\r");
     memcpy(&tx_buffer, addr, length);
     // send packet
     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);

@@ -4,7 +4,7 @@
 #define PROJECT_4
 
 #define USE_CLOCK_INT
-#define QEMU
+// #define QEMU
 // #define INIT_WITH_PRIORITY
 // #define SCHED_WITH_PRIORITY
 // #define PRINT_PRIORITY

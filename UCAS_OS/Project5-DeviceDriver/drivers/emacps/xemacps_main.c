@@ -485,7 +485,7 @@ LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t lengt
 		if (!(Reg & XEMACPS_NWCTRL_TXEN_MASK)) {
 			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg | (u32)XEMACPS_NWCTRL_TXEN_MASK);
 		}
-        EmacPsInstancePtr->Options &= ~(u32)XEMACPS_TRANSMITTER_ENABLE_OPTION;
+        EmacPsInstancePtr->Options |= (u32)XEMACPS_TRANSMITTER_ENABLE_OPTION;
 	}
 
 	// start transmit
@@ -509,7 +509,9 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
         while (TRUE)
         {
             txsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);
-            break;
+            if (txsr & XEMACPS_TXSR_TXCOMPL_MASK){
+                break;
+            }
         }
         #endif
     //}
@@ -528,6 +530,7 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
     // TODO:
 
     u32 numBDs = XEmacPs_BdRingFromHwTx(&(XEmacPs_GetTxRing(EmacPsInstancePtr)), 32, &Bd1Ptr);
+
     if (numBDs == 0) {
         EmacPsUtilErrorTrap("[ERROR] > No TxBDs for post processing");
         return XST_FAILURE;
@@ -546,11 +549,10 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
     Status = XEmacPs_BdRingFree(&(XEmacPs_GetTxRing(EmacPsInstancePtr)), 1, Bd1Ptr);
 
     if (Status != XST_SUCCESS) {
-        EmacPsUtilErrorTrap("[ERROR] > Error freeing up TxBDs");
+        EmacPsUtilErrorTrap("[ERROR] > Error in freeing up TxBDs");
         return XST_FAILURE;      
     }
 
-    // reset
     EmacPsResetTxBD(EmacPsInstancePtr);
 
     XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET, txsr | XEMACPS_TXSR_TXCOMPL_MASK);
@@ -564,16 +566,13 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     XEmacPs_Bd * BdTemplate;
     XEmacPs_Bd * CurBd;
 
-    EmacPsResetRxBD(EmacPsInstancePtr);
-
+    /* disable receiver */
 	u32 Reg_nwctrl = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
     u32 Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-    /* disable receiver */
 	if ((EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) || (Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK)) {
 		if (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) {
 			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg_nwctrl & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
 		}
-        Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
         if(Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK){
             XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK);
         }
@@ -594,16 +593,20 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
         XEmacPs_BdSetAddressRx(CurBd, (UINTPTR)(RxFrame + i));
         XEmacPs_BdClearRxNew(CurBd);
         XEmacPs_BdClearRxWrap(CurBd);
+        printk("CurBd: 0x%lx, Bd addr: 0x%x, Bd status: %x\n\r",CurBd, XEmacPs_BdGetBufAddr(CurBd), XEmacPs_BdGetStatus(CurBd));
         CurBd = XEmacPs_BdRingNext(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), CurBd);
     }
     XEmacPs_BdSetAddressRx(CurBd, (UINTPTR)(RxFrame + num_packet - 1));
     XEmacPs_BdClearRxNew(CurBd);
     XEmacPs_BdSetRxWrap((UINTPTR)CurBd);
+    printk("CurBd: 0x%lx, Bd addr: 0x%x, Bd status: %x\n\r",CurBd, XEmacPs_BdGetBufAddr(CurBd), XEmacPs_BdGetStatus(CurBd));
 
     Status = XEmacPs_BdRingToHw(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, BdTemplate);
 
+    printk("RingPtr->PreCnt: %d;RingPtr->HwTail: 0x%x; RingPtr->HwCnt: %d\n\r",EmacPsInstancePtr->RxBdRing.PreCnt,EmacPsInstancePtr->RxBdRing.HwTail,EmacPsInstancePtr->RxBdRing.HwCnt);
+
     if (Status != XST_SUCCESS) {
-        EmacPsUtilErrorTrap("[ERROR] > Error committing RxBD to HW");
+        EmacPsUtilErrorTrap("[ERROR] > Error in committing RxBD to HW");
         return XST_FAILURE;
     }
 
@@ -616,15 +619,17 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     XEmacPs_SetQueuePtr(EmacPsInstancePtr, EmacPsInstancePtr->RxBdRing.BaseBdAddr, 0, XEMACPS_RECV);
     
 	u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
-    
+
 	/* Enable receiver if not already enabled */
 	if (!(EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || !(Reg & XEMACPS_NWCTRL_RXEN_MASK)) {
 		u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
 		if (!(Reg & XEMACPS_NWCTRL_RXEN_MASK)) {
 			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg | (u32)XEMACPS_NWCTRL_RXEN_MASK);
 		}
-        EmacPsInstancePtr->Options &= ~XEMACPS_RECEIVER_ENABLE_OPTION;
+        EmacPsInstancePtr->Options |= XEMACPS_RECEIVER_ENABLE_OPTION;
 	}
+
+    printk("rx queue: 0x%x, EmacPsInstancePtr->Options: %x, Reg: 0x%x\n\r",XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXQBASE_OFFSET),EmacPsInstancePtr->Options,XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET));
 
     return Status;
 }
@@ -636,22 +641,26 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     u32 NumRxBuf    = 0;
     XEmacPs_Bd *BdRxPtr;
 
+    printk("num_packet: %d, EmacPsInstancePtr->Config.BaseAddress: %lx\n\r",num_packet,EmacPsInstancePtr->Config.BaseAddress);
+
     /*
      * Wait for Rx indication
      */
     int tmprx = 0;
     u32 rxsr;
-    while (!FramesRx) {
+    while (tmprx < num_packet) {
         // TODO:
         while (TRUE)
         {
             rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
             
             if (rxsr & XEMACPS_RXSR_FRAMERX_MASK){
-                XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
                 break;
             }
         }
+
+        printk("rxsr: 0x%x\n\r",rxsr);
+        
         NumRxBuf = XEmacPs_BdRingFromHwRx(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, &BdRxPtr);
         if (NumRxBuf == 0) {
             continue;
@@ -671,13 +680,11 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
         }
     }
 
-    EmacPsResetRxBD(EmacPsInstancePtr);
-
     // remember to flush dcache
     Xil_DCacheFlushRange(0, 64);
 
     // maybe you need
-    FramesRx = 0;
+    //FramesRx = 0;
 
     /*
      * Now that the frame has been received, post process our RxBD.
@@ -688,21 +695,9 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     // NOTE: you can get length from BD
     // Do it in previous circle
 
-    // clear ctrl for next recv
-	u32 Reg_nwctrl = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
-    u32 Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-    /* enable receiver */
-	if ((EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) || (Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK)) {
-		if (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) {
-			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg_nwctrl & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
-		}
-        Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-        if(Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK){
-            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK);
-        }
-        EmacPsInstancePtr->Options &= ~XEMACPS_RECEIVER_ENABLE_OPTION;
-	}
-
+    EmacPsResetRxBD(EmacPsInstancePtr);
+    
+    XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
     
     return Status;
 }

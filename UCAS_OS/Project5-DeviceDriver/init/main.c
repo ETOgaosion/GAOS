@@ -321,7 +321,7 @@ void boot_first_core(uintptr_t _dtb){
 
     // read CPU frequency
     time_base = sbi_read_fdt(TIMEBASE);
-    printk("time_base:%d\n",time_base);
+    printk("time_base:%d\n\r",time_base);
 
     // network card
     setup_network();
