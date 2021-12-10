@@ -465,6 +465,12 @@ LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t lengt
     XEmacPs_BdClearTxUsed(Bd1Ptr);
     XEmacPs_BdSetLast(Bd1Ptr);
 
+    Status = XEmacPs_BdRingToHw(&(XEmacPs_GetTxRing(EmacPsInstancePtr)), 1, Bd1Ptr);
+
+    if (Status != XST_SUCCESS) {
+        EmacPsUtilErrorTrap("[ERROR] > Error in committing TxBD to HW");
+        return XST_FAILURE;                                
+    }
 
     // TODO: remember to flush dcache
     Xil_DCacheFlushRange(0, 64);
@@ -472,9 +478,10 @@ LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t lengt
     // TODO: set tx queue base
     XEmacPs_SetQueuePtr(EmacPsInstancePtr, EmacPsInstancePtr->TxBdRing.BaseBdAddr, 0, XEMACPS_SEND);
 
+	u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
+
     /* Enable transmitter if not already enabled */
-	if (!(EmacPsInstancePtr->Options & (u32)XEMACPS_TRANSMITTER_ENABLE_OPTION)) {
-		u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
+	if (!(EmacPsInstancePtr->Options & (u32)XEMACPS_TRANSMITTER_ENABLE_OPTION) || !(Reg & XEMACPS_NWCTRL_TXEN_MASK)) {
 		if (!(Reg & XEMACPS_NWCTRL_TXEN_MASK)) {
 			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg | (u32)XEMACPS_NWCTRL_TXEN_MASK);
 		}
@@ -496,23 +503,19 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
     /*
      * Wait for transmission to complete
      */
-    while (!FramesTx) {
+    //while (!FramesTx) {
         // TODO:
         #ifndef IRQ_MODE
         while (TRUE)
         {
             txsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);
-            if (txsr & XEMACPS_TXSR_TXCOMPL_MASK){
-                // write 1 to clear
-                XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET, txsr | XEMACPS_TXSR_TXCOMPL_MASK);
-                break;
-            }
+            break;
         }
         #endif
-    }
+    //}
 
     // maybe you need
-    --FramesTx;
+    //--FramesTx;
 
     // NOTE: remember to flush dcache
     Xil_DCacheFlushRange(0, 64);
@@ -550,6 +553,8 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
     // reset
     EmacPsResetTxBD(EmacPsInstancePtr);
 
+    XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET, txsr | XEMACPS_TXSR_TXCOMPL_MASK);
+
     return Status;
 }
 
@@ -561,15 +566,16 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
 
     EmacPsResetRxBD(EmacPsInstancePtr);
 
+	u32 Reg_nwctrl = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
+    u32 Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
     /* disable receiver */
-	if (EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) {
-		u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
-		if (Reg & XEMACPS_NWCTRL_RXEN_MASK) {
-			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
+	if ((EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) || (Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK)) {
+		if (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) {
+			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg_nwctrl & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
 		}
-        Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-        if(Reg & XEMACPS_RXSR_FRAMERX_MASK){
-            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, Reg & XEMACPS_RXSR_FRAMERX_MASK);
+        Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
+        if(Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK){
+            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK);
         }
         EmacPsInstancePtr->Options &= ~XEMACPS_RECEIVER_ENABLE_OPTION;
 	}
@@ -609,8 +615,10 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     // TODO: set rx queue base
     XEmacPs_SetQueuePtr(EmacPsInstancePtr, EmacPsInstancePtr->RxBdRing.BaseBdAddr, 0, XEMACPS_RECV);
     
+	u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
+    
 	/* Enable receiver if not already enabled */
-	if (!(EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION)) {
+	if (!(EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || !(Reg & XEMACPS_NWCTRL_RXEN_MASK)) {
 		u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
 		if (!(Reg & XEMACPS_NWCTRL_RXEN_MASK)) {
 			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg | (u32)XEMACPS_NWCTRL_RXEN_MASK);
@@ -681,17 +689,20 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     // Do it in previous circle
 
     // clear ctrl for next recv
-	if (!(EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION)) {
-		u32 Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
-		if (Reg & XEMACPS_NWCTRL_RXEN_MASK) {
-			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
+	u32 Reg_nwctrl = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET);
+    u32 Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
+    /* enable receiver */
+	if ((EmacPsInstancePtr->Options & XEMACPS_RECEIVER_ENABLE_OPTION) || (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) || (Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK)) {
+		if (Reg_nwctrl & XEMACPS_NWCTRL_RXEN_MASK) {
+			XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_NWCTRL_OFFSET, Reg_nwctrl & (~(u32)XEMACPS_NWCTRL_RXEN_MASK));
 		}
-        Reg = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-		if (Reg & XEMACPS_RXSR_FRAMERX_MASK) {
-            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, XEMACPS_RXSR_FRAMERX_MASK);
-		}
+        Reg_rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
+        if(Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK){
+            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, Reg_rxsr & XEMACPS_RXSR_FRAMERX_MASK);
+        }
         EmacPsInstancePtr->Options &= ~XEMACPS_RECEIVER_ENABLE_OPTION;
 	}
+
     
     return Status;
 }
@@ -716,6 +727,7 @@ LONG EmacPsResetTxBD(XEmacPs *EmacPsInstancePtr)
                                   XEMACPS_BD_ALIGNMENT,
                                   TXBD_CNT,
                                   &(XEmacPs_GetRxRing(EmacPsInstancePtr)));
+    
     if (Status != XST_SUCCESS) {
         EmacPsUtilErrorTrap("[ERROR] > Error setting up TxBD space, BdRingCreate");
         return XST_FAILURE;

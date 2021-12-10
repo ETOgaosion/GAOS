@@ -11,8 +11,8 @@
 #define rmb()           RISCV_FENCE(ir,ir)
 #define wmb()           RISCV_FENCE(ow,ow)
 
-#define __arch_getl(a)                  (*(unsigned int *)(a))
-#define __arch_putl(v, a)               (*(unsigned int *)(a) = (v))
+#define __arch_getl(a)                  *(unsigned int *)a
+#define __arch_putl(v, a)               *(unsigned int *)a = v
 
 #define dmb() mb()
 #define __iormb() rmb()
