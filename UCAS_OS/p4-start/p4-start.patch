@@ -5,7 +5,7 @@ diff -rupdEZbB arch/riscv/include/atomic.h arch/riscv/include/atomic.h
      uint32_t ret;
      __asm__ __volatile__ (
          "amoswap.w.aqrl %0, %2, %1\n"
--        : "=r"(ret), "+A" (*(void*)mem_addr)
+-        : "=r"(ret), "+A" *(int *)mem_addr
 +        : "=r"(ret), "+A" (*(uint32_t*)mem_addr)
          : "r"(val)
          : "memory");
@@ -14,7 +14,7 @@ diff -rupdEZbB arch/riscv/include/atomic.h arch/riscv/include/atomic.h
      uint64_t ret;
      __asm__ __volatile__ (
                            "amoswap.d.aqrl %0, %2, %1\n"
--                          : "=r"(ret), "+A" (*(void*)mem_addr)
+-                          : "=r"(ret), "+A" *(int *)mem_addr
 +                          : "=r"(ret), "+A" (*(uint64_t*)mem_addr)
                            : "r"(val)
                            : "memory");
@@ -51,7 +51,7 @@ diff -rupdEZbB arch/riscv/include/atomic.h arch/riscv/include/atomic.h
            "	bnez %1, 0b\n"
            "	fence rw, rw\n"
            "1:\n"
--          : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+-          : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
 +          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint32_t*)mem_addr)
            : "rJ" (old_val), "rJ" (new_val)
            : "memory");
@@ -60,7 +60,7 @@ diff -rupdEZbB arch/riscv/include/atomic.h arch/riscv/include/atomic.h
            "	bnez %1, 0b\n"
            "	fence rw, rw\n"
            "1:\n"
--          : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+-          : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
 +          : "=&r" (ret), "=&r" (__rc), "+A" (*(uint64_t*)mem_addr)
            : "rJ" (old_val), "rJ" (new_val)
            : "memory");

@@ -1,9 +1,4 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
-riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/rw.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/rw.elf
-test/rw.c: In function 'main':
-test/rw.c:13:6: warning: unused variable 'curs' [-Wunused-variable]
-   13 |  int curs = 0;
-      |      ^~~~
 echo "" > user_programs.c
 echo "" > user_programs.h
 for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf; do ./elf2char --header-only $prog >> user_programs.h; done
@@ -12,24 +7,6 @@ for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.
 mv user_programs.h include/
 mv user_programs.c kernel/
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o main ./arch/riscv/kernel/trap.S ./arch/riscv/kernel/entry.S ./arch/riscv/kernel/start.S ./arch/riscv/sbi/common.c ./arch/riscv/kernel/smp.S ./init/main.c ./kernel/irq/irq.c ./drivers/screen.c  ./kernel/locking/lock.c  ./kernel/comm/comm.c ./kernel/sched/sched.c ./kernel/sched/time.c ./kernel/sched/smp.c ./kernel/mm/mm.c ./kernel/syscall/syscall.c ./libs/string.c ./libs/printk.c  ./kernel/user_programs.c -Ttext=0xffffffc050400000
-In file included from include/os/lock.h:32,
-                 from ./init/main.c:8:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./init/main.c: In function 'init_pcb_stack_pointer':
 ./init/main.c:107:20: warning: assignment to 'PTE *' {aka 'long unsigned int *'} from 'ptr_t' {aka 'long unsigned int'} makes pointer from integer without a cast [-Wint-conversion]
   107 |         pcb->pgdir = allocPage() - PAGE_SIZE;
@@ -154,25 +131,6 @@ include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} bu
 ./init/main.c:292:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
   292 |         current_running = &current_running_core_s;
       |                         ^
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./kernel/irq/irq.c:11:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/irq/irq.c: In function 'interrupt_helper':
 ./kernel/irq/irq.c:35:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
    35 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
@@ -212,42 +170,6 @@ In file included from include/os/sched.h:36,
 include/os/mm.h:70:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
    70 | uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
-In file included from include/os/lock.h:32,
-                 from ./drivers/screen.c:5:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-In file included from include/os/lock.h:32,
-                 from ./kernel/locking/lock.c:1:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
    13 |     return atomic_swap_d(LOCKED,&lock->flag);
@@ -263,25 +185,6 @@ arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned in
 ./kernel/locking/lock.c:61:1: warning: control reaches end of non-void function [-Wreturn-type]
    61 | }
       | ^
-In file included from include/os/lock.h:32,
-                 from include/os/comm.h:5,
-                 from ./kernel/comm/comm.c:1:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
 ./kernel/comm/comm.c:358:37: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
   358 |         memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
@@ -366,27 +269,8 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
 ./kernel/comm/comm.c:151:1: warning: control reaches end of non-void function [-Wreturn-type]
   151 | }
       | ^
-In file included from include/os/lock.h:32,
-                 from ./kernel/sched/sched.c:2:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/sched.h:39,
                  from ./kernel/sched/sched.c:3:
-./kernel/sched/sched.c: At top level:
 arch/riscv/include/pgtable.h:88:20: warning: initialization of 'PTE *' {aka 'long unsigned int *'} from 'long unsigned int' makes pointer from integer without a cast [-Wint-conversion]
    88 | #define KPA_OFFSET (uint64_t)0xffffffc000000000lu
       |                    ^
@@ -498,42 +382,6 @@ In file included from ./kernel/sched/sched.c:3:
 include/os/sched.h:206:33: note: expected 'char **' but argument is of type 'char *'
   206 |     pcb_t *pcb, int argc, char *argv[]);
       |                           ~~~~~~^~~~~~
-In file included from ./kernel/sched/smp.c:2:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./kernel/mm/mm.c:7:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 ./kernel/mm/mm.c: In function 'swap_page_with_sd':
 ./kernel/mm/mm.c:33:34: warning: passing argument 1 of 'get_pa' makes integer from pointer without a cast [-Wint-conversion]
    33 |         uintptr_t paddr = get_pa(kva);
@@ -631,25 +479,6 @@ arch/riscv/include/pgtable.h:99:42: note: expected 'uintptr_t' {aka 'long unsign
 ./kernel/mm/mm.c:255:44: warning: 'ptable[1]' is used uninitialized in this function [-Wuninitialized]
   255 |     PTE *ptable[] = {(PTE *)pa2kva((*ptable[1] >> 10) << 12) + vpn[0],(PTE *)pa2kva((*ptable[2] >> 10) << 12) + vpn[1],(PTE *)pgdir + vpn[2]};
       |                                      ~~~~~~^~~
-In file included from include/os/lock.h:32,
-                 from include/os/smp.h:4,
-                 from ./libs/printk.c:47:
-arch/riscv/include/atomic.h: In function 'atomic_swap':
-arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                            ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_swap_d':
-arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
-arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
-arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
-arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
-      |                                              ^~~~~~~~~~~~~~~~
 echo "" > payload.c
 echo "" > payload.h
 ./elf2char --header-only main > payload.h
@@ -680,7 +509,7 @@ there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.000296017 s, 112 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.0017313 s, 19.2 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt

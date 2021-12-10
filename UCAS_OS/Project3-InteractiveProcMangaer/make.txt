@@ -4,27 +4,27 @@ In file included from include/os/lock.h:32,
                  from ./init/main.c:37:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 ./init/main.c: At top level:
 ./init/main.c:211:5: warning: 'main' takes only zero or two arguments [-Wmain]
@@ -91,27 +91,27 @@ In file included from include/os/lock.h:32,
                  from ./kernel/irq/irq.c:11:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/irq/irq.c: In function 'interrupt_helper':
 ./kernel/irq/irq.c:34:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
@@ -126,53 +126,53 @@ In file included from include/os/lock.h:32,
                  from ./drivers/screen.c:5:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/lock.h:32,
                  from ./kernel/locking/lock.c:1:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:14:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
@@ -194,27 +194,27 @@ In file included from include/os/lock.h:32,
                  from ./kernel/comm/comm.c:1:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/comm/comm.c: In function 'k_mbox_send':
 ./kernel/comm/comm.c:356:38: warning: pointer targets in passing argument 1 of 'kmemcpy' differ in signedness [-Wpointer-sign]
@@ -292,52 +292,52 @@ In file included from include/os/lock.h:32,
                  from ./kernel/sched/sched.c:2:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 In file included from ./kernel/sched/smp.c:2:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 ./kernel/mm/mm.c: In function 'freePage':
 ./kernel/mm/mm.c:30:20: warning: passing argument 1 of 'kmemset' makes pointer from integer without a cast [-Wint-conversion]
@@ -354,27 +354,27 @@ In file included from include/os/lock.h:32,
                  from ./libs/printk.c:47:
 arch/riscv/include/atomic.h: In function 'atomic_swap':
 arch/riscv/include/atomic.h:13:28: warning: dereferencing 'void *' pointer
-   13 |         : "=r"(ret), "+A" (*(void*)mem_addr)
+   13 |         : "=r"(ret), "+A" *(int *)mem_addr
       |                            ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_swap_d':
 arch/riscv/include/atomic.h:24:46: warning: dereferencing 'void *' pointer
-   24 |                           : "=r"(ret), "+A" (*(void*)mem_addr)
+   24 |                           : "=r"(ret), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg':
 arch/riscv/include/atomic.h:42:46: warning: dereferencing 'void *' pointer
-   42 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   42 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_d':
 arch/riscv/include/atomic.h:60:46: warning: dereferencing 'void *' pointer
-   60 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   60 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc':
 arch/riscv/include/atomic.h:78:46: warning: dereferencing 'void *' pointer
-   78 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   78 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 arch/riscv/include/atomic.h: In function 'atomic_cmpxchg_ll_sc_d':
 arch/riscv/include/atomic.h:96:46: warning: dereferencing 'void *' pointer
-   96 |           : "=&r" (ret), "=&r" (__rc), "+A" (*(void*)mem_addr)
+   96 |           : "=&r" (ret), "=&r" (__rc), "+A" *(int *)mem_addr
       |                                              ^~~~~~~~~~~~~~~~
 In file included from include/os/sched.h:32,
                  from tiny_libc/include/os.h:5,

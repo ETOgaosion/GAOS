@@ -485,7 +485,7 @@ int k_waitpid(pid_t pid)
 int k_process_show()
 {
     int lines = 0;
-    prints("\n[Process table]:\nprocess id: 0 (shell), process status: TASK_RUNNING");
+    prints("\n[Process table]:\nprocess id: 1 (shell), process status: TASK_RUNNING");
     lines++;
     for (int i = 1; i < NUM_MAX_TASK; i++)
     {
