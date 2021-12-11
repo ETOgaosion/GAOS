@@ -121,6 +121,7 @@
 #include <net.h>
 
 #include <os/sched.h>
+#include <tasks.h>
 
 /*************************** Constant Definitions
  * ***************************/
@@ -128,8 +129,8 @@
 #define RXBD_CNT 32 /* Number of RxBDs to use */
 #define TXBD_CNT 32 /* Number of TxBDs to use */
 
-LIST_HEAD(net_recv_queue);
-LIST_HEAD(net_send_queue);
+LIST_HEAD(net_net_recv_queue);
+LIST_HEAD(net_net_send_queue);
 
 /*
  * SLCR setting
@@ -412,14 +413,20 @@ LONG EmacPsInit(XEmacPs *EmacPsInstancePtr)
      *          (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
      *          (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK)
      */
-    // XEmacPs_IntEnable(EmacPsInstancePtr, (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
-    //                                      (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK));
+    // EmacPsIRQMode(EmacPsInstancePtr, TRUE);
 
     return status;
 }
 
 LONG EmacPsIRQMode(XEmacPs *EmacPsInstancePtr, int mode){
-    if(mode == FALSE){
+    /* Enable TX and RX interrupts */ 
+    /* TODO: 
+     * NOTE: you can use XEmacPs_IntEnable and XEmacPs_IntDisable
+     *       enable these bits: 
+     *          (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
+     *          (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK)
+     */
+    if(mode == TRUE){
         XEmacPs_IntEnable(EmacPsInstancePtr, (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
                                              (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK));
     }
@@ -494,6 +501,21 @@ LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t lengt
     return Status;
 }
 
+LONG EmacPsCheckSend(XEmacPs *EmacPsInstancePtr)
+{
+    LONG Status = XST_FAILURE;
+    u32 rxsr;
+    rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);        
+    if (rxsr & XEMACPS_TXSR_TXCOMPL_MASK){
+        Status = XST_SUCCESS;
+        while (!list_is_empty(&net_send_queue))
+        {
+            k_unblock(net_send_queue.next,0);
+        }
+    }
+    return Status;
+}
+
 LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
 {
     LONG Status = XST_SUCCESS;
@@ -505,7 +527,7 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
      */
     //while (!FramesTx) {
         // TODO:
-        #ifndef IRQ_MODE
+        #ifndef TIE
         while (TRUE)
         {
             txsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);
@@ -513,6 +535,10 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
                 break;
             }
         }
+        #endif
+        #ifdef TIE
+        k_block(&(*current_running)->list,&net_send_queue);
+        k_schedule();
         #endif
     //}
 
@@ -628,6 +654,20 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     return Status;
 }
 
+LONG EmacPsCheckRecv(XEmacPs *EmacPsInstancePtr)
+{
+    LONG Status = XST_FAILURE;
+    u32 rxsr;
+    rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);        
+    if (rxsr & XEMACPS_RXSR_FRAMERX_MASK){
+        Status = XST_SUCCESS;
+        while(!list_is_empty(&net_recv_queue)){
+            k_unblock(net_recv_queue.next,0);
+        }
+    }
+    return Status;
+}
+
 LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
 {
     LONG Status = XST_SUCCESS;
@@ -642,14 +682,19 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     u32 rxsr;
     while (FramesRx < num_packet) {
         // TODO:
+        #ifndef TIE
         while (TRUE)
         {
             rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-            
             if (rxsr & XEMACPS_RXSR_FRAMERX_MASK){
                 break;
             }
         }
+        #endif
+        #ifdef TIE
+        k_block(&(*current_running)->list,&net_recv_queue);
+        k_schedule();
+        #endif
         
         NumRxBuf = XEmacPs_BdRingFromHwRx(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, &BdRxPtr);
         if (NumRxBuf == 0) {
@@ -661,7 +706,9 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
             *RxFrLen = XEmacPs_BdGetLength(BdRxPtr + i);
             RxFrLen++;
         }
+
         FramesRx += NumRxBuf;
+        
         Status = XEmacPs_BdRingFree(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), NumRxBuf, BdRxPtr);
     
         if (Status != XST_SUCCESS) {
@@ -1092,8 +1139,8 @@ static void XEmacPsSendHandler(void *Callback)
     FramesTx++;
 
     /*if (!net_poll_mode) {
-        if (!list_is_empty(&net_send_queue)) {
-            k_unblock(net_send_queue.next);
+        if (!list_is_empty(&net_net_send_queue)) {
+            k_unblock(net_net_send_queue.next);
         }
     }*/
 }
@@ -1132,8 +1179,8 @@ static void XEmacPsRecvHandler(void *Callback)
     FramesRx++;
     
     /*if (!net_poll_mode) {
-        if (!list_is_empty(&net_recv_queue)) {
-            k_unblock(net_recv_queue.next);
+        if (!list_is_empty(&net_net_recv_queue)) {
+            k_unblock(net_net_recv_queue.next);
         }
     }*/
 

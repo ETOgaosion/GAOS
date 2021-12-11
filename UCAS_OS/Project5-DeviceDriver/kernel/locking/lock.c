@@ -110,7 +110,7 @@ long k_mutex_lock_acquire(int key, int operator)
     else{
         k_block(&(*current_running)->list,&locks[key]->block_queue);
         locks[key]->lock.guard = 0;
-        k_scheduler();
+        k_schedule();
         return -2;
     }
 }

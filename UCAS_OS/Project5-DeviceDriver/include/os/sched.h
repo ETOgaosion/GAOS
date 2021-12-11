@@ -179,10 +179,10 @@ extern void __global_pointer$();
 /* ready queue to run */
 extern list_head ready_queue;
 extern list_head blocked_queue;
-/* recv_queue to wait for revieved packet*/
-extern list_head recv_queue;
-/* send_queue to wait for sent packet*/
-extern list_head send_queue;
+/* net_recv_queue to wait for revieved packet*/
+extern list_head net_recv_queue;
+/* net_send_queue to wait for sent packet*/
+extern list_head net_send_queue;
 
 extern task_info_t **tasks;
 extern long tasks_num;
@@ -228,7 +228,7 @@ pid_t k_mthread_create(int32_t *thread,
                    void *arg);
 
 extern void switch_to(pcb_t *prev, pcb_t *next);
-void k_scheduler();
+void k_schedule();
 void k_sleep(uint32_t);
 
 void k_block(list_node_t *, list_head *queue);

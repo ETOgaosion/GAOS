@@ -136,7 +136,7 @@ int k_semaphore_p(int key, int operator){
     sem_list[key]->sem--;
     if(sem_list[key]->sem < 0){
         k_block(&(*current_running)->list,&sem_list[key]->wait_queue);
-        k_scheduler();
+        k_schedule();
     }
 }
 
@@ -192,7 +192,7 @@ int k_cond_wait(int key, int lock_id, int operator){
     cond_list[key]->num_wait++;
     k_block(&(*current_running)->list,&cond_list[key]->wait_queue);
     k_mutex_lock_release(lock_id,operator);
-    k_scheduler();
+    k_schedule();
     k_mutex_lock_acquire(lock_id,operator);
     return 0;
 }

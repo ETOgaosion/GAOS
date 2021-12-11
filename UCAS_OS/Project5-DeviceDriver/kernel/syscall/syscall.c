@@ -1,4 +1,6 @@
-#include <os/syscall.h>
+#include <sys/syscall.h>
+#include <sys/syscall_number.h>
+#include <os/sched.h>
 #include <tasks.h>
 
 long (*syscall[NUM_SYSCALLS])();

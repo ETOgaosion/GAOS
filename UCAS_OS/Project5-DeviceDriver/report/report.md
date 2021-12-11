@@ -16,14 +16,14 @@ author:高梓源   Stu. Num: 2019K8009929026
 
 对于光标等的初始化包含在以上，因为每个任务在固定位置输出时都要系统调用获取光标位置，因此为每个PCB设置一个光标指示
 
-### k_scheduler
+### k_schedule
 
 设置好任务后可以开始运行和调度，调度过程就是停止当前任务的运行（或已经运行到一定阶段完毕，主动调用调度函数，非抢占式，使用该方法），保存当前任务上下文，寻找`ready_queue`中的一个任务（直接取队列对头，第一个进入的任务）并删除该任务，取该任务的上下文加载到寄存器中，开始执行。
 
 如此循环
 
 ```C
-void k_scheduler(void)
+void k_schedule(void)
 {
     // TODO schedule
     // Modify the (*current_running) pointer.
@@ -105,7 +105,7 @@ void k_mutex_lock_acquire(mutex_lock_t *lock)
     else{
         k_block(&(*current_running)->list,&lock->block_queue);
         lock->lock.guard = 0;
-        k_scheduler();
+        k_schedule();
     }
 }
 

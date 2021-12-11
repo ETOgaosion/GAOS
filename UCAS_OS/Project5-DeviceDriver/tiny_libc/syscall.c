@@ -32,7 +32,7 @@ void sys_yield()
     // TODO:
     invoke_syscall(SYSCALL_YIELD, IGNORE, IGNORE, IGNORE,IGNORE);
     //   or
-    // k_scheduler(,IGNORE);
+    // k_schedule(,IGNORE);
     // ???
 }
 

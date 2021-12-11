@@ -88,7 +88,7 @@ pcb_t *dequeue(list_head *queue, int field){
     return ret;
 }
 
-void k_scheduler()
+void k_schedule()
 {
     assert_supervisor_mode();
     // TODO schedule
@@ -183,7 +183,7 @@ void k_sleep(uint32_t sleep_time)
     create_timer(sleep_time*get_time_base(),(void (*)(void *, int))&k_unblock,&(*current_running)->list);
     // 3. reschedule because the (*current_running) is blocked.
     // must restore context, so see at sys_sleep()
-    k_scheduler();
+    k_schedule();
 }
 
 void k_block(list_node_t *pcb_node, list_head *queue)
@@ -199,6 +199,10 @@ void k_unblock(list_head *queue, int way)
     pcb_t *fetch_pcb = NULL;
     switch (way)
     {
+    case 0:
+        fetch_pcb = dequeue(queue->prev,0);
+        list_add(&fetch_pcb->list,&ready_queue);
+        break;
     case 1:
         fetch_pcb = dequeue(queue->prev,0);
         list_add_tail(&fetch_pcb->list,&ready_queue);
@@ -448,7 +452,7 @@ int k_kill(pid_t pid)
     if(pcb[pid].list.next)
         list_del(&pcb[pid].list);
     if((*current_running)->pid == pid + 1 || (*current_running)->pid == 0 || pcb[pid].mode == AUTO_CLEANUP_ON_EXIT){
-        k_scheduler();
+        k_schedule();
     }
     return 0;
 }
@@ -472,7 +476,7 @@ int k_waitpid(pid_t pid)
         pcb[pid].wait_parent = (*current_running);
         (*current_running)->status = TASK_BLOCKED;
         k_block(&(*current_running)->list,&blocked_queue);
-        k_scheduler();
+        k_schedule();
     }
     if(pcb[pid].status == TASK_ZOMBIE){
         pcb[pid].status = TASK_EXITED;

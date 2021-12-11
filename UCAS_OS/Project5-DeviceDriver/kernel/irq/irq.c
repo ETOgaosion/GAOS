@@ -15,6 +15,11 @@
 #include <emacps/xemacps_example.h>
 #include <emacps/xemacps.h>
 #include <os/list.h>
+#include <sys/syscall.h>
+#include <sys/syscall_number.h>
+#include <os/comm.h>
+#include <net.h>
+#include <tasks.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -26,11 +31,15 @@ void reset_irq_timer()
     // TODO: call following functions when task4
     screen_reflush();
     check_timer();
+    #ifdef TIE
+    EmacPsCheckRecv(&EmacPsInstance);
+    EmacPsCheckSend(&EmacPsInstance);
+    #endif
 
     // note: use sbi_set_timer
     // remember to reschedule
     sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
-    k_scheduler();
+    k_schedule();
 }
 
 void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t cause)
@@ -65,8 +74,8 @@ void handle_irq(regs_context_t *regs, int irq)
             recieved_num++;
         }
         if((bd_space[recieved_num-1]%4)==3){   //reieve enough packet
-            if (!list_is_empty(&recv_queue)) {
-                k_unblock(recv_queue.prev,1);
+            if (!list_is_empty(&net_recv_queue)) {
+                k_unblock(net_recv_queue.prev,1);
             }
         }
         //set XEMACPS_ISR_OFFSET for complete recieve
@@ -79,8 +88,8 @@ void handle_irq(regs_context_t *regs, int irq)
         plic_irq_eoi(irq);
     }
     if(ISR_reg & XEMACPS_IXR_TXCOMPL_MASK){      //complete sending a packet
-        if (!list_is_empty(&send_queue)) {
-            k_unblock(send_queue.prev,1);
+        if (!list_is_empty(&net_send_queue)) {
+            k_unblock(net_send_queue.prev,1);
         }
         //set XEMACPS_ISR_OFFSET for complete recieve/send
         XEmacPs_WriteReg(EmacPsInstance.Config.BaseAddress, XEMACPS_ISR_OFFSET,ISR_reg);  
@@ -95,6 +104,45 @@ void handle_irq(regs_context_t *regs, int irq)
     }
 }
 
+void init_syscall(void)
+{
+    // initialize system call table.
+    for(int i=0;i<NUM_SYSCALLS;i++){
+        syscall[i] = (long (*)())&unknown_syscall; // only print register info
+    }
+    syscall[SYSCALL_SPAWN]          = (long (*)())&k_spawn;
+    syscall[SYSCALL_EXIT]           = (long (*)())&k_exit;
+    syscall[SYSCALL_SLEEP]          = (long (*)())&k_sleep;
+    syscall[SYSCALL_KILL]           = (long (*)())&k_kill;
+    syscall[SYSCALL_WAITPID]        = (long (*)())&k_waitpid;
+    syscall[SYSCALL_PS]             = (long (*)())&k_process_show;
+    syscall[SYSCALL_GETPID]         = (long (*)())&k_getpid;
+    syscall[SYSCALL_YIELD]          = (long (*)())&k_schedule;
+    syscall[SYSCALL_FORK]           = (long (*)())&k_fork;
+    syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
+    syscall[SYSCALL_TASKSET]        = (long (*)())&k_taskset;
+    syscall[SYSCALL_MTHREAD_CREATE] = (long (*)())&k_mthread_create;
+    syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
+    syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
+    syscall[SYSCALL_SHMPGET]        = (long (*)())&shm_page_get;
+    syscall[SYSCALL_SHMPDT]         = (long (*)())&shm_page_dt;
+    
+    syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
+    syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
+    syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
+    syscall[SYSCALL_SERIAL_READ]    = (long (*)())&sbi_console_getchar;
+    syscall[SYSCALL_SERIAL_WRITE]   = (long (*)())&screen_write_ch;
+    syscall[SYSCALL_SCREEN_CLEAR]   = (long (*)())&screen_clear;
+    syscall[SYSCALL_GET_CURSOR]     = (long (*)())&get_cursor;
+    syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
+    syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
+    syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
+
+    syscall[SYSCALL_NET_RECV]       = (long (*)())&k_net_recv;
+    syscall[SYSCALL_NET_SEND]       = (long (*)())&k_net_send;
+    syscall[SYSCALL_NET_IRQ_MODE]   = (long (*)())&k_net_irq_mode;
+}
+
 void init_exception()
 {
     /* TODO: initialize irq_table and exc_table */
@@ -102,16 +150,16 @@ void init_exception()
     int i = 0;
     for (; i<IRQC_COUNT; i++)
     {
-        irq_table[i] = &handle_int;
+        irq_table[i] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_int;
     }
-    irq_table[IRQC_S_EXT           ] = (void (*)(struct regs_context *, long unsigned int,  long unsigned int))&plic_handle_irq;
     for(i=0; i<EXCC_COUNT; i++){
-        exc_table[i] = &handle_other;
+        exc_table[i] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_other;
     }
-    exc_table[EXCC_SYSCALL] = &handle_syscall;
-    exc_table[EXCC_INST_PAGE_FAULT ] = &handle_inst_pagefault;
-    exc_table[EXCC_LOAD_PAGE_FAULT ] = &handle_load_store_pagefault;
-    exc_table[EXCC_STORE_PAGE_FAULT] = &handle_load_store_pagefault;
+    irq_table[IRQC_S_EXT           ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&plic_handle_irq;
+    exc_table[EXCC_SYSCALL         ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_syscall;
+    exc_table[EXCC_INST_PAGE_FAULT ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_inst_pagefault;
+    exc_table[EXCC_LOAD_PAGE_FAULT ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_load_store_pagefault;
+    exc_table[EXCC_STORE_PAGE_FAULT] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_load_store_pagefault;
     setup_exception();
 }
 

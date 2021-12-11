@@ -16,7 +16,7 @@
 #include <pgtable.h>
 #include <os/elf.h>
 #include <sys/syscall_number.h>
-#include <os/syscall.h>
+#include <sys/syscall.h>
 #include <plic.h>
 #include <emacps/xemacps_example.h>
 #include <net.h>
@@ -165,6 +165,19 @@ void init_pcb_block(pcb_t *pcb, task_type_t pcb_type){
     pcb->sched_prior.last_sched_time = init_ticks;
 }
 
+static void init_pid0_core_both(int mhartid){
+    if(mhartid == 0){
+        switchto_context_t *stored_switchto_k_m = (switchto_context_t *) pid0_pcb_core_m.kernel_sp;
+        stored_switchto_k_m->regs[1] = pid0_pcb_core_m.kernel_sp;
+        current_running_core_m = &pid0_pcb_core_m;
+    }
+    else{
+        switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
+        stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
+        current_running_core_s = &pid0_pcb_core_s;
+    }
+}
+
 static void init_pcb(int way)
 {
     if(way == 0){
@@ -179,9 +192,6 @@ static void init_pcb(int way)
         init_pcb_stack(pcb[0].kernel_sp,pcb[0].user_sp_useeable,start_pos,&pcb[0],0,NULL);
         list_add_tail(&(pcb[0].list),&ready_queue);
         // help initialize pid0
-        switchto_context_t *stored_switchto_k_m = (switchto_context_t *) pid0_pcb_core_m.kernel_sp;
-        stored_switchto_k_m->regs[1] = pid0_pcb_core_m.kernel_sp;
-        current_running_core_m = &pid0_pcb_core_m;
     }
     else{
         init_pcb_block(&bubble_pcb_m,USER_PROCESS);
@@ -196,49 +206,7 @@ static void init_pcb(int way)
         bubble_pcb_s.pid = -1;
         bubble_pcb_s.core_mask = 0b11;
         init_pcb_stack(bubble_pcb_s.kernel_sp,bubble_pcb_s.user_sp_useeable,start_pos,&bubble_pcb_s,0,NULL);
-        switchto_context_t *stored_switchto_k_s = (switchto_context_t *) pid0_pcb_core_s.kernel_sp;
-        stored_switchto_k_s->regs[1] = pid0_pcb_core_s.kernel_sp;
-        current_running_core_s = &pid0_pcb_core_s;
     }
-}
-
-static void init_syscall(void)
-{
-    // initialize system call table.
-    for(int i=0;i<NUM_SYSCALLS;i++){
-        syscall[i] = (long (*)())&unknown_syscall; // only print register info
-    }
-    syscall[SYSCALL_SPAWN]          = (long (*)())&k_spawn;
-    syscall[SYSCALL_EXIT]           = (long (*)())&k_exit;
-    syscall[SYSCALL_SLEEP]          = (long (*)())&k_sleep;
-    syscall[SYSCALL_KILL]           = (long (*)())&k_kill;
-    syscall[SYSCALL_WAITPID]        = (long (*)())&k_waitpid;
-    syscall[SYSCALL_PS]             = (long (*)())&k_process_show;
-    syscall[SYSCALL_GETPID]         = (long (*)())&k_getpid;
-    syscall[SYSCALL_YIELD]          = (long (*)())&k_scheduler;
-    syscall[SYSCALL_FORK]           = (long (*)())&k_fork;
-    syscall[SYSCALL_SET_PRIORITY]   = (long (*)())&set_priority;
-    syscall[SYSCALL_TASKSET]        = (long (*)())&k_taskset;
-    syscall[SYSCALL_MTHREAD_CREATE] = (long (*)())&k_mthread_create;
-    syscall[SYSCALL_LOCKOP]         = (long (*)())&k_mutex_lock_op;
-    syscall[SYSCALL_COMMOP]         = (long (*)())&k_commop;
-    syscall[SYSCALL_SHMPGET]        = (long (*)())&shm_page_get;
-    syscall[SYSCALL_SHMPDT]         = (long (*)())&shm_page_dt;
-    
-    syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
-    syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
-    syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
-    syscall[SYSCALL_SERIAL_READ]    = (long (*)())&sbi_console_getchar;
-    syscall[SYSCALL_SERIAL_WRITE]   = (long (*)())&screen_write_ch;
-    syscall[SYSCALL_SCREEN_CLEAR]   = (long (*)())&screen_clear;
-    syscall[SYSCALL_GET_CURSOR]     = (long (*)())&get_cursor;
-    syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
-    syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
-    syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
-
-    syscall[SYSCALL_NET_RECV]       = (long (*)())&k_net_recv;
-    syscall[SYSCALL_NET_SEND]       = (long (*)())&k_net_send;
-    syscall[SYSCALL_NET_IRQ_MODE]   = (long (*)())&k_net_irq_mode;
 }
 
 void setup_network()
@@ -295,7 +263,7 @@ void setup_network()
         assert(0);
     }
 
-    net_poll_mode = 1;
+    // net_poll_mode = 1;
     // xemacps_example_main();
 }
 
@@ -303,21 +271,16 @@ void boot_first_core(uintptr_t _dtb){
     smp_init(); // only done by master core
     lock_kernel();
     local_flush_tlb_all();
-    init_pcb(0);
+    init_pid0_core_both(0);
     current_running = &current_running_core_m;
-    printk("\n\r> [INIT] PCB initialization succeeded.\n\r");
 
     // init interrupt (^_^)
     init_exception();
-    printk("> [INIT] Interrupt processing initialization succeeded.\n\r");
-
+    printk("\n\r> [INIT] Interrupt processing initialization succeeded.\n\r");
+    
     // init system call table (0_0)
     init_syscall();
     printk("> [INIT] System call initialized successfully.\n\r");
-
-    // init screen (QAQ)
-    init_screen();
-    printk("> [INIT] SCREEN initialization succeeded.\n\r");
 
     // read CPU frequency
     time_base = sbi_read_fdt(TIMEBASE);
@@ -325,6 +288,12 @@ void boot_first_core(uintptr_t _dtb){
 
     // network card
     setup_network();
+    init_pcb(0);
+    printk("> [INIT] PCB initialization succeeded.\n\r");
+
+    // init screen (QAQ)
+    init_screen();
+    printk("> [INIT] SCREEN initialization succeeded.\n\r");
 
     // wake up slave
     wakeup_other_hart();
@@ -347,11 +316,12 @@ int main(unsigned long mhartid, uintptr_t _dtb)
         lock_kernel();
         cancel_direct_map(0x50000000);
         init_pcb(1);
+        init_pid0_core_both(1);
         current_running = &current_running_core_s;
         setup_exception();
         printk("> [READY] Slave core ready to launch!\n\r");
         sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
-        k_scheduler();
+        k_schedule();
     }
 
     // TODO:
