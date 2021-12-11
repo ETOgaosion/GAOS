@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
     printf("[RECV TASK] start recv(%d):                    ", size);
 
     int ret = sys_net_recv(recv_buffer, size * sizeof(EthernetFrame), size, recv_length);
+    sys_move_cursor(1, 3);
     printf("%d\n", ret);
     char *curr = recv_buffer;
     for (int i = 0; i < size; ++i) {
-        printf("packet %d:\n", i);
         for (int j = 0; j < (recv_length[i] + 15) / 16; ++j) {
             for (int k = 0; k < 16 && (j * 16 + k < recv_length[i]); ++k) {
                 printf("%02x ", (uint32_t)(*(uint8_t*)curr));

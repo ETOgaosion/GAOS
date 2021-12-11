@@ -563,6 +563,8 @@ typedef struct XEmacPs_Instance {
 	u32 MaxFrameSize;
 	u32 MaxVlanFrameSize;
 
+	int IrqMode;
+
 } XEmacPs;
 
 
@@ -813,6 +815,7 @@ void XEmacPs_SetQueuePtr(XEmacPs *InstancePtr, UINTPTR QPtr, u8 QueueNum,
 LONG XEmacPs_SetHandler(XEmacPs *InstancePtr, u32 HandlerType,
 			void *FuncPointer, void *CallBackRef);
 void XEmacPs_IntrHandler(void *XEmacPsPtr);
+LONG XEmacPs_IntrChecker(XEmacPs *InstancePtr);
 
 /*
  * MAC configuration/control functions in XEmacPs_control.c

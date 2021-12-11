@@ -227,4 +227,20 @@ void XEmacPs_IntrHandler(void *XEmacPsPtr)
         InstancePtr->ErrorHandler(InstancePtr->ErrorRef, XEMACPS_SEND, RegSR);
     }
 }
+
+LONG XEmacPs_IntrChecker(XEmacPs *InstancePtr)
+{
+	u32 RegISR = XEmacPs_ReadReg(InstancePtr->Config.BaseAddress, XEMACPS_ISR_OFFSET);
+
+	/* Clear the interrupt status register */
+	XEmacPs_WriteReg(InstancePtr->Config.BaseAddress, XEMACPS_ISR_OFFSET, RegISR | XEMACPS_IXR_ALL_MASK);
+	if (RegISR & XEMACPS_IXR_FRAMERX_MASK){
+        return 2;
+    }
+    else if(RegISR & XEMACPS_IXR_TXCOMPL_MASK){
+        return 1;
+    }
+    return  0;
+}
+
 /** @} */

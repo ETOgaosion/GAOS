@@ -5,6 +5,7 @@
 
 #define USE_CLOCK_INT
 #define TIE
+#define EIE
 // #define QEMU
 // #define INIT_WITH_PRIORITY
 // #define SCHED_WITH_PRIORITY

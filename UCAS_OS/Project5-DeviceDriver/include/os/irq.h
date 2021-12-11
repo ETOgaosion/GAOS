@@ -72,7 +72,7 @@ extern void interrupt_helper(regs_context_t *regs, uint64_t stval, uint64_t caus
 /* exception handler entery */
 extern void exception_handler_entry(void);
 extern void init_exception();
-extern void setup_exception();
+extern void setup_exception(int eie);
 extern void init_syscall(void);
 
 extern void reset_irq_timer();

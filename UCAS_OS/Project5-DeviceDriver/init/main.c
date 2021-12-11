@@ -259,7 +259,7 @@ void setup_network()
     
     long status = EmacPsInit(&EmacPsInstance);
     if (status != XST_SUCCESS) {
-        printk("Error: initialize ethernet driver failed!\n\r");
+        printk("[Error] initialize ethernet driver failed!\n\r");
         assert(0);
     }
 
@@ -318,10 +318,13 @@ int main(unsigned long mhartid, uintptr_t _dtb)
         init_pcb(1);
         init_pid0_core_both(1);
         current_running = &current_running_core_s;
-        setup_exception();
+        #ifdef EIE
+        setup_exception(1);
+        #endif
+        #ifndef EIE
+        setup_exception(0);
+        #endif
         printk("> [READY] Slave core ready to launch!\n\r");
-        sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
-        k_schedule();
     }
 
     // TODO:

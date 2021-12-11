@@ -116,7 +116,7 @@ void EmacPsUtilstrncpy(char *Destination, const char *Source, u32 n);
 void EmacPsUtilErrorTrap(const char *Message);
 void EmacpsDelay(u32 delay);
 LONG EmacPsInit(XEmacPs *EmacPsInstancePtr);
-LONG EmacPsIRQMode(XEmacPs *EmacPsInstancePtr, int mode);
+LONG EmacPsSetIRQMode(XEmacPs *EmacPsInstancePtr, int mode);
 LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t length);
 LONG EmacPsCheckSend(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr);

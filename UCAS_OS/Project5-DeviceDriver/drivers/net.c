@@ -54,5 +54,5 @@ void k_net_irq_mode(int mode)
 {
     // TODO:
     // turn on/off network driver's interrupt mode
-    EmacPsIRQMode(&EmacPsInstance, mode);
+    EmacPsSetIRQMode(&EmacPsInstance, mode);
 }

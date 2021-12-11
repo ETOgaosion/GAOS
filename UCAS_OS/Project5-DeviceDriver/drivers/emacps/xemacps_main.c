@@ -403,8 +403,7 @@ LONG EmacPsInit(XEmacPs *EmacPsInstancePtr)
     }
 
     /* clear any existed int status */
-	XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_ISR_OFFSET,
-			   XEMACPS_IXR_ALL_MASK);
+	XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_ISR_OFFSET, XEMACPS_IXR_ALL_MASK);
 
     /* Enable TX and RX interrupts */ 
     /* TODO: 
@@ -413,12 +412,14 @@ LONG EmacPsInit(XEmacPs *EmacPsInstancePtr)
      *          (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
      *          (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK)
      */
-    // EmacPsIRQMode(EmacPsInstancePtr, TRUE);
+    #ifdef EIE
+    EmacPsSetIRQMode(EmacPsInstancePtr, TRUE);
+    #endif
 
     return status;
 }
 
-LONG EmacPsIRQMode(XEmacPs *EmacPsInstancePtr, int mode){
+LONG EmacPsSetIRQMode(XEmacPs *EmacPsInstancePtr, int mode){
     /* Enable TX and RX interrupts */ 
     /* TODO: 
      * NOTE: you can use XEmacPs_IntEnable and XEmacPs_IntDisable
@@ -434,6 +435,7 @@ LONG EmacPsIRQMode(XEmacPs *EmacPsInstancePtr, int mode){
         XEmacPs_IntDisable(EmacPsInstancePtr, (XEMACPS_IXR_TX_ERR_MASK | XEMACPS_IXR_RX_ERR_MASK |
                                               (u32)XEMACPS_IXR_FRAMERX_MASK | (u32)XEMACPS_IXR_TXCOMPL_MASK));
     }
+    EmacPsInstancePtr->IrqMode = mode;
     return (LONG)TRUE;
 }
 
@@ -527,19 +529,25 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
      */
     //while (!FramesTx) {
         // TODO:
-        #ifndef TIE
-        while (TRUE)
-        {
-            txsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);
-            if (txsr & XEMACPS_TXSR_TXCOMPL_MASK){
-                break;
-            }
+        if(EmacPsInstancePtr->IrqMode == TRUE){
+            k_block(&(*current_running)->list,&net_send_queue);
+            k_schedule();
         }
-        #endif
-        #ifdef TIE
-        k_block(&(*current_running)->list,&net_send_queue);
-        k_schedule();
-        #endif
+        else{
+            #ifndef TIE
+            while (TRUE)
+            {
+                txsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_TXSR_OFFSET);
+                if (txsr & XEMACPS_TXSR_TXCOMPL_MASK){
+                    break;
+                }
+            }
+            #endif
+            #ifdef TIE
+            k_block(&(*current_running)->list,&net_send_queue);
+            k_schedule();
+            #endif
+        }
     //}
 
     // maybe you need
@@ -682,19 +690,25 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     u32 rxsr;
     while (FramesRx < num_packet) {
         // TODO:
-        #ifndef TIE
-        while (TRUE)
-        {
-            rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
-            if (rxsr & XEMACPS_RXSR_FRAMERX_MASK){
-                break;
-            }
+        if(EmacPsInstancePtr->IrqMode == TRUE){
+            k_block(&(*current_running)->list,&net_recv_queue);
+            k_schedule();
         }
-        #endif
-        #ifdef TIE
-        k_block(&(*current_running)->list,&net_recv_queue);
-        k_schedule();
-        #endif
+        else{
+            #ifndef TIE
+            while (TRUE)
+            {
+                rxsr = XEmacPs_ReadReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET);
+                if (rxsr & XEMACPS_RXSR_FRAMERX_MASK){
+                    break;
+                }
+            }
+            #endif
+            #ifdef TIE
+            k_block(&(*current_running)->list,&net_recv_queue);
+            k_schedule();
+            #endif
+        }
         
         NumRxBuf = XEmacPs_BdRingFromHwRx(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, &BdRxPtr);
         if (NumRxBuf == 0) {

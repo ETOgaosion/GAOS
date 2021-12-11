@@ -31,10 +31,12 @@ void reset_irq_timer()
     // TODO: call following functions when task4
     screen_reflush();
     check_timer();
-    #ifdef TIE
-    EmacPsCheckRecv(&EmacPsInstance);
-    EmacPsCheckSend(&EmacPsInstance);
-    #endif
+    if(!EmacPsInstance.IrqMode){
+        #ifdef TIE
+        EmacPsCheckRecv(&EmacPsInstance);
+        EmacPsCheckSend(&EmacPsInstance);
+        #endif
+    }
 
     // note: use sbi_set_timer
     // remember to reschedule
@@ -66,42 +68,19 @@ void handle_irq(regs_context_t *regs, int irq)
 {
     // TODO: 
     // handle external irq from network device
-    uint32_t ISR_reg;
-    ISR_reg = XEmacPs_ReadReg(EmacPsInstance.Config.BaseAddress, XEMACPS_ISR_OFFSET);
-    if(ISR_reg & XEMACPS_IXR_FRAMERX_MASK){      //complete getting a packet
-        int recieved_num=0;
-        while(bd_space[recieved_num]%2){
-            recieved_num++;
-        }
-        if((bd_space[recieved_num-1]%4)==3){   //reieve enough packet
-            if (!list_is_empty(&net_recv_queue)) {
-                k_unblock(net_recv_queue.prev,1);
-            }
-        }
-        //set XEMACPS_ISR_OFFSET for complete recieve
-        XEmacPs_WriteReg(EmacPsInstance.Config.BaseAddress, XEMACPS_ISR_OFFSET,ISR_reg); 
-        //set RXSR for complete recieve
-        XEmacPs_WriteReg(EmacPsInstance.Config.BaseAddress, XEMACPS_RXSR_OFFSET,XEMACPS_RXSR_FRAMERX_MASK);
-        // NOTE: remember to flush dcache
-        Xil_DCacheFlushRange(0, 64);
-        // let PLIC know that handle_irq has been finished
-        plic_irq_eoi(irq);
-    }
-    if(ISR_reg & XEMACPS_IXR_TXCOMPL_MASK){      //complete sending a packet
-        if (!list_is_empty(&net_send_queue)) {
-            k_unblock(net_send_queue.prev,1);
-        }
-        //set XEMACPS_ISR_OFFSET for complete recieve/send
-        XEmacPs_WriteReg(EmacPsInstance.Config.BaseAddress, XEMACPS_ISR_OFFSET,ISR_reg);  
-        //set TXSR for complete recieve
-        uint32_t TXSR_reg;
-        TXSR_reg = XEmacPs_ReadReg(EmacPsInstance.Config.BaseAddress, XEMACPS_TXSR_OFFSET);
-        XEmacPs_WriteReg(EmacPsInstance.Config.BaseAddress, XEMACPS_TXSR_OFFSET,TXSR_reg|XEMACPS_TXSR_TXCOMPL_MASK);  
-        // NOTE: remember to flush dcache
-        Xil_DCacheFlushRange(0, 64);
-        // let PLIC know that handle_irq has been finished
-        plic_irq_eoi(irq);
-    }
+    // Clear IXR and judge type
+    int type = XEmacPs_IntrChecker(&EmacPsInstance);
+    // printk("type: %d\n\r",type);
+    if ((type == 1) && !list_is_empty(&net_send_queue))
+        k_unblock(net_send_queue.next,0);
+    else if ((type == 2) && !list_is_empty(&net_recv_queue))
+        k_unblock(net_recv_queue.next,0);
+    else
+        return;
+    // let PLIC know that handle_irq has been finished
+    plic_irq_eoi(irq);
+
+    k_schedule();
 }
 
 void init_syscall(void)
@@ -160,7 +139,12 @@ void init_exception()
     exc_table[EXCC_INST_PAGE_FAULT ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_inst_pagefault;
     exc_table[EXCC_LOAD_PAGE_FAULT ] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_load_store_pagefault;
     exc_table[EXCC_STORE_PAGE_FAULT] = (void (*)(regs_context_t *, long unsigned int,  long unsigned int))&handle_load_store_pagefault;
-    setup_exception();
+    #ifdef EIE
+    setup_exception(1);
+    #endif
+    #ifndef EIE
+    setup_exception(0);
+    #endif
 }
 
 void handle_inst_pagefault(regs_context_t *regs, uint64_t stval, uint64_t cause)
