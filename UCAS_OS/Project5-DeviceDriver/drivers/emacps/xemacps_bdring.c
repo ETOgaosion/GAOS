@@ -563,7 +563,7 @@ LONG XEmacPs_BdRingToHw(
             Status = (LONG)(XST_DMA_SG_LIST_ERROR);
         } else {
             CurBdPtr = BdSetPtr;
-            for (i = 0U; i < NumBd - 1; i++) {
+            for (i = 0U; i < NumBd; i++) {
                 CurBdPtr = (XEmacPs_Bd *)((void *)XEmacPs_BdRingNext(
                     RingPtr, CurBdPtr));
             }

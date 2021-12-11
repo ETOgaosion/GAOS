@@ -217,8 +217,11 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
   204 |  char *CheckPtr = (char *) CheckFrame;
       |        ^~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetTxBD':
-./drivers/emacps/xemacps_main.c:720:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  720 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:700:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  700 |     TxBdSpacePtr = &(bd_space[0x10000]);
+      |                  ^
+./drivers/emacps/xemacps_main.c:709:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  709 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -231,8 +234,11 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetRxBD':
-./drivers/emacps/xemacps_main.c:766:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  766 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:736:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  736 |     RxBdSpacePtr = &(bd_space[0]);
+      |                  ^
+./drivers/emacps/xemacps_main.c:755:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  755 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -245,16 +251,16 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsDmaSingleFrameIntrExample':
-./drivers/emacps/xemacps_main.c:853:10: warning: unused variable 'Status' [-Wunused-variable]
-  853 |     LONG Status;
+./drivers/emacps/xemacps_main.c:842:10: warning: unused variable 'Status' [-Wunused-variable]
+  842 |     LONG Status;
       |          ^~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsSendHandler':
-./drivers/emacps/xemacps_main.c:1090:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1090 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1079:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1079 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsRecvHandler':
-./drivers/emacps/xemacps_main.c:1130:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1130 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1119:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1119 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
@@ -584,18 +590,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0xccc94		memsz 0xccca8
-		writing 0xccc94 bytes
-		padding up to 0xcd000
+		filesz 0xcc914		memsz 0xcc928
+		writing 0xcc914 bytes
+		padding up to 0xccc00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 1639 sector(s)
+kernel_size: 1637 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.000289761 s, 115 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.00229633 s, 14.5 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt
