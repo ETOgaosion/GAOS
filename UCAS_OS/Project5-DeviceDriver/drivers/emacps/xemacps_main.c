@@ -715,8 +715,6 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
         }
 
 try_getrx:
-        printk("Global_BdRxPtr_assigned: %d\n\r",Global_BdRxPtr_assigned);
-        
         if(!Global_BdRxPtr_assigned){
             Global_NumRxBuf = XEmacPs_BdRingFromHwRx(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, &Global_BdRxPtr);
             Global_BdRxPtr_assigned = 1;
@@ -780,7 +778,6 @@ try_getrx:
     EmacPsResetRxBD(EmacPsInstancePtr);
     Global_BdRxPtr_assigned = 0;
     Global_NumRxBuf = 0;
-    printk("Global_BdRxPtr_assigned: %d\n\r",Global_BdRxPtr_assigned);
     XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
     
     return Status;
@@ -789,7 +786,6 @@ try_getrx:
 LONG EmacPsCheckRecvPort(XEmacPs_Bd *BdRxPtr){
     #ifdef LISTEN_PORT
     unsigned char *buff_addr = (unsigned char *)(pa2kva(XEmacPs_BdGetBufAddr(BdRxPtr)) & ~0b11);
-    printk("(buff_addr[36] << 8) + buff_addr[37]: %d, (*current_running)->listen_port: %d\n\r",(buff_addr[36] << 8) + buff_addr[37],(*current_running)->listen_port);
     if(((buff_addr[36] << 8) + buff_addr[37]) == (*current_running)->listen_port){
         return 0;
     }
