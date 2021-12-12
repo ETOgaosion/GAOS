@@ -259,6 +259,9 @@ long k_fork(void)
     kid->sched_prior.last_sched_time = 0;
     kid->sched_prior.priority = 0;
     kid->core_mask = (*current_running)->core_mask;
+    #ifdef LISTEN_PORT
+    pcb->listen_port = 0;
+    #endif
     copy_pcb_stack(kid->kernel_sp,kid->user_sp_kseeonly,kid,curr->kernel_sp,curr->user_sp_kseeonly,curr);
     list_add_tail(&(kid->list),&ready_queue);
     return kid->pid;
@@ -278,7 +281,7 @@ pid_t k_mthread_create(int32_t *thread, void (*start_routine)(void*), void *arg)
     new->core_mask = (*current_running)->core_mask;
     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - 8;
     new->user_sp_useeable = (char *)new->user_sp_useeable - 8;
-    *(char *)new->user_sp_kseeonly = (char *)arg;
+    *(long *)new->user_sp_kseeonly = arg;
     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
     list_add_tail(&(new->list),&ready_queue);
     *thread = new->pid;

@@ -9,6 +9,7 @@ ENTRY(invoke_syscall)
   mv a1,a2
   mv a2,a3
   mv a3,a4
+  mv a4,a5
   ecall
 syscall_return:
   ret

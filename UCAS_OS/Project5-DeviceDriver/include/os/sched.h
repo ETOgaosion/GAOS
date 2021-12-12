@@ -39,6 +39,9 @@
 #include <pgtable.h>
 #include <context.h>
 #include <os/elf.h>
+#include <emacps/xemacps_example.h>
+
+#include <tasks.h>
 
 #define NUM_MAX_TASK 16
 #define MAX_THREAD_NUM 16
@@ -159,6 +162,10 @@ typedef struct pcb
     int owned_page_num;
     list_head k_plist;
     list_head u_plist;
+
+    #ifdef LISTEN_PORT
+    int listen_port;
+    #endif
 } pcb_t;
 
 /* task information, used to init PCB */

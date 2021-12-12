@@ -19,13 +19,15 @@ extern unsigned char _elf___test_recv_elf[];
 int _length___test_recv_elf;
 extern unsigned char _elf___test_send_elf[];
 int _length___test_send_elf;
+extern unsigned char _elf___test_multi_port_recv_elf[];
+int _length___test_multi_port_recv_elf;
 typedef struct ElfFile {
   char *file_name;
   unsigned char* file_content;
   int* file_length;
 } ElfFile;
 
-#define ELF_FILE_NUM 10
-extern ElfFile elf_files[10];
+#define ELF_FILE_NUM 11
+extern ElfFile elf_files[11];
 extern int get_elf_file(const char *file_name, unsigned char **binary, int *length);
 extern int match_elf(char *file_name);

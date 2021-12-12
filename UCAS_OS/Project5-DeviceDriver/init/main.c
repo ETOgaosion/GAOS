@@ -163,6 +163,9 @@ void init_pcb_block(pcb_t *pcb, task_type_t pcb_type){
     pcb->sched_prior.priority = 0;
     #endif
     pcb->sched_prior.last_sched_time = init_ticks;
+    #ifdef LISTEN_PORT
+    pcb->listen_port = 0;
+    #endif
 }
 
 static void init_pid0_core_both(int mhartid){
@@ -287,7 +290,9 @@ void boot_first_core(uintptr_t _dtb){
     printk("time_base:%d\n\r",time_base);
 
     // network card
+    #ifndef DEBUG_WITHOUT_NET
     setup_network();
+    #endif
     init_pcb(0);
     printk("> [INIT] PCB initialization succeeded.\n\r");
 

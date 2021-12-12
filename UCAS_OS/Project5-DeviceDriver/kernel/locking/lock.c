@@ -21,11 +21,6 @@ void spin_lock_release(spin_lock_t *lock){
     lock->flag = UNLOCKED;
 }
 
-static inline void assert_supervisor_mode() 
-{ 
-   __asm__ __volatile__("csrr x0, sscratch\n"); 
-}
-
 long k_mutex_lock_op(int *key,int op){
     assert_supervisor_mode();
     int operator = (*current_running)->pid;
@@ -48,16 +43,12 @@ long k_mutex_lock_op(int *key,int op){
 }
 
 static inline int find_lock(){
-    int found = 0;
     for(int i = 0; i < LOCK_NUM; i++){
         if(!locks[i]->initialized){
-            found = 1;
             return i;
         }
     }
-    if(!found){
-        return -1;
-    }
+    return -1;
 }
 
 long k_mutex_lock_init(int *key, int operator)

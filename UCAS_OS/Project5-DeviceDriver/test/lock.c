@@ -7,8 +7,8 @@ static mthread_mutex_t mutex_lock = {.id = 0};
 
 static char blank[] = {"                                             "};
 
-void try_lock(int argc, char *argv[]){
-    int print_location = *(int *)argv;
+void try_lock(int argc, int **argv){
+    int print_location = **argv;
 
     while (1)
     {
@@ -49,7 +49,8 @@ int main(int argc, char* argv[])
 
     mthread_t lock[3];
     for(int i = 0; i < 3; i++){
-        mthread_create(&lock[i], try_lock, print_location++);
+        mthread_create(&lock[i], try_lock, &print_location);
+        print_location++;
     }
     while (1) ;
     

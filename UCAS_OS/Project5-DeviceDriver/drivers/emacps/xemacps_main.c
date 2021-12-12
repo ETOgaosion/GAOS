@@ -636,6 +636,8 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     Status = XEmacPs_BdRingToHw(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, BdTemplate);
 
     if (Status != XST_SUCCESS) {
+        printk("fail (*current_running)->pid: %d\n\r",(*current_running)->pid);
+        printk("Status: 0x%lx\n\r",Status);
         EmacPsUtilErrorTrap("[ERROR] > Error in committing RxBD to HW");
         return XST_FAILURE;
     }
@@ -692,6 +694,8 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
         // TODO:
         if(EmacPsInstancePtr->IrqMode == TRUE){
             k_block(&(*current_running)->list,&net_recv_queue);
+            Status = XEmacPs_BdRingFree(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), NumRxBuf, BdRxPtr);
+            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
             k_schedule();
         }
         else{
@@ -706,14 +710,42 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
             #endif
             #ifdef TIE
             k_block(&(*current_running)->list,&net_recv_queue);
+            Status = XEmacPs_BdRingFree(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), NumRxBuf, BdRxPtr);
+            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
             k_schedule();
             #endif
         }
         
         NumRxBuf = XEmacPs_BdRingFromHwRx(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, &BdRxPtr);
+\
+        // check port
+        #ifdef LISTEN_PORT
+        if((*current_running)->listen_port > 0){
+            while(EmacPsCheckRecvPort(BdRxPtr) < 0){
+                if(!list_is_empty(&net_recv_queue)){
+                    k_unblock(net_recv_queue.next,1);
+                }
+                k_block(&(*current_running)->list,&net_recv_queue);
+                Status = XEmacPs_BdRingFree(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), NumRxBuf, BdRxPtr);
+                XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
+                k_schedule();
+            }
+        }
+        #endif
+
         if (NumRxBuf == 0) {
+            Status = XEmacPs_BdRingFree(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), NumRxBuf, BdRxPtr);
+            XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
+    
+            if (Status != XST_SUCCESS) {
+                EmacPsUtilErrorTrap("[ERROR] > Error in freeing up RxBDs");
+                return XST_FAILURE;
+            }
+
             continue;
         }
+
+
         // Get length from BD
         for (int i = 0; i < NumRxBuf; i++)
         {
@@ -750,6 +782,16 @@ LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen)
     XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
     
     return Status;
+}
+
+LONG EmacPsCheckRecvPort(XEmacPs_Bd *BdRxPtr){
+    #ifdef LISTEN_PORT
+    unsigned char *buff_addr = (unsigned char *)(pa2kva(XEmacPs_BdGetBufAddr(BdRxPtr)) & ~0b11);
+    if(((buff_addr[36] << 8) + buff_addr[37]) == (*current_running)->listen_port){
+        return 0;
+    }
+    #endif
+    return -1;
 }
 
 LONG EmacPsResetTxBD(XEmacPs *EmacPsInstancePtr)

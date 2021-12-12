@@ -12,21 +12,6 @@ size_t recv_length[MAX_RECV_CNT];
 
 int main(int argc, char *argv[])
 {
-    // printf("%lx \n\r", (uintptr_t) argv);
-    // printf("%lx \n\r", (uintptr_t) argv[0]);
-    // printf("%lx \n\r", (uintptr_t) argv[1]);
-    // printf("%lx \n\r", (uintptr_t) argv[2]);
-    //uintptr_t baseAddr = ((uintptr_t) argv) >> 12 << 12;
-    //char* tmpAddr = (char*) baseAddr;
-    /*for (int i = 100; i < 128; ++i) {
-        printf("0x%lx : ", &tmpAddr[i*32]);
-        for (int j = 0; j < 32; ++j) {
-            printf("%02x ", (uint32_t) tmpAddr[i*32 + j]);
-        }
-        printf("\n");
-    }
-    printf("\n");*/
-    // for(;;);
     int mode = 0;
     int size = 1;
     sys_move_cursor(1, 1);
@@ -44,7 +29,7 @@ int main(int argc, char *argv[])
 
     printf("[RECV TASK] start recv(%d):                    ", size);
 
-    int ret = sys_net_recv(recv_buffer, size * sizeof(EthernetFrame), size, recv_length);
+    int ret = sys_net_recv(recv_buffer, size * sizeof(EthernetFrame), size, recv_length,0);
     sys_move_cursor(1, 3);
     printf("%d\n", ret);
     char *curr = recv_buffer;

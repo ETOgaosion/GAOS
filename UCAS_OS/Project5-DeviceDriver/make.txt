@@ -1,8 +1,8 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
 echo "" > user_programs.c
 echo "" > user_programs.h
-for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf; do ./elf2char --header-only $prog >> user_programs.h; done
-for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf; do ./elf2char $prog >> user_programs.c; done
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf ./test/multi_port_recv.elf; do ./elf2char --header-only $prog >> user_programs.h; done
+for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf ./test/multi_port_recv.elf; do ./elf2char $prog >> user_programs.c; done
 ./generateMapping user_programs
 mv user_programs.h include/
 mv user_programs.c kernel/
@@ -33,8 +33,8 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
 ./init/main.c: In function 'init_pcb':
-./init/main.c:189:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  189 |         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
+./init/main.c:192:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  192 |         ptr_t start_pos = (ptr_t)load_elf(_elf___test_test_shell_elf,_length___test_test_shell_elf,pcb[0].pgdir,alloc_page_helper_user);
       |                                                                                                    ~~~~~~^~~~~~
       |                                                                                                          |
       |                                                                                                          PTE * {aka long unsigned int *}
@@ -44,8 +44,8 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
-./init/main.c:199:119: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  199 |         ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_m.pgdir,alloc_page_helper_user);
+./init/main.c:202:119: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  202 |         ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_m.pgdir,alloc_page_helper_user);
       |                                                                                                           ~~~~~~~~~~~~^~~~~~
       |                                                                                                                       |
       |                                                                                                                       PTE * {aka long unsigned int *}
@@ -55,8 +55,8 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
-./init/main.c:205:113: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  205 |         start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_s.pgdir,alloc_page_helper_user);
+./init/main.c:208:113: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  208 |         start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,bubble_pcb_s.pgdir,alloc_page_helper_user);
       |                                                                                                     ~~~~~~~~~~~~^~~~~~
       |                                                                                                                 |
       |                                                                                                                 PTE * {aka long unsigned int *}
@@ -67,20 +67,20 @@ include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} bu
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
 ./init/main.c: In function 'boot_first_core':
-./init/main.c:275:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  275 |     current_running = &current_running_core_m;
+./init/main.c:278:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  278 |     current_running = &current_running_core_m;
       |                     ^
 ./init/main.c: In function 'main':
-./init/main.c:320:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  320 |         current_running = &current_running_core_s;
+./init/main.c:325:25: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  325 |         current_running = &current_running_core_s;
       |                         ^
 ./kernel/irq/irq.c: In function 'interrupt_helper':
 ./kernel/irq/irq.c:51:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
    51 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
 ./kernel/irq/irq.c: In function 'handle_inst_pagefault':
-./kernel/irq/irq.c:153:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  153 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+./kernel/irq/irq.c:154:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  154 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
       |                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                          |
       |                                                          PTE * {aka long unsigned int *}
@@ -91,8 +91,8 @@ include/os/mm.h:73:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but 
    73 | uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                           ~~~~~~~~~~^~~~~
 ./kernel/irq/irq.c: In function 'handle_load_store_pagefault':
-./kernel/irq/irq.c:171:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  171 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
+./kernel/irq/irq.c:172:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  172 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
       |                                         ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                           |
       |                                                           PTE * {aka long unsigned int *}
@@ -102,8 +102,8 @@ In file included from include/os/sched.h:36,
 include/os/mm.h:74:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
    74 | uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
-./kernel/irq/irq.c:173:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
-  173 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
+./kernel/irq/irq.c:174:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
+  174 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
       |                                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                          |
       |                                                                          PTE * {aka long unsigned int *}
@@ -114,8 +114,8 @@ include/os/mm.h:71:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but 
    71 | uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
 ./drivers/net.c: In function 'k_net_recv':
-./drivers/net.c:27:44: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-   27 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+./drivers/net.c:31:44: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   31 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
       |                                            ^~~~~~~~~~
       |                                            |
       |                                            char (*)[1536]
@@ -128,8 +128,8 @@ In file included from drivers/emacps/xil_utils.h:5,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./drivers/net.c:27:37: warning: passing argument 2 of 'EmacPsRecv' makes pointer from integer without a cast [-Wint-conversion]
-   27 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+./drivers/net.c:31:37: warning: passing argument 2 of 'EmacPsRecv' makes pointer from integer without a cast [-Wint-conversion]
+   31 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
       |                                     ^~~~~~~~~~~~~~~~~~
       |                                     |
       |                                     uintptr_t {aka long unsigned int}
@@ -138,8 +138,8 @@ In file included from drivers/net.h:5,
 drivers/emacps/xemacps_example.h:123:60: note: expected 'char (*)[1536]' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
   123 | LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
       |                                             ~~~~~~~~~~~~~~~^~~~~~~
-./drivers/net.c:31:20: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
-   31 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+./drivers/net.c:35:20: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   35 |             memcpy(addr, rx_buffers + i, rx_len[i]);
       |                    ^~~~
       |                    |
       |                    uintptr_t {aka long unsigned int}
@@ -151,8 +151,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./drivers/net.c:31:37: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
-   31 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+./drivers/net.c:35:37: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   35 |             memcpy(addr, rx_buffers + i, rx_len[i]);
       |                          ~~~~~~~~~~~^~~
       |                                     |
       |                                     char (*)[1536]
@@ -165,8 +165,8 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
 ./drivers/net.c: In function 'k_net_send':
-./drivers/net.c:47:12: warning: passing argument 1 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
-   47 |     memcpy(&tx_buffer, addr, length);
+./drivers/net.c:51:12: warning: passing argument 1 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   51 |     memcpy(&tx_buffer, addr, length);
       |            ^~~~~~~~~~
       |            |
       |            char (*)[1536]
@@ -178,8 +178,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char (*)[1536]'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./drivers/net.c:47:24: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
-   47 |     memcpy(&tx_buffer, addr, length);
+./drivers/net.c:51:24: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   51 |     memcpy(&tx_buffer, addr, length);
       |                        ^~~~
       |                        |
       |                        uintptr_t {aka long unsigned int}
@@ -191,8 +191,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./drivers/net.c:49:40: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-   49 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+./drivers/net.c:53:40: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   53 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
       |                                        ^~~~~~~~~~
       |                                        |
       |                                        char (*)[1536]
@@ -205,8 +205,8 @@ In file included from drivers/emacps/xil_utils.h:5,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./drivers/net.c:49:33: warning: passing argument 2 of 'EmacPsSend' makes pointer from integer without a cast [-Wint-conversion]
-   49 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+./drivers/net.c:53:33: warning: passing argument 2 of 'EmacPsSend' makes pointer from integer without a cast [-Wint-conversion]
+   53 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
       |                                 ^~~~~~~~~~~~~~~~~~
       |                                 |
       |                                 uintptr_t {aka long unsigned int}
@@ -237,11 +237,11 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
   204 |  char *CheckPtr = (char *) CheckFrame;
       |        ^~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetTxBD':
-./drivers/emacps/xemacps_main.c:761:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
-  761 |     TxBdSpacePtr = &(bd_space[0x10000]);
+./drivers/emacps/xemacps_main.c:803:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  803 |     TxBdSpacePtr = &(bd_space[0x10000]);
       |                  ^
-./drivers/emacps/xemacps_main.c:770:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  770 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:812:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  812 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -254,11 +254,11 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetRxBD':
-./drivers/emacps/xemacps_main.c:797:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
-  797 |     RxBdSpacePtr = &(bd_space[0]);
+./drivers/emacps/xemacps_main.c:839:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  839 |     RxBdSpacePtr = &(bd_space[0]);
       |                  ^
-./drivers/emacps/xemacps_main.c:816:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  816 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:858:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  858 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -271,21 +271,21 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsDmaSingleFrameIntrExample':
-./drivers/emacps/xemacps_main.c:903:10: warning: unused variable 'Status' [-Wunused-variable]
-  903 |     LONG Status;
+./drivers/emacps/xemacps_main.c:945:10: warning: unused variable 'Status' [-Wunused-variable]
+  945 |     LONG Status;
       |          ^~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsSendHandler':
-./drivers/emacps/xemacps_main.c:1140:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1140 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1182:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1182 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsRecvHandler':
-./drivers/emacps/xemacps_main.c:1180:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1180 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1222:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1222 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsWaitRecv':
-./drivers/emacps/xemacps_main.c:750:87: warning: 'rxsr' may be used uninitialized in this function [-Wmaybe-uninitialized]
-  750 |     XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
-      |                                                                                       ^
+./drivers/emacps/xemacps_main.c:698:95: warning: 'rxsr' may be used uninitialized in this function [-Wmaybe-uninitialized]
+  698 |             XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
+      |                                                                                               ^
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
    13 |     return atomic_swap_d(LOCKED,&lock->flag);
@@ -297,10 +297,6 @@ In file included from include/os/lock.h:32,
 arch/riscv/include/atomic.h:19:58: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'volatile lock_status_t *' {aka 'volatile enum <anonymous> *'}
    19 | static inline uint64_t atomic_swap_d(uint64_t val, ptr_t mem_addr)
       |                                                    ~~~~~~^~~~~~~~
-./kernel/locking/lock.c: In function 'find_lock':
-./kernel/locking/lock.c:61:1: warning: control reaches end of non-void function [-Wreturn-type]
-   61 | }
-      | ^
 ./kernel/comm/comm.c: In function 'k_mbox_send':
 ./kernel/comm/comm.c:358:37: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
   358 |         memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
@@ -423,42 +419,42 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./kernel/sched/sched.c: In function 'k_mthread_create':
-./kernel/sched/sched.c:279:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
-  279 |     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - 8;
+./kernel/sched/sched.c:282:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+  282 |     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - 8;
       |                           ^
-./kernel/sched/sched.c:280:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
-  280 |     new->user_sp_useeable = (char *)new->user_sp_useeable - 8;
+./kernel/sched/sched.c:283:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+  283 |     new->user_sp_useeable = (char *)new->user_sp_useeable - 8;
       |                           ^
-./kernel/sched/sched.c:281:36: warning: assignment to 'char' from 'char *' makes integer from pointer without a cast [-Wint-conversion]
-  281 |     *(char *)new->user_sp_kseeonly = (char *)arg;
+./kernel/sched/sched.c:284:36: warning: assignment to 'long int' from 'void *' makes integer from pointer without a cast [-Wint-conversion]
+  284 |     *(long *)new->user_sp_kseeonly = arg;
       |                                    ^
-./kernel/sched/sched.c:282:57: warning: passing argument 3 of 'init_pcb_stack' makes integer from pointer without a cast [-Wint-conversion]
-  282 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
+./kernel/sched/sched.c:285:57: warning: passing argument 3 of 'init_pcb_stack' makes integer from pointer without a cast [-Wint-conversion]
+  285 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
       |                                                         ^~~~~~~~~~~~~
       |                                                         |
       |                                                         void (*)(void *)
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:209:49: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'void (*)(void *)'
-  209 |     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
+include/os/sched.h:216:49: note: expected 'ptr_t' {aka 'long unsigned int'} but argument is of type 'void (*)(void *)'
+  216 |     ptr_t kernel_stack, ptr_t user_stack, ptr_t entry_point,
       |                                           ~~~~~~^~~~~~~~~~~
-./kernel/sched/sched.c:282:80: warning: passing argument 6 of 'init_pcb_stack' makes pointer from integer without a cast [-Wint-conversion]
-  282 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
+./kernel/sched/sched.c:285:80: warning: passing argument 6 of 'init_pcb_stack' makes pointer from integer without a cast [-Wint-conversion]
+  285 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_routine,new,1,new->user_sp_useeable);
       |                                                                             ~~~^~~~~~~~~~~~~~~~~~
       |                                                                                |
       |                                                                                reg_t {aka long unsigned int}
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:210:33: note: expected 'char **' but argument is of type 'reg_t' {aka 'long unsigned int'}
-  210 |     pcb_t *pcb, int argc, char *argv[]);
+include/os/sched.h:217:33: note: expected 'char **' but argument is of type 'reg_t' {aka 'long unsigned int'}
+  217 |     pcb_t *pcb, int argc, char *argv[]);
       |                           ~~~~~~^~~~~~
 ./kernel/sched/sched.c: In function 'k_spawn':
-./kernel/sched/sched.c:398:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
-  398 |     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
+./kernel/sched/sched.c:401:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+  401 |     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
       |                           ^
-./kernel/sched/sched.c:399:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
-  399 |     new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
+./kernel/sched/sched.c:402:27: warning: assignment to 'reg_t' {aka 'long unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+  402 |     new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
       |                           ^
-./kernel/sched/sched.c:400:12: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
-  400 |     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
+./kernel/sched/sched.c:403:12: warning: pointer targets in passing argument 1 of 'memcpy' differ in signedness [-Wpointer-sign]
+  403 |     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
       |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |            |
       |            char *
@@ -468,8 +464,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./kernel/sched/sched.c:400:42: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
-  400 |     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
+./kernel/sched/sched.c:403:42: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+  403 |     memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
       |                                          ^~~~
       |                                          |
       |                                          char **
@@ -479,8 +475,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char **'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/sched/sched.c:402:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
-  402 |     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
+./kernel/sched/sched.c:405:106: warning: passing argument 3 of 'load_elf' makes integer from pointer without a cast [-Wint-conversion]
+  405 |     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
       |                                                                                                       ~~~^~~~~~~
       |                                                                                                          |
       |                                                                                                          PTE * {aka long unsigned int *}
@@ -489,14 +485,14 @@ In file included from include/os/sched.h:41,
 include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
   141 |     unsigned char elf_binary[], unsigned length, uintptr_t pgdir,
       |                                                  ~~~~~~~~~~^~~~~
-./kernel/sched/sched.c:405:76: warning: passing argument 6 of 'init_pcb_stack' from incompatible pointer type [-Wincompatible-pointer-types]
-  405 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,(char *)new->user_sp_useeable);
+./kernel/sched/sched.c:408:76: warning: passing argument 6 of 'init_pcb_stack' from incompatible pointer type [-Wincompatible-pointer-types]
+  408 |     init_pcb_stack(new->kernel_sp,new->user_sp_kseeonly,start_pos,new,argc,(char *)new->user_sp_useeable);
       |                                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                                                            |
       |                                                                            char *
 In file included from ./kernel/sched/sched.c:3:
-include/os/sched.h:210:33: note: expected 'char **' but argument is of type 'char *'
-  210 |     pcb_t *pcb, int argc, char *argv[]);
+include/os/sched.h:217:33: note: expected 'char **' but argument is of type 'char *'
+  217 |     pcb_t *pcb, int argc, char *argv[]);
       |                           ~~~~~~^~~~~~
 ./kernel/mm/mm.c: In function 'swap_page_with_sd':
 ./kernel/mm/mm.c:49:34: warning: passing argument 1 of 'get_pa' makes integer from pointer without a cast [-Wint-conversion]
@@ -614,18 +610,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0xccbc4		memsz 0xccbd8
-		writing 0xccbc4 bytes
-		padding up to 0xcce00
+		filesz 0xddfa4		memsz 0xddfb8
+		writing 0xddfa4 bytes
+		padding up to 0xde200
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 1638 sector(s)
+kernel_size: 1776 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.000277322 s, 120 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000268357 s, 124 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt
@@ -636,3 +632,4 @@ riscv64-unknown-linux-gnu-objdump -d test/mailbox.elf > mailbox.txt
 riscv64-unknown-linux-gnu-objdump -d test/swap_page.elf > swap_page.txt
 riscv64-unknown-linux-gnu-objdump -d test/send.elf > send.txt
 riscv64-unknown-linux-gnu-objdump -d test/recv.elf > recv.txt
+riscv64-unknown-linux-gnu-objdump -d test/multi_port_recv.elf > multi_port_recv.txt

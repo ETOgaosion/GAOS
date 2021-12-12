@@ -4,6 +4,7 @@
 
 #include <os/sched.h>
 #include <os/mm.h>
+#include <tasks.h>
 
 EthernetFrame rx_buffers[RXBD_CNT];
 EthernetFrame tx_buffer;
@@ -15,12 +16,15 @@ volatile int rx_curr = 0, rx_tail = 0;
 LIST_HEAD(net_recv_queue);                            //list_head of wait-recieve process
 LIST_HEAD(net_send_queue);                            //list_head of wait-send process
 
-long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength)
+long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength, int port)
 {
     // TODO: 
     // receive packet by calling network driver's function
     // wait until you receive enough packets(`num_packet`).
     // maybe you need to call drivers' receive function multiple times ?
+    #ifdef LISTEN_PORT
+    (*current_running)->listen_port = port;
+    #endif
     while(num_packet > 0)
     {
         int num = (num_packet > 32) ? 32 : num_packet;

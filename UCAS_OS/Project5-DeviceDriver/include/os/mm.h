@@ -49,7 +49,7 @@
 #define ROUND(a, n)     (((((uint64_t)(a))+(n)-1)) & ~((n)-1))
 #define ROUNDDOWN(a, n) (((uint64_t)(a)) & ~((n)-1))
 
-#define SD_SWAP 1024
+#define SD_SWAP 2048
 
 extern ptr_t memCurr;
 typedef struct {

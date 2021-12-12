@@ -123,6 +123,7 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
 LONG EmacPsCheckRecv(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen);
+LONG EmacPsCheckRecvPort(XEmacPs_Bd *BdRxPtr);
 LONG EmacPsResetTxBD(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsResetRxBD(XEmacPs *EmacPsInstancePtr);
 

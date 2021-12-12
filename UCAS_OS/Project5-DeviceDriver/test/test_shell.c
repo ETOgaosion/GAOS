@@ -48,7 +48,7 @@ typedef struct sys_taskset_arg{
     int mask;
 } sys_taskset_arg_t;
 
-char *task_names[] = {"fly","consensus","lock","mailbox","rw","swappage","recv","send"};
+char *task_names[] = {"fly","consensus","lock","mailbox","rw","swappage","recv","send","multiportrecv"};
 
 void panic(char *error);
 static int shell_help(int argc, char *argv[]);

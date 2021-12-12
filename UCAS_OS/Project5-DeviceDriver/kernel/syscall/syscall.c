@@ -11,7 +11,8 @@ void handle_syscall(regs_context_t *regs, uint64_t interrupt, uint64_t cause)
     regs->sepc = regs->sepc +4;
     // use a7 to mark which syscall, a0~a3 are args
     regs->regs[10] = syscall[regs->regs[17]](regs->regs[10],
-                                              regs->regs[11],
-                                              regs->regs[12],
-                                              regs->regs[13]);
+                                             regs->regs[11],
+                                             regs->regs[12],
+                                             regs->regs[13],
+                                             regs->regs[14]);
 }
