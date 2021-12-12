@@ -79,8 +79,8 @@ include/os/elf.h:141:60: note: expected 'uintptr_t' {aka 'long unsigned int'} bu
    51 |     current_running = (get_current_cpu_id() == 0) ? &current_running_core_m : &current_running_core_s;
       |                     ^
 ./kernel/irq/irq.c: In function 'handle_inst_pagefault':
-./kernel/irq/irq.c:154:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  154 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
+./kernel/irq/irq.c:155:58: warning: passing argument 2 of 'check_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  155 |     if ((kva = check_page_helper(stval,(*current_running)->pgdir)) != 0)
       |                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                          |
       |                                                          PTE * {aka long unsigned int *}
@@ -91,8 +91,8 @@ include/os/mm.h:73:53: note: expected 'uintptr_t' {aka 'long unsigned int'} but 
    73 | uintptr_t check_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                           ~~~~~~~~~~^~~~~
 ./kernel/irq/irq.c: In function 'handle_load_store_pagefault':
-./kernel/irq/irq.c:172:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
-  172 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
+./kernel/irq/irq.c:173:59: warning: passing argument 2 of 'search_last_page_helper' makes integer from pointer without a cast [-Wint-conversion]
+  173 |     kva = search_last_page_helper(stval,(*current_running)->pgdir);
       |                                         ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                           |
       |                                                           PTE * {aka long unsigned int *}
@@ -102,8 +102,8 @@ In file included from include/os/sched.h:36,
 include/os/mm.h:74:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'PTE *' {aka 'long unsigned int *'}
    74 | uintptr_t search_last_page_helper(uintptr_t va, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
-./kernel/irq/irq.c:174:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
-  174 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
+./kernel/irq/irq.c:175:74: warning: passing argument 2 of 'alloc_page_helper_user' makes integer from pointer without a cast [-Wint-conversion]
+  175 |         kva = alloc_page_helper_user((uintptr_t)stval, (*current_running)->pgdir);
       |                                                        ~~~~~~~~~~~~~~~~~~^~~~~~~
       |                                                                          |
       |                                                                          PTE * {aka long unsigned int *}
@@ -114,11 +114,11 @@ include/os/mm.h:71:59: note: expected 'uintptr_t' {aka 'long unsigned int'} but 
    71 | uintptr_t alloc_page_helper_user(uintptr_t kva, uintptr_t pgdir);
       |                                                 ~~~~~~~~~~^~~~~
 ./drivers/net.c: In function 'k_net_recv':
-./drivers/net.c:31:44: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-   31 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
-      |                                            ^~~~~~~~~~
-      |                                            |
-      |                                            char (*)[1536]
+./drivers/net.c:32:48: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   32 |             EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+      |                                                ^~~~~~~~~~
+      |                                                |
+      |                                                char (*)[1536]
 In file included from drivers/emacps/xil_utils.h:5,
                  from drivers/emacps/xemacps_hw.h:72,
                  from drivers/emacps/xemacps.h:348,
@@ -128,18 +128,18 @@ In file included from drivers/emacps/xil_utils.h:5,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./drivers/net.c:31:37: warning: passing argument 2 of 'EmacPsRecv' makes pointer from integer without a cast [-Wint-conversion]
-   31 |         EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
-      |                                     ^~~~~~~~~~~~~~~~~~
-      |                                     |
-      |                                     uintptr_t {aka long unsigned int}
+./drivers/net.c:32:41: warning: passing argument 2 of 'EmacPsRecv' makes pointer from integer without a cast [-Wint-conversion]
+   32 |             EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+      |                                         ^~~~~~~~~~~~~~~~~~
+      |                                         |
+      |                                         uintptr_t {aka long unsigned int}
 In file included from drivers/net.h:5,
                  from ./drivers/net.c:1:
 drivers/emacps/xemacps_example.h:123:60: note: expected 'char (*)[1536]' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
   123 | LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
       |                                             ~~~~~~~~~~~~~~~^~~~~~~
-./drivers/net.c:35:20: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
-   35 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+./drivers/net.c:39:20: warning: passing argument 1 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   39 |             memcpy(addr, rx_buffers + i, rx_len[i]);
       |                    ^~~~
       |                    |
       |                    uintptr_t {aka long unsigned int}
@@ -151,8 +151,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./drivers/net.c:35:37: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
-   35 |             memcpy(addr, rx_buffers + i, rx_len[i]);
+./drivers/net.c:39:37: warning: passing argument 2 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   39 |             memcpy(addr, rx_buffers + i, rx_len[i]);
       |                          ~~~~~~~~~~~^~~
       |                                     |
       |                                     char (*)[1536]
@@ -165,8 +165,8 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
 ./drivers/net.c: In function 'k_net_send':
-./drivers/net.c:51:12: warning: passing argument 1 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
-   51 |     memcpy(&tx_buffer, addr, length);
+./drivers/net.c:55:12: warning: passing argument 1 of 'memcpy' from incompatible pointer type [-Wincompatible-pointer-types]
+   55 |     memcpy(&tx_buffer, addr, length);
       |            ^~~~~~~~~~
       |            |
       |            char (*)[1536]
@@ -178,8 +178,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:22: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'char (*)[1536]'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |             ~~~~~~~~~^~~~
-./drivers/net.c:51:24: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
-   51 |     memcpy(&tx_buffer, addr, length);
+./drivers/net.c:55:24: warning: passing argument 2 of 'memcpy' makes pointer from integer without a cast [-Wint-conversion]
+   55 |     memcpy(&tx_buffer, addr, length);
       |                        ^~~~
       |                        |
       |                        uintptr_t {aka long unsigned int}
@@ -191,8 +191,8 @@ In file included from drivers/emacps/xemacps_bd.h:85,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./drivers/net.c:53:40: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-   53 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+./drivers/net.c:57:40: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+   57 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
       |                                        ^~~~~~~~~~
       |                                        |
       |                                        char (*)[1536]
@@ -205,8 +205,8 @@ In file included from drivers/emacps/xil_utils.h:5,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'char (*)[1536]'
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./drivers/net.c:53:33: warning: passing argument 2 of 'EmacPsSend' makes pointer from integer without a cast [-Wint-conversion]
-   53 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
+./drivers/net.c:57:33: warning: passing argument 2 of 'EmacPsSend' makes pointer from integer without a cast [-Wint-conversion]
+   57 |     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
       |                                 ^~~~~~~~~~~~~~~~~~
       |                                 |
       |                                 uintptr_t {aka long unsigned int}
@@ -237,11 +237,11 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
   204 |  char *CheckPtr = (char *) CheckFrame;
       |        ^~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetTxBD':
-./drivers/emacps/xemacps_main.c:803:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
-  803 |     TxBdSpacePtr = &(bd_space[0x10000]);
+./drivers/emacps/xemacps_main.c:806:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  806 |     TxBdSpacePtr = &(bd_space[0x10000]);
       |                  ^
-./drivers/emacps/xemacps_main.c:812:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  812 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:815:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  815 |                                   (UINTPTR) kva2pa(TxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -254,11 +254,11 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsResetRxBD':
-./drivers/emacps/xemacps_main.c:839:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
-  839 |     RxBdSpacePtr = &(bd_space[0]);
+./drivers/emacps/xemacps_main.c:842:18: warning: assignment to 'u8 *' {aka 'unsigned char *'} from incompatible pointer type 'u64 *' {aka 'long unsigned int *'} [-Wincompatible-pointer-types]
+  842 |     RxBdSpacePtr = &(bd_space[0]);
       |                  ^
-./drivers/emacps/xemacps_main.c:858:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  858 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
+./drivers/emacps/xemacps_main.c:861:52: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  861 |                                   (UINTPTR) kva2pa(RxBdSpacePtr),
       |                                                    ^~~~~~~~~~~~
       |                                                    |
       |                                                    u8 * {aka unsigned char *}
@@ -271,21 +271,21 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsDmaSingleFrameIntrExample':
-./drivers/emacps/xemacps_main.c:945:10: warning: unused variable 'Status' [-Wunused-variable]
-  945 |     LONG Status;
+./drivers/emacps/xemacps_main.c:948:10: warning: unused variable 'Status' [-Wunused-variable]
+  948 |     LONG Status;
       |          ^~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsSendHandler':
-./drivers/emacps/xemacps_main.c:1182:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1182 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1185:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1185 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'XEmacPsRecvHandler':
-./drivers/emacps/xemacps_main.c:1222:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
- 1222 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
+./drivers/emacps/xemacps_main.c:1225:14: warning: unused variable 'EmacPsInstancePtr' [-Wunused-variable]
+ 1225 |     XEmacPs *EmacPsInstancePtr = (XEmacPs *)Callback;
       |              ^~~~~~~~~~~~~~~~~
 ./drivers/emacps/xemacps_main.c: In function 'EmacPsWaitRecv':
-./drivers/emacps/xemacps_main.c:698:95: warning: 'rxsr' may be used uninitialized in this function [-Wmaybe-uninitialized]
-  698 |             XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
-      |                                                                                               ^
+./drivers/emacps/xemacps_main.c:784:87: warning: 'rxsr' may be used uninitialized in this function [-Wmaybe-uninitialized]
+  784 |     XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
+      |                                                                                       ^
 ./kernel/locking/lock.c: In function 'spin_lock_try_acquire':
 ./kernel/locking/lock.c:13:33: warning: passing argument 2 of 'atomic_swap_d' makes integer from pointer without a cast [-Wint-conversion]
    13 |     return atomic_swap_d(LOCKED,&lock->flag);
@@ -610,18 +610,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0xddfa4		memsz 0xddfb8
-		writing 0xddfa4 bytes
-		padding up to 0xde200
+		filesz 0xde1d4		memsz 0xde1e8
+		writing 0xde1d4 bytes
+		padding up to 0xde400
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 1776 sector(s)
+kernel_size: 1777 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.000268357 s, 124 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000284195 s, 117 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt

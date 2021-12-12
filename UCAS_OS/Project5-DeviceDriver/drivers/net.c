@@ -10,11 +10,11 @@ EthernetFrame rx_buffers[RXBD_CNT];
 EthernetFrame tx_buffer;
 uint32_t rx_len[RXBD_CNT];
 
+int rx_allocated = 0;
+
 int net_poll_mode;
 
 volatile int rx_curr = 0, rx_tail = 0;
-LIST_HEAD(net_recv_queue);                            //list_head of wait-recieve process
-LIST_HEAD(net_send_queue);                            //list_head of wait-send process
 
 long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength, int port)
 {
@@ -28,8 +28,12 @@ long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength,
     while(num_packet > 0)
     {
         int num = (num_packet > 32) ? 32 : num_packet;
-        EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+        if(!rx_allocated){
+            EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+            rx_allocated = 1;
+        }
         EmacPsWaitRecv(&EmacPsInstance, num, rx_len);
+        rx_allocated = 0;
         // Copy to user
         for (int i = 0; i < num; i++){
             memcpy(addr, rx_buffers + i, rx_len[i]);

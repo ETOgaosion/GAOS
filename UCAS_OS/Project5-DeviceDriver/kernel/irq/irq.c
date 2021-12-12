@@ -70,6 +70,7 @@ void handle_irq(regs_context_t *regs, int irq)
     // handle external irq from network device
     // Clear IXR and judge type
     int type = XEmacPs_IntrChecker(&EmacPsInstance);
+    printk("type: %d\n\r",type);
     if ((type == 1) && !list_is_empty(&net_send_queue)){
         k_unblock(net_send_queue.next,0);
     }
