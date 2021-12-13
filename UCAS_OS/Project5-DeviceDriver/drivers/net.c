@@ -11,6 +11,7 @@ EthernetFrame tx_buffer;
 uint32_t rx_len[RXBD_CNT];
 
 int rx_allocated = 0;
+int rx_not_used = 1;
 
 int net_poll_mode;
 
@@ -22,15 +23,20 @@ long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength,
     // receive packet by calling network driver's function
     // wait until you receive enough packets(`num_packet`).
     // maybe you need to call drivers' receive function multiple times ?
+    uintptr_t addr_tmp = addr;
+    size_t *frLength_tmp = frLength;
     #ifdef LISTEN_PORT
     (*current_running)->listen_port = port;
     #endif
     while(num_packet > 0)
     {
+        addr = addr_tmp;
+        frLength = frLength_tmp;
         int num = (num_packet > 32) ? 32 : num_packet;
         if(!rx_allocated){
-            EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num);
+            EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num, rx_not_used);
             rx_allocated = 1;
+            rx_not_used = 0;
         }
         EmacPsWaitRecv(&EmacPsInstance, num, rx_len);
         rx_allocated = 0;

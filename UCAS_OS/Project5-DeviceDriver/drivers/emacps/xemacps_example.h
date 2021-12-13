@@ -120,7 +120,7 @@ LONG EmacPsSetIRQMode(XEmacPs *EmacPsInstancePtr, int mode);
 LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t length);
 LONG EmacPsCheckSend(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr);
-LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
+LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet, int way);
 LONG EmacPsCheckRecv(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen);
 LONG EmacPsCheckRecvPort(XEmacPs_Bd *BdRxPtr);

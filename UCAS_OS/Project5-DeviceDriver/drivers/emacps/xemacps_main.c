@@ -594,7 +594,7 @@ LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr)
     return Status;
 }
 
-LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet)
+LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet, int way)
 {
     LONG Status = XST_SUCCESS;
     XEmacPs_Bd * BdTemplate;
@@ -633,15 +633,16 @@ LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_pack
     XEmacPs_BdClearRxNew(CurBd);
     XEmacPs_BdSetRxWrap((UINTPTR)CurBd);
 
-    Status = XEmacPs_BdRingToHw(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, BdTemplate);
+    if(way){
+        Status = XEmacPs_BdRingToHw(&(XEmacPs_GetRxRing(EmacPsInstancePtr)), num_packet, BdTemplate);
 
-    if (Status != XST_SUCCESS) {
-        printk("fail (*current_running)->pid: %d\n\r",(*current_running)->pid);
-        printk("Status: 0x%lx\n\r",Status);
-        EmacPsUtilErrorTrap("[ERROR] > Error in committing RxBD to HW");
-        return XST_FAILURE;
+        if (Status != XST_SUCCESS) {
+            printk("fail (*current_running)->pid: %d\n\r",(*current_running)->pid);
+            printk("Status: 0x%lx\n\r",Status);
+            EmacPsUtilErrorTrap("[ERROR] > Error in committing RxBD to HW");
+            return XST_FAILURE;
+        }
     }
-
     // flush again!
     Xil_DCacheFlushRange(0, 64);
     /*
@@ -759,6 +760,9 @@ try_getrx:
             EmacPsUtilErrorTrap("[ERROR] > Error in freeing up RxBDs");
             return XST_FAILURE;
         }
+
+        Global_BdRxPtr_assigned = 0;
+        Global_NumRxBuf = 0;
     }
 
     // remember to flush dcache
@@ -775,10 +779,9 @@ try_getrx:
     // TODO:
     // NOTE: you can get length from BD
     // Do it in previous circle
-    EmacPsResetRxBD(EmacPsInstancePtr);
+    // EmacPsResetRxBD(EmacPsInstancePtr);
     Global_BdRxPtr_assigned = 0;
     Global_NumRxBuf = 0;
-    XEmacPs_WriteReg(EmacPsInstancePtr->Config.BaseAddress, XEMACPS_RXSR_OFFSET, rxsr | XEMACPS_RXSR_FRAMERX_MASK);
     
     return Status;
 }
@@ -972,7 +975,7 @@ LONG EmacPsDmaSingleFrameIntrExample(XEmacPs *EmacPsInstancePtr)
 	xil_printf("Clear out receive packet memory area\n\r");
     Xil_DCacheFlushRange((UINTPTR)&RxFrame, sizeof(EthernetFrame));
 
-    EmacPsRecv(EmacPsInstancePtr, &RxFrame, 1);
+    EmacPsRecv(EmacPsInstancePtr, &RxFrame, 1, 1);
     EmacPsSend(EmacPsInstancePtr, &TxFrame, TxFrameLength);
 
     EmacPsWaitSend(EmacPsInstancePtr);
