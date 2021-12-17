@@ -427,11 +427,11 @@ LONG XEmacPs_BdRingAlloc(XEmacPs_BdRing * RingPtr, u32 NumBd,
 	if (RingPtr->FreeCnt < NumBd) {
 		Status = (LONG)(XST_FAILURE);
 	} else {
-	/* Set the return argument and move FreeHead forward */
-	*BdSetPtr = RingPtr->FreeHead;
-	XEMACPS_RING_SEEKAHEAD(RingPtr, RingPtr->FreeHead, NumBd);
-	RingPtr->FreeCnt -= NumBd;
-	RingPtr->PreCnt += NumBd;
+		/* Set the return argument and move FreeHead forward */
+		*BdSetPtr = RingPtr->FreeHead;
+		XEMACPS_RING_SEEKAHEAD(RingPtr, RingPtr->FreeHead, NumBd);
+		RingPtr->FreeCnt -= NumBd;
+		RingPtr->PreCnt += NumBd;
 		Status = (LONG)(XST_SUCCESS);
 	}
 	return Status;
@@ -793,6 +793,7 @@ u32 XEmacPs_BdRingFromHwTx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
  *       provide a mutual exclusion mechanism.
  *
  *****************************************************************************/
+#include <os/sched.h>
 u32 XEmacPs_BdRingFromHwRx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
 				 XEmacPs_Bd ** BdSetPtr)
 {
@@ -812,55 +813,57 @@ u32 XEmacPs_BdRingFromHwRx(XEmacPs_BdRing * RingPtr, u32 BdLimit,
 		Status = 0U;
 	} else {
 
-	/* Starting at HwHead, keep moving forward in the list until:
-	 *  - A BD is encountered with its new/used bit set which means
-	 *    hardware has completed processing of that BD.
-	 *  - RingPtr->HwTail is reached and RingPtr->HwCnt is reached.
-	 *  - The number of requested BDs has been processed
-	 */
-	while (BdCount < BdLimit) {
-        /* Read the status */
-        if (CurBdPtr != NULL) {
-            BdStr = XEmacPs_BdRead(CurBdPtr, XEMACPS_BD_STAT_OFFSET);
-        }
-        if ((!(XEmacPs_BdIsRxNew(CurBdPtr))) == TRUE) {
-            break;
-        }
+		/* Starting at HwHead, keep moving forward in the list until:
+		*  - A BD is encountered with its new/used bit set which means
+		*    hardware has completed processing of that BD.
+		*  - RingPtr->HwTail is reached and RingPtr->HwCnt is reached.
+		*  - The number of requested BDs has been processed
+		*/
+		while (BdCount < BdLimit) {
+			/* Read the status */
+			if (CurBdPtr != NULL) {
+				BdStr = XEmacPs_BdRead(CurBdPtr, XEMACPS_BD_STAT_OFFSET);
+			}
+			if ((!(XEmacPs_BdIsRxNew(CurBdPtr))) == TRUE) {
+				break;
+			}
 
-        BdCount++;
+			BdCount++;
+            XEmacPs_BdClearRxNew(CurBdPtr);
 
-        /* hardware has processed this BD so check the "last" bit. If
-         * it is clear, then there are more BDs for the current packet.
-         * Keep a count of these partial packet BDs.
-         */
-        if ((BdStr & XEMACPS_RXBUF_EOF_MASK) != XEMACPS_NULL) {
-            BdPartialCount = 0U;
-        } else {
-            BdPartialCount++;
-        }
+			/* hardware has processed this BD so check the "last" bit. If
+			* it is clear, then there are more BDs for the current packet.
+			* Keep a count of these partial packet BDs.
+			*/
+			if ((BdStr & XEMACPS_RXBUF_EOF_MASK) != XEMACPS_NULL) {
+				BdPartialCount = 0U;
+			} else {
+				BdPartialCount++;
+			}
 
-        /* Move on to next BD in work group */
-        CurBdPtr = XEmacPs_BdRingNext(RingPtr, CurBdPtr);
-    }
+			/* Move on to next BD in work group */
+			CurBdPtr = XEmacPs_BdRingNext(RingPtr, CurBdPtr);
+		}
 
-	/* Subtract off any partial packet BDs found */
-	BdCount -= BdPartialCount;
+		/* Subtract off any partial packet BDs found */
+		BdCount -= BdPartialCount;
 
-	/* If BdCount is non-zero then BDs were found to return. Set return
-	 * parameters, update pointers and counters, return success
-	 */
-	if (BdCount > XEMACPS_NULL) {
-		*BdSetPtr = RingPtr->HwHead;
-		RingPtr->HwCnt -= BdCount;
-		RingPtr->PostCnt += BdCount;
-		XEMACPS_RING_SEEKAHEAD(RingPtr, RingPtr->HwHead, BdCount);
-		Status = (BdCount);
+		/* If BdCount is non-zero then BDs were found to return. Set return
+		* parameters, update pointers and counters, return success
+		*/
+
+		if (BdCount > XEMACPS_NULL) {
+			*BdSetPtr = RingPtr->HwHead;
+			RingPtr->HwCnt -= BdCount;
+			RingPtr->PostCnt += BdCount;
+			XEMACPS_RING_SEEKAHEAD(RingPtr, RingPtr->HwHead, BdCount);
+			Status = (BdCount);
+		}
+		else {
+			*BdSetPtr = NULL;
+			Status = 0U;
+		}
 	}
-	else {
-		*BdSetPtr = NULL;
-		Status = 0U;
-	}
-}
 	return Status;
 }
 

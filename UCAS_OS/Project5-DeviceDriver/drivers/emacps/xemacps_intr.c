@@ -234,7 +234,7 @@ LONG XEmacPs_IntrChecker(XEmacPs *InstancePtr)
 
 	/* Clear the interrupt status register */
 	XEmacPs_WriteReg(InstancePtr->Config.BaseAddress, XEMACPS_ISR_OFFSET, RegISR | XEMACPS_IXR_ALL_MASK);
-	if (RegISR & XEMACPS_IXR_FRAMERX_MASK){
+	if ((RegISR & XEMACPS_IXR_FRAMERX_MASK) || (RegISR & XEMACPS_IXR_RXUSED_MASK)){
         return 2;
     }
     else if(RegISR & XEMACPS_IXR_TXCOMPL_MASK){

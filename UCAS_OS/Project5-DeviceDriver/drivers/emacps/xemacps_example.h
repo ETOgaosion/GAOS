@@ -120,9 +120,12 @@ LONG EmacPsSetIRQMode(XEmacPs *EmacPsInstancePtr, int mode);
 LONG EmacPsSend(XEmacPs *EmacPsInstancePtr, EthernetFrame *TxFrame, size_t length);
 LONG EmacPsCheckSend(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsWaitSend(XEmacPs *EmacPsInstancePtr);
-LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet, int way);
+LONG EmacPsRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
+LONG EmacPsResetRecv(XEmacPs *EmacPsInstancePtr, EthernetFrame *RxFrame, int num_packet);
 LONG EmacPsCheckRecv(XEmacPs *EmacPsInstancePtr);
-LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen);
+void EmacPs_DisableRead(XEmacPs *EmacPsInstancePtr);
+void EmacPs_EnableRead(XEmacPs *EmacPsInstancePtr);
+LONG EmacPsWaitRecv(XEmacPs *EmacPsInstancePtr, int num_packet, u32* RxFrLen, int *rx_ports);
 LONG EmacPsCheckRecvPort(XEmacPs_Bd *BdRxPtr);
 LONG EmacPsResetTxBD(XEmacPs *EmacPsInstancePtr);
 LONG EmacPsResetRxBD(XEmacPs *EmacPsInstancePtr);
@@ -130,6 +133,7 @@ LONG EmacPsResetRxBD(XEmacPs *EmacPsInstancePtr);
 /************************** Variable Definitions ****************************/
 
 extern XEmacPs EmacPsInstance;	/* Device instance used throughout examples */
+extern XEmacPs EmacPsInstance_cpy;	/* Device instance used throughout examples */
 extern char EmacPsMAC[];	/* Local MAC address */
 extern char BroadcastMAC[];
 extern char DestMAC[];

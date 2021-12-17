@@ -7,11 +7,12 @@
 #include <tasks.h>
 
 EthernetFrame rx_buffers[RXBD_CNT];
-EthernetFrame tx_buffer;
+int rx_ports[RXBD_CNT];
 uint32_t rx_len[RXBD_CNT];
+uint32_t rx_len_cpy[RXBD_CNT];
+EthernetFrame tx_buffer;
 
-int rx_allocated = 0;
-int rx_not_used = 1;
+int rx_owner = 0;
 
 int net_poll_mode;
 
@@ -28,26 +29,47 @@ long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength,
     #ifdef LISTEN_PORT
     (*current_running)->listen_port = port;
     #endif
-    while(num_packet > 0)
-    {
-        addr = addr_tmp;
-        frLength = frLength_tmp;
-        int num = (num_packet > 32) ? 32 : num_packet;
-        if(!rx_allocated){
-            EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers), num, rx_not_used);
-            rx_allocated = 1;
-            rx_not_used = 0;
+    if(!rx_owner){
+        rx_owner = (*current_running)->pid;
+        EmacPsRecv(&EmacPsInstance, kva2pa(rx_buffers),/* num_packet <= 32 ? num_packet :*/ 32);
+    }
+    addr = addr_tmp;
+    frLength = frLength_tmp;
+    if(rx_owner == (*current_running)->pid){
+        EmacPsWaitRecv(&EmacPsInstance, num_packet, rx_len,rx_ports);
+    }
+    else{
+        EmacPsWaitRecv(&EmacPsInstance, num_packet, rx_len_cpy,rx_ports);
+    }
+    // Copy to user
+    int i = 0, j = 0;
+    while(i < (num_packet >= 32 ? 32 : num_packet)){
+        if((*current_running)->listen_port > 0){
+            if(rx_ports[i] == (*current_running)->listen_port){
+                memcpy(addr, rx_buffers + i, rx_len[j]);
+                if(rx_owner == (*current_running)->pid){
+                    *frLength = rx_len[j];
+                    frLength ++;
+                    addr += rx_len[j];
+                }
+                else{
+                    *frLength = rx_len_cpy[j];
+                    frLength ++;
+                    addr += rx_len_cpy[j];
+                }
+                i++,j++;
+            }
+            else{
+                i++;
+            }
         }
-        EmacPsWaitRecv(&EmacPsInstance, num, rx_len);
-        rx_allocated = 0;
-        // Copy to user
-        for (int i = 0; i < num; i++){
-            memcpy(addr, rx_buffers + i, rx_len[i]);
-            *frLength = rx_len[i];
+        else{
+            memcpy(addr, rx_buffers + i, rx_len[j]);
+            *frLength = rx_len[j];
             frLength ++;
-            addr += rx_len[i];
+            addr += rx_len[j];
+            i++, j++;
         }
-        num_packet -= 32;
     }
     return 1;
 }
