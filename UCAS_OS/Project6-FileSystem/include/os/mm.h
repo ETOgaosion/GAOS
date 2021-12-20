@@ -34,7 +34,7 @@
 #define MEM_SIZE 32
 #define PAGE_SIZE 4096 // 4K
 #define INIT_KERNEL_STACK 0xffffffc050500000lu
-#define TOP_USABLE_SPACE 0xffffffc05d000000lu
+#define TOP_USABLE_SPACE 0xffffffc05c000000lu
 #define MAX_PAGE_NUM_PER_PCB 0x1000
 #define PAGE_LIMIT 0x9500
 #define WATER_MASK PAGE_SIZE * PAGE_LIMIT
@@ -49,7 +49,7 @@
 #define ROUND(a, n)     (((((uint64_t)(a))+(n)-1)) & ~((n)-1))
 #define ROUNDDOWN(a, n) (((uint64_t)(a)) & ~((n)-1))
 
-#define SD_SWAP 2048
+#define SD_SWAP (1 << 30)
 
 extern ptr_t memCurr;
 typedef struct {

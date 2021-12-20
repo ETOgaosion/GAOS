@@ -898,6 +898,7 @@ LONG XEmacPs_BdRingFree(XEmacPs_BdRing * RingPtr, u32 NumBd,
     } else {
         /* Make sure we are in sync with XEmacPs_BdRingFromHw() */
         if ((RingPtr->PostCnt < NumBd) || (RingPtr->PostHead != BdSetPtr)) {
+			printk("RingPtr->PostCnt: %d, NumBd: %d,  RingPtr->PostHead: %x, BdSetPtr: %x",RingPtr->PostCnt,NumBd,RingPtr->PostHead,BdSetPtr);
             Status = (LONG)(XST_DMA_SG_LIST_ERROR);
         } else {
             /* Update pointers and counters */

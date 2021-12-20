@@ -784,8 +784,8 @@ try_getrx:
         if((*current_running)->listen_port > 0 && Global_RecvPort == (*current_running)->listen_port && Global_NumRxBuf > tmpFramesRx - prev_tmpFramesRx){
             if(!list_is_empty(&net_recv_queue)){
                 k_unblock(net_recv_queue.next,0);
+                continue;
             }
-            continue;
         }
         #endif
 

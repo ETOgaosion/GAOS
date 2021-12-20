@@ -21,9 +21,11 @@ typedef enum {
     USER_PROCESS,
     USER_THREAD,
 } task_type_t;
+
+/* task information, used to init PCB */
 typedef struct task_info
 {
-    ptr_t entry_point;
+    uintptr_t entry_point;
     task_type_t type;
 } task_info_t;
 
@@ -46,5 +48,11 @@ typedef struct task_info
 
 typedef char EthernetFrame[XEMACPS_MAX_FRAME_SIZE]
 	__attribute__ ((aligned(64)));
+
+/* define for test_fs.c */
+
+#define O_RDONLY 1 /* read only open */
+#define O_WRONLY 2 /* write only open */
+#define O_RDWR 3 /* read/write open */
 
 #endif // OS_H
