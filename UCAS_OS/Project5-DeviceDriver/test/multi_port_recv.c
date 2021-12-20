@@ -46,11 +46,8 @@ void multi_port_recver(int argc, long *argv[])
 int main(int argc, char *argv[])
 {
     int print_location = 1, max_recv_size = 3;
-    if (argc >= 1) {
-        print_location = (int)atoi((char *)argv);
-    }
-    if(argc >= 2){
-        max_recv_size = (int)atoi((char *)argv + SHELL_ARG_MAX_LENGTH);
+    if(argc >= 1){
+        max_recv_size = (int)atoi((char *)argv);
     }
 
     mthread_t recver[2];
