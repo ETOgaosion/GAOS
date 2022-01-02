@@ -707,7 +707,7 @@ Disassembly of section .text:
    107de:	fd043783          	ld	a5,-48(s0)
    107e2:	fef43423          	sd	a5,-24(s0)
    107e6:	fe843503          	ld	a0,-24(s0)
-   107ea:	3cd010ef          	jal	ra,123b6 <rmdir>
+   107ea:	3a9010ef          	jal	ra,12392 <rmdir>
    107ee:	87aa                	mv	a5,a0
    107f0:	853e                	mv	a0,a5
    107f2:	70a2                	ld	ra,40(sp)
@@ -736,7 +736,7 @@ Disassembly of section .text:
    1082e:	fd043783          	ld	a5,-48(s0)
    10832:	fef43423          	sd	a5,-24(s0)
    10836:	fe843503          	ld	a0,-24(s0)
-   1083a:	359010ef          	jal	ra,12392 <cd>
+   1083a:	37d010ef          	jal	ra,123b6 <cd>
    1083e:	87aa                	mv	a5,a0
    10840:	853e                	mv	a0,a5
    10842:	70a2                	ld	ra,40(sp)
@@ -3268,7 +3268,7 @@ Disassembly of section .text:
    1238e:	6105                	addi	sp,sp,32
    12390:	8082                	ret
 
-0000000000012392 <cd>:
+0000000000012392 <rmdir>:
    12392:	1101                	addi	sp,sp,-32
    12394:	ec06                	sd	ra,24(sp)
    12396:	e822                	sd	s0,16(sp)
@@ -3285,7 +3285,7 @@ Disassembly of section .text:
    123b2:	6105                	addi	sp,sp,32
    123b4:	8082                	ret
 
-00000000000123b6 <rmdir>:
+00000000000123b6 <cd>:
    123b6:	1101                	addi	sp,sp,-32
    123b8:	ec06                	sd	ra,24(sp)
    123ba:	e822                	sd	s0,16(sp)

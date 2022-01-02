@@ -6,8 +6,8 @@ int statfs();
 
 // dir
 int mkdir(char * dirname);
-int cd(char * dirname);
 int rmdir(char * dirname);
+int cd(char * dirname);
 int ls(char * dirname, int option);
 int pwd(char *dirname);
 // inode_t *find(inode_t *dp, char *name, int type);

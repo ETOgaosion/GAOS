@@ -18,12 +18,12 @@ int mkdir(char * dirname)
     return sys_dirop(0, dirname, 0);
 }
 
-int cd(char * dirname)
+int rmdir(char * dirname)
 {
     return sys_dirop(1,dirname,0);
 }
 
-int rmdir(char * dirname)
+int cd(char * dirname)
 {
     return sys_dirop(2,dirname,0);
 }

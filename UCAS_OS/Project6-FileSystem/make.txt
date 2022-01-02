@@ -1,4 +1,102 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/test_shell.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/test_shell.elf
+In file included from test/test_shell.c:29:
+tiny_libc/include/string.h:7:7: warning: conflicting types for built-in function 'memcpy'; expected 'void *(void *, const void *, long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    7 | void *memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |       ^~~~~~
+tiny_libc/include/string.h:6:1: note: 'memcpy' is declared in header '<string.h>'
+    5 | #include <stddef.h>
+  +++ |+#include <string.h>
+    6 | 
+tiny_libc/include/string.h:8:7: warning: conflicting types for built-in function 'memset'; expected 'void *(void *, int,  long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    8 | void *memset(void *dest, uint8_t val, size_t len);
+      |       ^~~~~~
+tiny_libc/include/string.h:8:7: note: 'memset' is declared in header '<string.h>'
+tiny_libc/include/string.h:9:5: warning: conflicting types for built-in function 'memcmp'; expected 'int(const void *, const void *, long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    9 | int memcmp(const void *ptr1, const void* ptr2, uint32_t num);
+      |     ^~~~~~
+tiny_libc/include/string.h:9:5: note: 'memcmp' is declared in header '<string.h>'
+tiny_libc/include/string.h:14:5: warning: conflicting types for built-in function 'strlen'; expected 'long unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   14 | int strlen(const char *src);
+      |     ^~~~~~
+tiny_libc/include/string.h:14:5: note: 'strlen' is declared in header '<string.h>'
+In file included from test/test_shell.c:36:
+tiny_libc/include/fs.h:20:5: warning: conflicting types for built-in function 'fwrite'; expected 'long unsigned int(const void *, long unsigned int,  long unsigned int,  void *)' [-Wbuiltin-declaration-mismatch]
+   20 | int fwrite(int fd, char *buff, int size);
+      |     ^~~~~~
+tiny_libc/include/fs.h:1:1: note: 'fwrite' is declared in header '<stdio.h>'
+  +++ |+#include <stdio.h>
+    1 | #ifndef _FS_H_
+test/test_shell.c: In function 'shell_exec':
+test/test_shell.c:179:31: warning: passing argument 1 of 'sys_spawn' from incompatible pointer type [-Wincompatible-pointer-types]
+  179 |         return (int)sys_spawn(first_arg, 0, NULL, mode);
+      |                               ^~~~~~~~~
+      |                               |
+      |                               char *
+In file included from test/test_shell.c:31:
+tiny_libc/include/sys/syscall.h:38:37: note: expected 'task_info_t *' {aka 'struct task_info *'} but argument is of type 'char *'
+   38 | extern pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode);
+      |                        ~~~~~~~~~~~~~^~~~
+test/test_shell.c:200:31: warning: passing argument 1 of 'sys_spawn' from incompatible pointer type [-Wincompatible-pointer-types]
+  200 |         return (int)sys_spawn(first_arg, argc, (char *)argv + 2 * SHELL_ARG_MAX_LENGTH, mode);
+      |                               ^~~~~~~~~
+      |                               |
+      |                               char *
+In file included from test/test_shell.c:31:
+tiny_libc/include/sys/syscall.h:38:37: note: expected 'task_info_t *' {aka 'struct task_info *'} but argument is of type 'char *'
+   38 | extern pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode);
+      |                        ~~~~~~~~~~~~~^~~~
+test/test_shell.c:200:61: warning: passing argument 3 of 'sys_spawn' from incompatible pointer type [-Wincompatible-pointer-types]
+  200 |         return (int)sys_spawn(first_arg, argc, (char *)argv + 2 * SHELL_ARG_MAX_LENGTH, mode);
+In file included from test/test_shell.c:31:
+tiny_libc/include/sys/syscall.h:38:59: note: expected 'char **' but argument is of type 'char *'
+   38 | extern pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode);
+      |                                                     ~~~~~~^~~~~~
+test/test_shell.c:205:35: warning: passing argument 1 of 'sys_spawn' from incompatible pointer type [-Wincompatible-pointer-types]
+  205 |             return (int)sys_spawn(first_arg, argc, (char *)argv + 4 * SHELL_ARG_MAX_LENGTH, mode);
+      |                                   ^~~~~~~~~
+      |                                   |
+      |                                   char *
+In file included from test/test_shell.c:31:
+tiny_libc/include/sys/syscall.h:38:37: note: expected 'task_info_t *' {aka 'struct task_info *'} but argument is of type 'char *'
+   38 | extern pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode);
+      |                        ~~~~~~~~~~~~~^~~~
+test/test_shell.c:205:65: warning: passing argument 3 of 'sys_spawn' from incompatible pointer type [-Wincompatible-pointer-types]
+  205 |             return (int)sys_spawn(first_arg, argc, (char *)argv + 4 * SHELL_ARG_MAX_LENGTH, mode);
+In file included from test/test_shell.c:31:
+tiny_libc/include/sys/syscall.h:38:59: note: expected 'char **' but argument is of type 'char *'
+   38 | extern pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode);
+      |                                                     ~~~~~~^~~~~~
+test/test_shell.c: In function 'shell_ls':
+test/test_shell.c:329:41: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  329 |             memcpy((uint8_t *)filename, first_arg, SHELL_ARG_MAX_LENGTH);
+      |                                         ^~~~~~~~~
+      |                                         |
+      |                                         char *
+In file included from test/test_shell.c:29:
+tiny_libc/include/string.h:7:7: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+    7 | void *memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |       ^~~~~~
+test/test_shell.c:339:41: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  339 |             memcpy((uint8_t *)filename, second_arg, SHELL_ARG_MAX_LENGTH);
+      |                                         ^~~~~~~~~~
+      |                                         |
+      |                                         char *
+In file included from test/test_shell.c:29:
+tiny_libc/include/string.h:7:7: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+    7 | void *memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |       ^~~~~~
+test/test_shell.c: In function 'main':
+test/test_shell.c:474:60: warning: passing argument 2 of 'cmd_table[i].handler' from incompatible pointer type [-Wincompatible-pointer-types]
+  474 |                 cmd_res = cmd_table[i].handler(arg_idx - 1,arg);
+      |                                                            ^~~
+      |                                                            |
+      |                                                            char (*)[16]
+test/test_shell.c:474:60: note: expected 'char **' but argument is of type 'char (*)[16]'
+test/test_shell.c: In function 'shell_taskset':
+test/test_shell.c:258:23: warning: 'pid' may be used uninitialized in this function [-Wmaybe-uninitialized]
+  258 |         taskset_arg_t taskset_args = {.mask = mask, .pid = pid};
+      |                       ^~~~~~~~~~~~
 echo "" > user_programs.c
 echo "" > user_programs.h
 for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf ./test/multi_port_recv.elf ./test/test_fs.elf; do ./elf2char --header-only $prog >> user_programs.h; done
@@ -581,14 +679,8 @@ include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned
   143 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'k_mkdir':
-./kernel/mm/fs.c:213:19: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  213 |     inode_t *in = (inode_t *)(INO_MEM_ADDR + current_ino);
-      |                   ^
-./kernel/mm/fs.c:247:23: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  247 |     dir_entry_t *de = (dir_entry_t *)(DATA_MEM_ADDR + start);
-      |                       ^
-./kernel/mm/fs.c:250:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  250 |     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
+./kernel/mm/fs.c:249:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  249 |     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
       |                                 ^~~~~~~
       |                                 |
       |                                 char *
@@ -598,19 +690,19 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:254:25: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
-  254 |     memset(INO_MEM_ADDR + de->ino,0,sizeof(inode_t));
+./kernel/mm/fs.c:253:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
+  253 |     memset(pa2kva(INO_MEM_ADDR + de->ino * BLOCK_SIZE),0,sizeof(inode_t));
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |            |
+      |            uintptr_t {aka long unsigned int}
 In file included from include/os/elf.h:4,
                  from include/os/sched.h:41,
                  from ./kernel/mm/fs.c:3:
-include/os/string.h:34:19: note: expected 'void *' but argument is of type 'int'
+include/os/string.h:34:19: note: expected 'void *' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    34 | void memset(void *dest, uint8_t val, uint32_t len);
       |             ~~~~~~^~~~
-./kernel/mm/fs.c:255:22: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  255 |     inode_t *inode = (inode_t *)(INO_MEM_ADDR + de->ino);
-      |                      ^
-./kernel/mm/fs.c:265:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  265 |     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
+./kernel/mm/fs.c:264:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  264 |     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
       |                                 ^~~~~~~
       |                                 |
       |                                 char *
@@ -620,8 +712,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:266:34: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  266 |     memcpy((uint8_t *)de->alias, ".", 1);
+./kernel/mm/fs.c:265:34: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  265 |     memcpy((uint8_t *)de->alias, ".", 1);
       |                                  ^~~
       |                                  |
       |                                  char *
@@ -631,11 +723,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:270:27: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  270 |     dir_entry_t *par_de = (dir_entry_t *)(DATA_MEM_ADDR + in->dir_blks[0] * BLOCK_SIZE);
-      |                           ^
-./kernel/mm/fs.c:271:39: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  271 |     memcpy((uint8_t *)de->name, par_de->name, strlen(par_de->name));
+./kernel/mm/fs.c:270:39: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  270 |     memcpy((uint8_t *)de->name, par_de->name, strlen(par_de->name));
       |                                 ~~~~~~^~~~~~
       |                                       |
       |                                       char *
@@ -645,8 +734,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:272:34: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  272 |     memcpy((uint8_t *)de->alias, "..", 2);
+./kernel/mm/fs.c:271:34: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  271 |     memcpy((uint8_t *)de->alias, "..", 2);
       |                                  ^~~~
       |                                  |
       |                                  char *
@@ -656,18 +745,12 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:276:5: warning: 'return' with no value, in function returning non-void [-Wreturn-type]
-  276 |     return;
-      |     ^~~~~~
-./kernel/mm/fs.c:200:5: note: declared here
-  200 | int k_mkdir(char * dirname)
-      |     ^~~~~~~
 ./kernel/mm/fs.c:207:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
   207 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'k_rmdir':
-./kernel/mm/fs.c:286:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  286 |     uintptr_t status;
+./kernel/mm/fs.c:285:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  285 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'find_dir':
 ./kernel/mm/fs.c:354:49: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
@@ -799,20 +882,16 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
 ./kernel/mm/fs.c:513:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
   513 |     uintptr_t status;
       |               ^~~~~~
-In file included from ./kernel/mm/fs.c:10:
 ./kernel/mm/fs.c: In function 'k_cat':
-include/os/fs.h:31:29: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
-   31 | #define DATA_MEM_ADDR       0x5d20a000
-      |                             ^~~~~~~~~~
-      |                             |
-      |                             int
-./kernel/mm/fs.c:556:12: note: in expansion of macro 'DATA_MEM_ADDR'
-  556 |     memset(DATA_MEM_ADDR, 0, inode->used_size * SECTOR_SIZE * BLOCK_SECTORS);
-      |            ^~~~~~~~~~~~~
+./kernel/mm/fs.c:556:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
+  556 |     memset(pa2kva(DATA_MEM_ADDR), 0, inode->used_size * SECTOR_SIZE * BLOCK_SECTORS);
+      |            ^~~~~~~~~~~~~~~~~~~~~
+      |            |
+      |            uintptr_t {aka long unsigned int}
 In file included from include/os/elf.h:4,
                  from include/os/sched.h:41,
                  from ./kernel/mm/fs.c:3:
-include/os/string.h:34:19: note: expected 'void *' but argument is of type 'int'
+include/os/string.h:34:19: note: expected 'void *' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    34 | void memset(void *dest, uint8_t val, uint32_t len);
       |             ~~~~~~^~~~
 ./kernel/mm/fs.c: In function 'k_fread':
@@ -985,14 +1064,12 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   951 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'alloc_inode':
-./kernel/mm/fs.c:975:49: warning: suggest parentheses around '+' inside '<<' [-Wparentheses]
-  975 |                 free_inode = i << BYTE_BIT_BIOS + j;
-./kernel/mm/fs.c:966:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  966 |     uintptr_t status;
+./kernel/mm/fs.c:962:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  962 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'free_inode':
-./kernel/mm/fs.c:988:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  988 |     uintptr_t status;
+./kernel/mm/fs.c:989:15: warning: unused variable 'status' [-Wunused-variable]
+  989 |     uintptr_t status;
       |               ^~~~~~
 ./libs/printk.c: In function 'port_write_wrapper':
 ./libs/printk.c:251:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
@@ -1017,18 +1094,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0x109fbc		memsz 0x109fd0
-		writing 0x109fbc bytes
-		padding up to 0x10a200
+		filesz 0x10a204		memsz 0x10a218
+		writing 0x10a204 bytes
+		padding up to 0x10a600
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 2128 sector(s)
+kernel_size: 2130 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.00327383 s, 10.2 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000242095 s, 137 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt
