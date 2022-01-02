@@ -61,6 +61,11 @@ extern long sys_get_timebase();
 extern long sys_get_tick();
 extern long sys_get_wall_time(long *);
 
+extern int sys_fsop(int op);
+extern int sys_dirop(int op, char *dirname, int option);
+extern int sys_fileop(int op, char *mul_char, int mul_int, int size);
+extern int sys_linkop(int op, char *src, char *dst);
+extern int sys_lseek(int fd, int offset, int whence, int r_or_w);
 
 extern long sys_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength, int port);
 extern void sys_net_send(uintptr_t addr, size_t length);

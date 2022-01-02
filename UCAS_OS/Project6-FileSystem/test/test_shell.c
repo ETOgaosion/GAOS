@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <fs.h>
 
 #define BEGIN cmd_in_length = 0;\
     sys_screen_clear();\
@@ -55,8 +56,19 @@ static int shell_help(int argc, char *argv[]);
 static int shell_exec(int argc, char *argv[]);
 static int shell_kill(int argc, char *argv[]);
 static int shell_taskset(int argc, char *argv[]);
-static void shell_ps(int argc, char *argv[]);
-static void shell_clear(int argc, char *argv[]);
+static int shell_ps(int argc, char *argv[]);
+static int shell_clear(int argc, char *argv[]);
+static int shell_mkfs(int argc, char *argv[]);
+static int shell_statfs(int argc, char *argv[]);
+static int shell_mkdir(int argc, char *argv[]);
+static int shell_rmdir(int argc, char *argv[]);
+static int shell_cd(int argc, char *argv[]);
+static int shell_ls(int argc, char *argv[]);
+static int shell_pwd(int argc, char *argv[]);
+static int shell_touch(int argc, char *argv[]);
+static int shell_cat(int argc, char *argv[]);
+static int shell_rm(int argc, char *argv[]);
+static int shell_ln(int argc, char *argv[]);
 
 #define HELP 0
 #define EXEC 1
@@ -64,6 +76,18 @@ static void shell_clear(int argc, char *argv[]);
 #define TASKSET 3
 #define PS 4
 #define CLEAR 5
+#define MKFS 6
+#define STATFS 7
+#define MKDIR 8
+#define RMDIR 9
+#define CD 10
+#define LS 11
+#define PWD 12
+#define TOUCH 13
+#define CAT 14
+#define RM 15
+#define LN 16
+
 static struct {
     char *cmd_full_name;
     char *cmd_alias;
@@ -78,7 +102,18 @@ static struct {
     {"kill", "k", "Kill process [pid](start from 1)", "kill [pid]",&shell_kill, 1, 1},
     {"taskset","ts","Start a task's or set some task's running core","taskset [mask] [taskid]/taskset -p [mask] [taskid]",&shell_taskset,3,3},
     {"ps", "ps", "Display all process", "ps", &shell_ps, 0,0},
-    {"clear", "clr", "Clear the screen", "clear", &shell_clear, 0,0}
+    {"clear", "clr", "Clear the screen", "clear", &shell_clear, 0,0},
+    {"mkfs","mkfs", "Initial file system", "mkfs", &shell_mkfs, 0,0},
+    {"statfs", "stfs", "Show info of file system", "statfs", &shell_statfs, 0,0},
+    {"mkdir", "md", "Create a directory", "mkdir [name]", &shell_mkdir, 1,1},
+    {"rmdir", "rmd", "Remove a directory", "rmdir [name]", &shell_rmdir, 1,1},
+    {"cd", "c", "Change a directory", "cd [name]", &shell_cd, 1,1},
+    {"ls", "l", "Show content of directory", "ls [-option] [name]", &shell_ls, 2,0},
+    {"pwd", "p", "Show current path", "pwd", &shell_pwd, 0,0},
+    {"touch", "t", "Create a file", "touch [name]", &shell_touch, 1,1},
+    {"cat", "cat", "Print content of file to console", "cat [name]", &shell_cat, 1,1},
+    {"rm", "rm", "Remove a file", "rm [name]", &shell_rm, 1,1},
+    {"ln", "ln", "Link file to another directory", "ln [-s] <path1> <path2>", &shell_ln, 3,2}
 };
 
 char cmd_not_found[] = "command not found";
@@ -147,7 +182,7 @@ static int shell_exec(int argc, char *argv[])
     if(!second_arg || strcmp(second_arg,"-a") == 0){
         mode = ENTER_ZOMBIE_ON_EXIT;
     }
-    else if(second_arg == "-m"){
+    else if(!strcmp(second_arg,"-m")){
         if(argc <3){
             panic(arg_num_error);
             return -1;
@@ -174,6 +209,7 @@ static int shell_exec(int argc, char *argv[])
         panic(arg_num_error);
         return -1;
     }
+    return 0;
 }
 
 static int shell_kill(int argc, char *argv[])
@@ -225,15 +261,147 @@ static int shell_taskset(int argc, char *argv[])
     }
 }
 
-static void shell_ps(int argc, char *argv[])
+static int shell_ps(int argc, char *argv[])
 {
     cmd_in_length += sys_process_show();
+    return 0;
 }
 
-static void shell_clear(int argc, char *argv[]){
+static int shell_clear(int argc, char *argv[]){
     sys_screen_clear();
     BEGIN
+    return 0;
 }
+
+static int shell_mkfs(int argc, char *argv[])
+{
+    return mkfs();
+}
+
+static int shell_statfs(int argc, char *argv[])
+{
+    return statfs();
+}
+
+static int shell_mkdir(int argc, char *argv[])
+{
+    if(argc < cmd_table[MKDIR].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *dirname = (char *)argv;
+    return mkdir(dirname);
+}
+
+static int shell_rmdir(int argc, char *argv[])
+{
+    if(argc < cmd_table[RMDIR].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *dirname = (char *)argv;
+    return rmdir(dirname);
+}
+
+static int shell_cd(int argc, char *argv[])
+{
+    if(argc < cmd_table[CD].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *dirname = (char *)argv;
+    return cd(dirname);
+}
+
+static int shell_ls(int argc, char *argv[])
+{
+    char filename[SHELL_ARG_MAX_LENGTH] = {0};
+    int option = 0;
+    if(argc != 1 && argc != 2){
+        option = -1;
+    }
+    char *first_arg = (char *)argv;
+    if(argc == 1){
+        if(first_arg[0] == '-'){
+            option = first_arg[1] - 'a';
+        }
+        else{
+            memcpy((uint8_t *)filename, first_arg, SHELL_ARG_MAX_LENGTH);
+        }
+    }
+    char *second_arg = (char *)(argv + SHELL_ARG_MAX_LENGTH);
+    if(argc == 2){
+        if(first_arg[0] != '-'){
+            panic(arg_num_error);
+        }
+        else{
+            option = first_arg[1] - 'a';
+            memcpy((uint8_t *)filename, second_arg, SHELL_ARG_MAX_LENGTH);
+        }
+    }
+    return ls(filename,option);
+}
+
+static int shell_pwd(int argc, char *argv[])
+{
+    if(argc < cmd_table[PWD].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *filename = (char *)argv;
+    return pwd(filename);
+}
+
+static int shell_touch(int argc, char *argv[])
+{
+    if(argc < cmd_table[TOUCH].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *filename = (char *)argv;
+    return touch(filename);
+}
+
+static int shell_cat(int argc, char *argv[])
+{
+    if(argc < cmd_table[CAT].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *filename = (char *)argv;
+    return cat(filename);
+}
+
+static int shell_rm(int argc, char *argv[])
+{
+    if(argc < cmd_table[RM].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *filename = (char *)argv;
+    return frm(filename);
+}
+
+static int shell_ln(int argc, char *argv[])
+{
+    if(argc < cmd_table[RM].min_arg_num){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *first_arg = (char *)argv;
+    char *second_arg = (char *)(argv + SHELL_ARG_MAX_LENGTH);
+    if(argc == 2){
+        return ln(0,first_arg,second_arg);
+    }
+    if(strcmp(first_arg,"-s") || (strcmp(first_arg,"-h"))){
+        panic(arg_num_error);
+        return -1;
+    }
+    char *third_arg = (char *)(argv + 2 * SHELL_ARG_MAX_LENGTH);
+    return ln(first_arg[1] - 'h' > 0 ? 1 : 0, second_arg, third_arg);
+}
+
+// #define DEBUG_WITHOUT_INIT_FS
 
 int main()
 {
@@ -248,7 +416,13 @@ int main()
     bool cmd_found = false;
     while (1)
     {
-        printf("\n[master@GAOS] > ");
+        printf("\n[master@GAOS] @");
+        char dirname[SHELL_ARG_MAX_LENGTH];
+        #ifndef DEBUG_WITHOUT_INIT_FS
+        pwd(dirname);
+        #endif
+        printf("%s",dirname);
+        printf(" > ");
         // TODO: call syscall to read UART port
         // 3-^C 4-^D, 8-^H(backspace), 9-^I(\t) 10-^J(new line), 13-^M(\r), 24-^X(cancel), 127-Del, 32~126 readable char
         // TODO: parse input

@@ -82,7 +82,7 @@ void shmpagedt(void *addr)
 void sys_write(char *buff)
 {
     // TODO:
-    invoke_syscall(SYSCALL_WRITE,buff,IGNORE,IGNORE,IGNORE,IGNORE);
+    invoke_syscall(SYSCALL_WRITE_SCREEN,buff,IGNORE,IGNORE,IGNORE,IGNORE);
 }
 
 void sys_move_cursor(int x, int y)
@@ -148,6 +148,30 @@ void sys_sleep(long time)
 {
     // TODO:
     invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE,IGNORE,IGNORE);
+}
+
+int sys_fsop(int op)
+{
+    return invoke_syscall(SYSCALL_FSOP,op,IGNORE,IGNORE,IGNORE,IGNORE);
+}
+
+int sys_dirop(int op, char *dirname, int option)
+{
+    return invoke_syscall(SYSCALL_DIROP,op,dirname,option,IGNORE,IGNORE);
+}
+
+int sys_fileop(int op, char *mul_char, int mul_int, int size){
+    return invoke_syscall(SYSCALL_FILEOP,op,mul_char,mul_int,size,IGNORE);
+}
+
+int sys_linkop(int op, char *src, char *dst)
+{
+    return invoke_syscall(SYSCALL_LINKOP,op,src,dst,IGNORE,IGNORE);
+}
+
+int sys_lseek(int fd, int offset, int whence, int r_or_w)
+{
+    return invoke_syscall(SYSCALL_LSEEK, fd, offset, whence, r_or_w, IGNORE);
 }
 
 long sys_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength, int port){

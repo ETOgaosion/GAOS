@@ -355,12 +355,12 @@ int k_mbox_send(int key, mbox_arg_t *arg, int operator){
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->write_tail + arg->msg_length);
     if(left_space < 0){
-        memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
-        memcpy(mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
+        memcpy((uint8_t *)mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail);
+        memcpy((uint8_t *)mbox_list[key]->buff,arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->write_tail, -left_space);
         mbox_list[key]->write_tail = -left_space;
     }
     else{
-        memcpy(mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
+        memcpy((uint8_t *)mbox_list[key]->buff + mbox_list[key]->write_tail,arg->msg,arg->msg_length);
         mbox_list[key]->write_tail += arg->msg_length;
     }
     mbox_list[key]->used_units += arg->msg_length;
@@ -384,12 +384,12 @@ int k_mbox_recv(int key, mbox_arg_t *arg, int operator){
     }
     int left_space = MBOX_MSG_MAX_LEN - (mbox_list[key]->read_head + arg->msg_length);
     if(left_space < 0){
-        memcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
-        memcpy(arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
+        memcpy((uint8_t *)arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,MBOX_MSG_MAX_LEN - mbox_list[key]->read_head);
+        memcpy((uint8_t *)arg->msg + MBOX_MSG_MAX_LEN - mbox_list[key]->read_head,mbox_list[key]->buff, -left_space);
         mbox_list[key]->read_head = -left_space;
     }
     else{
-        memcpy(arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
+        memcpy((uint8_t *)arg->msg,mbox_list[key]->buff + mbox_list[key]->read_head,arg->msg_length);
         mbox_list[key]->read_head += arg->msg_length;
     }
     mbox_list[key]->used_units -= arg->msg_length;

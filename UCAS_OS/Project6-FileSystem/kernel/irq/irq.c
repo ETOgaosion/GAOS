@@ -20,6 +20,7 @@
 #include <os/comm.h>
 #include <net.h>
 #include <tasks.h>
+#include <os/fs.h>
 
 handler_t irq_table[IRQC_COUNT];
 handler_t exc_table[EXCC_COUNT];
@@ -31,13 +32,14 @@ void reset_irq_timer()
     // TODO: call following functions when task4
     screen_reflush();
     check_timer();
+    #ifndef DEBUG_WITHOUT_NET
     if(!EmacPsInstance.IrqMode){
         #ifdef TIE
         EmacPsCheckRecv(&EmacPsInstance);
         EmacPsCheckSend(&EmacPsInstance);
         #endif
     }
-
+    #endif
     // note: use sbi_set_timer
     // remember to reschedule
     sbi_set_timer(get_ticks() + get_time_base()/TICKS_INTERVAL);
@@ -107,7 +109,7 @@ void init_syscall(void)
     syscall[SYSCALL_SHMPGET]        = (long (*)())&shm_page_get;
     syscall[SYSCALL_SHMPDT]         = (long (*)())&shm_page_dt;
     
-    syscall[SYSCALL_WRITE]          = (long (*)())&screen_write;
+    syscall[SYSCALL_WRITE_SCREEN]   = (long (*)())&screen_write;
     syscall[SYSCALL_MOVE_CURSOR]    = (long (*)())&screen_move_cursor;
     syscall[SYSCALL_REFLUSH]        = (long (*)())&screen_reflush;
     syscall[SYSCALL_SERIAL_READ]    = (long (*)())&sbi_console_getchar;
@@ -117,6 +119,12 @@ void init_syscall(void)
     syscall[SYSCALL_GET_TIMEBASE]   = (long (*)())&get_timer;
     syscall[SYSCALL_GET_TICK]       = (long (*)())&get_ticks;
     syscall[SYSCALL_GET_WALL_TIME]  = (long (*)())&get_wall_time;
+
+    syscall[SYSCALL_FSOP]           = (long (*)())&k_fsop;
+    syscall[SYSCALL_DIROP]          = (long (*)())&k_dirop;
+    syscall[SYSCALL_FILEOP]         = (long (*)())&k_fileop;
+    syscall[SYSCALL_LINKOP]         = (long (*)())&k_linkop;
+    syscall[SYSCALL_LSEEK]          = (long (*)())&k_lseek;
 
     syscall[SYSCALL_NET_RECV]       = (long (*)())&k_net_recv;
     syscall[SYSCALL_NET_SEND]       = (long (*)())&k_net_send;

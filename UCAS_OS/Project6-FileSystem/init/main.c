@@ -21,6 +21,7 @@
 #include <emacps/xemacps_example.h>
 #include <net.h>
 #include <os/ioremap.h>
+#include <os/fs.h>
 #include <assert.h>
 
 extern void ret_from_exception();
@@ -95,7 +96,7 @@ void init_pcb_stack_pointer(pcb_t *pcb){
         pcb->pgdir = (PTE *)(allocPage() - PAGE_SIZE);
         clear_pgdir((uintptr_t)pcb->pgdir);
         cancel_direct_map(0x50000000);
-        memcpy((char *)pcb->pgdir, (char *)pa2kva(PGDIR_PA), PAGE_SIZE);
+        memcpy((uint8_t *)pcb->pgdir, (uint8_t *)pa2kva(PGDIR_PA), PAGE_SIZE);
         // user stack
         pcb->user_sp_useeable = (USER_STACK_BIOS + PAGE_SIZE) & ~((((uint64_t)1) << 7) - 1);
         pcb->user_sp_kseeonly = (uint64_t)alloc_page_helper((uintptr_t)USER_STACK_BIOS, (uintptr_t)pcb->pgdir, 1, 0);
@@ -292,7 +293,15 @@ void boot_first_core(uintptr_t _dtb){
     // network card
     #ifndef DEBUG_WITHOUT_NET
     setup_network();
+    printk("> [INIT] Network initialization succeeded.\n\r");
     #endif
+
+    // setup file system
+    #ifndef DEBUG_WITHOUT_INIT_FS
+    k_mkfs();
+    printk("> [INIT] File System initialization succeeded.\n\r");
+    #endif
+
     init_pcb(0);
     printk("> [INIT] PCB initialization succeeded.\n\r");
 

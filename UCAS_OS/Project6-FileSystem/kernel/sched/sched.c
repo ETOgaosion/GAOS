@@ -301,10 +301,10 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     regs_context_t *src_pt_regs = (regs_context_t *)(src_kernel_stack + SWITCH_TO_SIZE);
     
     kid->user_sp_kseeonly = kid->user_sp_kseeonly - src->user_sp_kseeonly + src_pt_regs->regs[8];
-    memcpy((void *)kid->user_sp_kseeonly, (void *)src->user_sp_kseeonly, (PAGE_SIZE - src->user_sp_kseeonly % PAGE_SIZE));
+    memcpy((uint8_t *)kid->user_sp_kseeonly, (uint8_t *)src->user_sp_kseeonly, (PAGE_SIZE - src->user_sp_kseeonly % PAGE_SIZE));
     
     kid->user_sp_useeable = kid->user_sp_useeable - src->user_sp_useeable + src_pt_regs->regs[8];
-    memcpy((void *)kid->user_sp_useeable, (void *)src->user_sp_useeable, (PAGE_SIZE - src->user_sp_useeable % PAGE_SIZE));
+    memcpy((uint8_t *)kid->user_sp_useeable, (uint8_t *)src->user_sp_useeable, (PAGE_SIZE - src->user_sp_useeable % PAGE_SIZE));
 
     // kid's ra, after do scheduler of the last task, kid shall go to ret_from_exception
     kid_stored_switchto_k->regs[0] = (reg_t)&ret_from_exception;
@@ -312,7 +312,7 @@ void copy_pcb_stack(ptr_t kid_kernel_stack, ptr_t kid_user_stack,pcb_t *kid, ptr
     kid_stored_switchto_k->regs[2] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[2] % PAGE_SIZE);
     // kid's ksp, copy from src, but shall move to it's own page
     kid_stored_switchto_k->regs[1] = kid_kernel_stack - (PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE);
-    memcpy((void *)kid_stored_switchto_k->regs[1], (void *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
+    memcpy((uint8_t *)kid_stored_switchto_k->regs[1], (uint8_t *)src_stored_switchto_k->regs[1], PAGE_SIZE - src_stored_switchto_k->regs[1] % PAGE_SIZE - sizeof(regs_context_t) - sizeof(switchto_context_t));
     for(int i=2;i<14;i++){
         kid_stored_switchto_k->regs[i] = src_stored_switchto_k->regs[i];
     }
@@ -400,7 +400,7 @@ pid_t k_spawn(char *names, int argc, char *argv[], spawn_mode_t mode)
     *((PTE *)pcb[pcb_i].pgdir + 1) = 0;
     new->user_sp_kseeonly = (char *)new->user_sp_kseeonly - argc * SHELL_ARG_MAX_LENGTH;
     new->user_sp_useeable = (char *)new->user_sp_useeable - argc * SHELL_ARG_MAX_LENGTH;
-    memcpy((char *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
+    memcpy((uint8_t *)new->user_sp_kseeonly,argv,argc * SHELL_ARG_MAX_LENGTH);
     int elf_idx = match_elf(names);
     ptr_t start_pos = (ptr_t)load_elf(elf_files[elf_idx].file_content,*elf_files[elf_idx].file_length,new->pgdir,alloc_page_helper_user);
     new->pid = pcb_i + 1;

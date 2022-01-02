@@ -51,8 +51,8 @@ typedef char EthernetFrame[XEMACPS_MAX_FRAME_SIZE]
 
 /* define for test_fs.c */
 
-#define O_RDONLY 1 /* read only open */
-#define O_WRONLY 2 /* write only open */
-#define O_RDWR 3 /* read/write open */
+#define O_RD  0x001 /* read only open */
+#define O_WR  0x010 /* write only open */
+#define O_EXE 0x100 /* read/write open */
 
 #endif // OS_H

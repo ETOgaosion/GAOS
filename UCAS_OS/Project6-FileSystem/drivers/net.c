@@ -46,7 +46,7 @@ long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength,
     while(i < (num_packet >= 32 ? 32 : num_packet)){
         if((*current_running)->listen_port > 0){
             if(rx_ports[i] == (*current_running)->listen_port){
-                memcpy(addr, rx_buffers + i, rx_len[j]);
+                memcpy((uint8_t *)addr, rx_buffers + i, rx_len[j]);
                 if(rx_owner == (*current_running)->pid){
                     *frLength = rx_len[j];
                     frLength ++;
@@ -64,7 +64,7 @@ long k_net_recv(uintptr_t addr, size_t length, int num_packet, size_t* frLength,
             }
         }
         else{
-            memcpy(addr, rx_buffers + i, rx_len[j]);
+            memcpy((uint8_t *)addr, rx_buffers + i, rx_len[j]);
             *frLength = rx_len[j];
             frLength ++;
             addr += rx_len[j];
@@ -80,7 +80,7 @@ void k_net_send(uintptr_t addr, size_t length)
     // send all packet
     // maybe you need to call drivers' send function multiple times ?
     // Copy to `buffer'
-    memcpy(&tx_buffer, addr, length);
+    memcpy((uint8_t *)&tx_buffer, addr, length);
     // send packet
     EmacPsSend(&EmacPsInstance, kva2pa(&tx_buffer), length);
     EmacPsWaitSend(&EmacPsInstance);

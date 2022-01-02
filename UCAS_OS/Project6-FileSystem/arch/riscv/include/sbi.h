@@ -48,12 +48,33 @@ static inline void sbi_console_putstr(char *str)
     }
 }
 
-static inline uintptr_t sbi_sd_write(
+static inline uintptr_t sbi_sd_write_64(
     unsigned int mem_address, unsigned int num_of_sectors,
     unsigned int sector_id)
 {
     return SBI_CALL_3(
         SBI_SD_WRITE, mem_address, num_of_sectors, sector_id);
+}
+
+static inline uintptr_t sbi_sd_write(
+    unsigned int mem_address, unsigned int num_of_sectors,
+    unsigned int sector_id)
+{
+    while (num_of_sectors > 64)
+    {
+        sbi_sd_write_64(mem_address,64,sector_id);
+        num_of_sectors -= 64;
+        sector_id += 64;
+        mem_address += 64 * 512;
+    }
+    return sbi_sd_write_64(mem_address,num_of_sectors,sector_id);
+}
+
+static inline uintptr_t sbi_sd_blk_write(
+    unsigned int mem_address, unsigned int num_of_blocks,
+    unsigned int block_id)
+{
+    return sbi_sd_write(mem_address,num_of_blocks << 3, block_id << 3);
 }
 
 static inline uintptr_t sbi_sd_read_64(
@@ -80,9 +101,9 @@ static inline uintptr_t sbi_sd_read(
 
 static inline uintptr_t sbi_sd_blk_read(
     unsigned int mem_address, unsigned int num_of_blocks,
-    unsigned int sector_id)
+    unsigned int block_id)
 {
-    return sbi_sd_read(mem_address,num_of_blocks << 3, sector_id);
+    return sbi_sd_read(mem_address,num_of_blocks << 3, block_id << 3);
 }
 
 static inline void sbi_console_putchar(int ch)

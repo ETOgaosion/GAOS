@@ -8,7 +8,8 @@
 #define EIE
 #define LISTEN_PORT
 #define BLOCK_MAP
-//#define DEBUG_WITHOUT_NET
+#define DEBUG_WITHOUT_NET
+// #define DEBUG_WITHOUT_INIT_FS
 // #define QEMU
 // #define INIT_WITH_PRIORITY
 // #define SCHED_WITH_PRIORITY
