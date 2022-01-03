@@ -1,4 +1,31 @@
 riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T riscv.lds -Wall -mcmodel=medany -Iinclude -Idrivers -nostdinc -g -fvar-tracking -ffreestanding -Iarch/riscv/include -o bootblock ./arch/riscv/boot/bootblock.S -e main -Ttext=0x50200000
+riscv64-unknown-linux-gnu-gcc -O0 -nostdlib -T user_riscv.lds -Wall -mcmodel=medany -Itest -Itiny_libc/include -nostdinc -g -fvar-tracking -Iarch/riscv/include test/test_fs.c -L./ -ltiny_libc ./arch/riscv/crt0.o -o test/test_fs.elf
+In file included from test/test_fs.c:2:
+tiny_libc/include/string.h:7:7: warning: conflicting types for built-in function 'memcpy'; expected 'void *(void *, const void *, long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    7 | void *memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |       ^~~~~~
+tiny_libc/include/string.h:1:1: note: 'memcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | #ifndef STRING_H
+tiny_libc/include/string.h:8:7: warning: conflicting types for built-in function 'memset'; expected 'void *(void *, int,  long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    8 | void *memset(void *dest, uint8_t val, size_t len);
+      |       ^~~~~~
+tiny_libc/include/string.h:8:7: note: 'memset' is declared in header '<string.h>'
+tiny_libc/include/string.h:9:5: warning: conflicting types for built-in function 'memcmp'; expected 'int(const void *, const void *, long unsigned int)' [-Wbuiltin-declaration-mismatch]
+    9 | int memcmp(const void *ptr1, const void* ptr2, uint32_t num);
+      |     ^~~~~~
+tiny_libc/include/string.h:9:5: note: 'memcmp' is declared in header '<string.h>'
+tiny_libc/include/string.h:14:5: warning: conflicting types for built-in function 'strlen'; expected 'long unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   14 | int strlen(const char *src);
+      |     ^~~~~~
+tiny_libc/include/string.h:14:5: note: 'strlen' is declared in header '<string.h>'
+In file included from test/test_fs.c:4:
+tiny_libc/include/fs.h:20:5: warning: conflicting types for built-in function 'fwrite'; expected 'long unsigned int(const void *, long unsigned int,  long unsigned int,  void *)' [-Wbuiltin-declaration-mismatch]
+   20 | int fwrite(int fd, char *buff, int size);
+      |     ^~~~~~
+tiny_libc/include/fs.h:1:1: note: 'fwrite' is declared in header '<stdio.h>'
+  +++ |+#include <stdio.h>
+    1 | #ifndef _FS_H_
 echo "" > user_programs.c
 echo "" > user_programs.h
 for prog in ./test/test_shell.elf ./test/rw.elf ./test/fly.elf ./test/consensus.elf ./test/lock.elf ./test/mailbox.elf ./test/bubble.elf ./test/swap_page.elf ./test/recv.elf ./test/send.elf ./test/multi_port_recv.elf ./test/test_fs.elf; do ./elf2char --header-only $prog >> user_programs.h; done
@@ -746,8 +773,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:34:19: note: expected 'void *' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    34 | void memset(void *dest, uint8_t val, uint32_t len);
       |             ~~~~~~^~~~
-./kernel/mm/fs.c:541:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  541 |     memcpy((uint8_t *)de->name, filename, strlen(filename));
+./kernel/mm/fs.c:542:33: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  542 |     memcpy((uint8_t *)de->name, filename, strlen(filename));
       |                                 ^~~~~~~~
       |                                 |
       |                                 char *
@@ -757,9 +784,9 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:545:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
-  545 |     memset(pa2kva(INO_MEM_ADDR + de->ino), 0, sizeof(inode));
-      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+./kernel/mm/fs.c:547:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
+  547 |     memset(pa2kva(INO_MEM_ADDR + de->ino * BLOCK_SIZE), 0, sizeof(inode));
+      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |            |
       |            uintptr_t {aka long unsigned int}
 In file included from include/os/elf.h:4,
@@ -768,8 +795,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:34:19: note: expected 'void *' but argument is of type 'uintptr_t' {aka 'long unsigned int'}
    34 | void memset(void *dest, uint8_t val, uint32_t len);
       |             ~~~~~~^~~~
-./kernel/mm/fs.c:556:29: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  556 |     sbi_sd_blk_write(kva2pa(inode), 1, sublk->fs_start + sublk->inode_start + inode->ino);
+./kernel/mm/fs.c:558:29: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  558 |     sbi_sd_blk_write(kva2pa(inode), 1, sublk->fs_start + sublk->inode_start + inode->ino);
       |                             ^~~~~
       |                             |
       |                             inode_t * {aka struct inode *}
@@ -785,8 +812,8 @@ arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsig
   525 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'k_cat':
-./kernel/mm/fs.c:568:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
-  568 |     memset(pa2kva(DATA_MEM_ADDR), 0, inode->used_size * SECTOR_SIZE * BLOCK_SECTORS);
+./kernel/mm/fs.c:572:12: warning: passing argument 1 of 'memset' makes pointer from integer without a cast [-Wint-conversion]
+  572 |     memset(pa2kva(DATA_MEM_ADDR), 0, inode->used_size * SECTOR_SIZE * BLOCK_SECTORS);
       |            ^~~~~~~~~~~~~~~~~~~~~
       |            |
       |            uintptr_t {aka long unsigned int}
@@ -797,8 +824,8 @@ include/os/string.h:34:19: note: expected 'void *' but argument is of type 'uint
    34 | void memset(void *dest, uint8_t val, uint32_t len);
       |             ~~~~~~^~~~
 ./kernel/mm/fs.c: In function 'k_fread':
-./kernel/mm/fs.c:610:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  610 |         sbi_sd_blk_read(kva2pa(buffer), 1, file_discriptors[fd].r_pos / BLOCK_SIZE);
+./kernel/mm/fs.c:614:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  614 |         sbi_sd_blk_read(kva2pa(buffer), 1, file_discriptors[fd].r_pos / BLOCK_SIZE);
       |                                ^~~~~~
       |                                |
       |                                uint8_t * {aka unsigned char *}
@@ -807,8 +834,8 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:623:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  623 |         sbi_sd_blk_read(kva2pa(buffer), 1, start + in->dir_blks[through_times + 1]);
+./kernel/mm/fs.c:627:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  627 |         sbi_sd_blk_read(kva2pa(buffer), 1, start + in->dir_blks[through_times + 1]);
       |                                ^~~~~~
       |                                |
       |                                uint8_t * {aka unsigned char *}
@@ -817,8 +844,8 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:639:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  639 |         sbi_sd_blk_read(kva2pa(buffer), 1, start + indir_list->blks[through_times]);
+./kernel/mm/fs.c:643:32: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  643 |         sbi_sd_blk_read(kva2pa(buffer), 1, start + indir_list->blks[through_times]);
       |                                ^~~~~~
       |                                |
       |                                uint8_t * {aka unsigned char *}
@@ -827,8 +854,8 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:660:36: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  660 |             sbi_sd_blk_read(kva2pa(buffer), 1, start + db_indir_list->blks[through_times_db]);
+./kernel/mm/fs.c:664:36: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  664 |             sbi_sd_blk_read(kva2pa(buffer), 1, start + db_indir_list->blks[through_times_db]);
       |                                    ^~~~~~
       |                                    |
       |                                    uint8_t * {aka unsigned char *}
@@ -837,20 +864,20 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:598:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  598 |     uintptr_t status;
+./kernel/mm/fs.c:602:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  602 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'k_fwrite':
-./kernel/mm/fs.c:695:40: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  695 |         memcpy((uint8_t *)buffer, buff + file_discriptors[fd].w_pos % BLOCK_SIZE, tmp_size );
+./kernel/mm/fs.c:700:29: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  700 |         memcpy(buffer, buff + file_discriptors[fd].w_pos % BLOCK_SIZE, tmp_size );
 In file included from include/os/elf.h:4,
                  from include/os/sched.h:41,
                  from ./kernel/mm/fs.c:3:
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:696:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  696 |         sbi_sd_blk_write(kva2pa(buffer), 1, file_discriptors[fd].w_pos / BLOCK_SIZE);
+./kernel/mm/fs.c:701:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  701 |         sbi_sd_blk_write(kva2pa(buffer), 1, file_discriptors[fd].w_pos / BLOCK_SIZE);
       |                                 ^~~~~~
       |                                 |
       |                                 uint8_t * {aka unsigned char *}
@@ -859,8 +886,39 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:708:35: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  708 |         memcpy((uint8_t *)buffer, buff, tmp_size);
+./kernel/mm/fs.c:713:24: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  713 |         memcpy(buffer, buff, tmp_size);
+      |                        ^~~~
+      |                        |
+      |                        char *
+In file included from include/os/elf.h:4,
+                 from include/os/sched.h:41,
+                 from ./kernel/mm/fs.c:3:
+include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
+   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
+      |                            ~~~~~~~~~~~~~~~^~~
+./kernel/mm/fs.c:717:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  717 |         sbi_sd_blk_write(kva2pa(buffer), 1, start + in->dir_blks[through_times + 1]);
+      |                                 ^~~~~~
+      |                                 |
+      |                                 uint8_t * {aka unsigned char *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/fs.c:3:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./kernel/mm/fs.c:723:29: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  723 |     sbi_sd_blk_write(kva2pa(in),1,sublk->fs_start + sublk->inode_start + in->ino);
+      |                             ^~
+      |                             |
+      |                             inode_t * {aka struct inode *}
+In file included from include/os/sched.h:39,
+                 from ./kernel/mm/fs.c:3:
+arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'inode_t *' {aka 'struct inode *'}
+  100 | static inline uintptr_t kva2pa(uintptr_t kva)
+      |                                ~~~~~~~~~~^~~
+./kernel/mm/fs.c:733:35: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  733 |         memcpy((uint8_t *)buffer, buff, tmp_size);
       |                                   ^~~~
       |                                   |
       |                                   char *
@@ -870,8 +928,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:712:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  712 |         sbi_sd_blk_write(kva2pa(buffer), 1, start + in->dir_blks[through_times + 1]);
+./kernel/mm/fs.c:735:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  735 |         sbi_sd_blk_write(kva2pa(buffer), 1, start + indir_list->blks[through_times]);
       |                                 ^~~~~~
       |                                 |
       |                                 uint8_t * {aka unsigned char *}
@@ -880,29 +938,8 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:727:35: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  727 |         memcpy((uint8_t *)buffer, buff, tmp_size);
-      |                                   ^~~~
-      |                                   |
-      |                                   char *
-In file included from include/os/elf.h:4,
-                 from include/os/sched.h:41,
-                 from ./kernel/mm/fs.c:3:
-include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
-   33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
-      |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:729:33: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  729 |         sbi_sd_blk_write(kva2pa(buffer), 1, start + indir_list->blks[through_times]);
-      |                                 ^~~~~~
-      |                                 |
-      |                                 uint8_t * {aka unsigned char *}
-In file included from include/os/sched.h:39,
-                 from ./kernel/mm/fs.c:3:
-arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
-  100 | static inline uintptr_t kva2pa(uintptr_t kva)
-      |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:749:39: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
-  749 |             memcpy((uint8_t *)buffer, buff, tmp_size);
+./kernel/mm/fs.c:755:39: warning: pointer targets in passing argument 2 of 'memcpy' differ in signedness [-Wpointer-sign]
+  755 |             memcpy((uint8_t *)buffer, buff, tmp_size);
       |                                       ^~~~
       |                                       |
       |                                       char *
@@ -912,8 +949,8 @@ In file included from include/os/elf.h:4,
 include/os/string.h:33:43: note: expected 'const uint8_t *' {aka 'const unsigned char *'} but argument is of type 'char *'
    33 | void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len);
       |                            ~~~~~~~~~~~~~~~^~~
-./kernel/mm/fs.c:750:37: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  750 |             sbi_sd_blk_write(kva2pa(buffer), 1, start + db_indir_list->blks[through_times_db]);
+./kernel/mm/fs.c:756:37: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  756 |             sbi_sd_blk_write(kva2pa(buffer), 1, start + db_indir_list->blks[through_times_db]);
       |                                     ^~~~~~
       |                                     |
       |                                     uint8_t * {aka unsigned char *}
@@ -922,12 +959,12 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'uint8_t *' {aka 'unsigned char *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:683:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  683 |     uintptr_t status;
+./kernel/mm/fs.c:688:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  688 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'k_links':
-./kernel/mm/fs.c:830:29: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
-  830 |     sbi_sd_blk_write(kva2pa(in), 1, sublk->fs_start + sublk->inode_start + dir_dst.ino);
+./kernel/mm/fs.c:836:29: warning: passing argument 1 of 'kva2pa' makes integer from pointer without a cast [-Wint-conversion]
+  836 |     sbi_sd_blk_write(kva2pa(in), 1, sublk->fs_start + sublk->inode_start + dir_dst.ino);
       |                             ^~
       |                             |
       |                             inode_t * {aka struct inode *}
@@ -936,42 +973,39 @@ In file included from include/os/sched.h:39,
 arch/riscv/include/pgtable.h:100:42: note: expected 'uintptr_t' {aka 'long unsigned int'} but argument is of type 'inode_t *' {aka 'struct inode *'}
   100 | static inline uintptr_t kva2pa(uintptr_t kva)
       |                                ~~~~~~~~~~^~~
-./kernel/mm/fs.c:821:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  821 |     uintptr_t status;
+./kernel/mm/fs.c:827:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  827 |     uintptr_t status;
       |               ^~~~~~
-./kernel/mm/fs.c:820:13: warning: unused variable 'file_ino' [-Wunused-variable]
-  820 |     uint8_t file_ino = find_file_ino(dir_src);
+./kernel/mm/fs.c:826:13: warning: unused variable 'file_ino' [-Wunused-variable]
+  826 |     uint8_t file_ino = find_file_ino(dir_src);
       |             ^~~~~~~~
 ./kernel/mm/fs.c: In function 'k_lseek':
-./kernel/mm/fs.c:857:23: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  857 |             uintptr_t status;
+./kernel/mm/fs.c:863:23: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  863 |             uintptr_t status;
       |                       ^~~~~~
 ./kernel/mm/fs.c: In function 'check_fs':
-./kernel/mm/fs.c:876:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  876 |     uintptr_t status;
+./kernel/mm/fs.c:882:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  882 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'find_file_ino':
-./kernel/mm/fs.c:903:27: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  903 |         dir_entry_t *de = (dir_entry_t *)(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
-      |                           ^
-./kernel/mm/fs.c:886:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  886 |     uintptr_t status;
+./kernel/mm/fs.c:892:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  892 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'alloc_block':
-./kernel/mm/fs.c:932:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  932 |     uintptr_t status;
+./kernel/mm/fs.c:938:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  938 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'free_block':
-./kernel/mm/fs.c:965:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  965 |     uintptr_t status;
+./kernel/mm/fs.c:971:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  971 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'alloc_inode':
-./kernel/mm/fs.c:976:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
-  976 |     uintptr_t status;
+./kernel/mm/fs.c:982:15: warning: variable 'status' set but not used [-Wunused-but-set-variable]
+  982 |     uintptr_t status;
       |               ^~~~~~
 ./kernel/mm/fs.c: In function 'free_inode':
-./kernel/mm/fs.c:1003:15: warning: unused variable 'status' [-Wunused-variable]
- 1003 |     uintptr_t status;
+./kernel/mm/fs.c:1009:15: warning: unused variable 'status' [-Wunused-variable]
+ 1009 |     uintptr_t status;
       |               ^~~~~~
 ./libs/printk.c: In function 'port_write_wrapper':
 ./libs/printk.c:251:21: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
@@ -996,18 +1030,18 @@ kernelimage can open
 0x50203000: kernelimage
 	segment 0
 		offset 0x1000		vaddr 0x50203000
-		filesz 0x10a784		memsz 0x10a798
-		writing 0x10a784 bytes
-		padding up to 0x10aa00
+		filesz 0x10aa44		memsz 0x10aa58
+		writing 0x10aa44 bytes
+		padding up to 0x10ae00
 	segment 1
 		offset 0x0		vaddr 0x0
 		filesz 0x0		memsz 0x0
-kernel_size: 2132 sector(s)
+kernel_size: 2134 sector(s)
 there are 1 kernel(s) in image
 dd if=/dev/zero of=image oflag=append conv=notrunc bs=512 count=65
 65+0 records in
 65+0 records out
-33280 bytes (33 kB, 32 KiB) copied, 0.00040468 s, 82.2 MB/s
+33280 bytes (33 kB, 32 KiB) copied, 0.000294865 s, 113 MB/s
 riscv64-unknown-linux-gnu-objdump -d main > kernel.txt
 riscv64-unknown-linux-gnu-objdump -d kernelimage > kernel_boot.txt
 riscv64-unknown-linux-gnu-objdump -d test/test_shell.elf > test_shell.txt

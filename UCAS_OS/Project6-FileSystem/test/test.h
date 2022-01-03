@@ -34,7 +34,7 @@
 #define SHELL_ARG_MAX_NUM 10
 #define SHELL_ARG_MAX_LENGTH 2*8
 #define SUPPORTED_CMD_NUM 17
-#define CURRENT_TASK_NUM 9
+#define CURRENT_TASK_NUM 10
 #define MAX_CMD_IN_LINES 16
 
 void test_shell();

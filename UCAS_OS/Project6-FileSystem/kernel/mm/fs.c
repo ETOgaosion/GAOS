@@ -535,15 +535,17 @@ int k_touch(char * filename)
         inode->dir_blks[inode->used_size - 1] = alloc_block();
     }
     memset(pa2kva(DATA_MEM_ADDR), 0, sizeof(dir_entry_t));
-    dir_entry_t *de = (dir_entry_t *)DATA_MEM_ADDR;
+    dir_entry_t *de = (dir_entry_t *)pa2kva(DATA_MEM_ADDR);
     de->mode = FILE;
     de->ino = alloc_inode();
+    memset((uint8_t *)de->name,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->name, filename, strlen(filename));
+    memset((uint8_t *)de->alias,0,MAX_NAME_LEN);
     sbi_sd_blk_write(DATA_MEM_ADDR, 1, sublk->fs_start + sublk->datablock_start + inode->dir_blks[inode->used_size - 1]);
     sbi_sd_blk_write(INO_MEM_ADDR + current_ino, 1, sublk->fs_start + sublk->inode_start + current_ino);
     // handle new inode
-    memset(pa2kva(INO_MEM_ADDR + de->ino), 0, sizeof(inode));
-    inode = (inode_t *)pa2kva(INO_MEM_ADDR + de->ino);
+    memset(pa2kva(INO_MEM_ADDR + de->ino * BLOCK_SIZE), 0, sizeof(inode));
+    inode = (inode_t *)pa2kva(INO_MEM_ADDR + de->ino * BLOCK_SIZE);
     inode->ino = de->ino;
     inode->mode = READ | WRITE; 
     inode->link_num = 0;
@@ -554,6 +556,8 @@ int k_touch(char * filename)
     inode->indir_blks_offset = 0;
     inode->dbindir_blks_offset = 0;
     sbi_sd_blk_write(kva2pa(inode), 1, sublk->fs_start + sublk->inode_start + inode->ino);
+    sbi_sd_blk_write(DATA_MEM_ADDR, 1, sublk->fs_start + sublk->datablock_start + inode->dir_blks[0]);
+    prints("successfully touch file:%s\n",filename);
     return 0;
 }
 
@@ -602,7 +606,7 @@ int k_fread(int fd, char *buff, int size)
     inode_t *in = (inode_t *)pa2kva(INO_MEM_ADDR + inode* BLOCK_SIZE);
     int sz = 0;
     uint32_t start = sublk->fs_start + sublk->datablock_start;
-    uint8_t buffer_raw[BLOCK_SIZE * BYTE_BIT_BIOS] = {0};
+    uint8_t buffer_raw[BLOCK_SIZE] = {0};
     uint8_t *buffer = buffer_raw;
     // handle unalign
     if (file_discriptors[fd].r_pos % BLOCK_SIZE != 0){
@@ -674,6 +678,7 @@ int k_fread(int fd, char *buff, int size)
     return size;
 }
 
+
 int k_fwrite(int fd, char *buff, int size)
 {
     uint8_t inode = file_discriptors[fd].ino;
@@ -687,12 +692,12 @@ int k_fwrite(int fd, char *buff, int size)
     inode_t *in = (inode_t *)pa2kva(INO_MEM_ADDR + inode* BLOCK_SIZE);
     int sz = 0;
     uint32_t start = sublk->fs_start + sublk->datablock_start;
-    uint8_t buffer_raw[BLOCK_SIZE * BYTE_BIT_BIOS] = {0};
+    uint8_t buffer_raw[BLOCK_SIZE] = {0};
     uint8_t *buffer = buffer_raw;
     // handle unalign
     if (file_discriptors[fd].w_pos % BLOCK_SIZE != 0){
         int tmp_size = BLOCK_SIZE - file_discriptors[fd].w_pos % BLOCK_SIZE;
-        memcpy((uint8_t *)buffer, buff + file_discriptors[fd].w_pos % BLOCK_SIZE, tmp_size );
+        memcpy(buffer, buff + file_discriptors[fd].w_pos % BLOCK_SIZE, tmp_size );
         sbi_sd_blk_write(kva2pa(buffer), 1, file_discriptors[fd].w_pos / BLOCK_SIZE);
         file_discriptors[fd].w_pos += tmp_size;
         sz += tmp_size;
@@ -705,16 +710,17 @@ int k_fwrite(int fd, char *buff, int size)
     int through_times = 0;
     while (through_times < MAX_DIR_BLK - 1 && file_discriptors[fd].w_pos < (MAX_DIR_BLK - 1) * BLOCK_SIZE && size > sz){
         int tmp_size = size - sz < BLOCK_SIZE ? size -sz : BLOCK_SIZE;
-        memcpy((uint8_t *)buffer, buff, tmp_size); 
-        if(in->used_size < through_times + 1){
-            in->dir_blks[through_times + 1] = alloc_block();
-        }
+        memcpy(buffer, buff, tmp_size);
+        in->dir_blks[through_times + 1] = alloc_block();
+        in->used_size++;
+        in->size++;
         sbi_sd_blk_write(kva2pa(buffer), 1, start + in->dir_blks[through_times + 1]);
         sz += tmp_size;
         buff += tmp_size;
         file_discriptors[fd].w_pos += BLOCK_SIZE;
         through_times++;
     }
+    sbi_sd_blk_write(kva2pa(in),1,sublk->fs_start + sublk->inode_start + in->ino);
     if(sz >= size){
         return sz;
     }
@@ -900,7 +906,7 @@ uint8_t find_file_ino(dir_entry_t dir)
     for (int i = 0; i < inode->used_size; i++)
     {
         sbi_sd_blk_read(DATA_MEM_ADDR  + inode->dir_blks[i] * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
-        dir_entry_t *de = (dir_entry_t *)(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
+        dir_entry_t *de = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
         if (!strcmp(de->name, dir.name) && de->ino != 0xff && de->mode == FILE){
             file_ino = de->ino;
             break;

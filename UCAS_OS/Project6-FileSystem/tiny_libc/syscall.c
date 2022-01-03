@@ -1,6 +1,7 @@
 #include <sys/syscall.h>
 #include <sys/syscall_number.h>
 #include <sys/shm.h>
+#include <stdio.h>
 #include <stdint.h>
 
 pid_t sys_spawn(task_info_t *info, int argc, char* argv[], spawn_mode_t mode){

@@ -49,7 +49,7 @@ typedef struct sys_taskset_arg{
     int mask;
 } sys_taskset_arg_t;
 
-char *task_names[] = {"fly","consensus","lock","mailbox","rw","swappage","recv","send","multiportrecv"};
+char *task_names[] = {"fly","consensus","lock","mailbox","rw","swappage","recv","send","multiportrecv","fs"};
 
 void panic(char *error);
 static int shell_help(int argc, char *argv[]);
@@ -348,8 +348,10 @@ static int shell_pwd(int argc, char *argv[])
         panic(arg_num_error);
         return -1;
     }
-    char *filename = (char *)argv;
-    return pwd(filename);
+    char filename[SHELL_ARG_MAX_LENGTH];
+    pwd(filename);
+    printf("%s\n",filename);
+    return 0;
 }
 
 static int shell_touch(int argc, char *argv[])
