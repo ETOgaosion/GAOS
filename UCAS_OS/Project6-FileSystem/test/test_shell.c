@@ -439,7 +439,7 @@ int main()
                 input_buffer[input_length++] = 32;
             }
             else if(ch == 10 || ch == 13){
-                // printf("\n");
+                printf("\n");
                 cmd_in_length++;
                 if(input_length == 0){
                     goto clear_and_next;

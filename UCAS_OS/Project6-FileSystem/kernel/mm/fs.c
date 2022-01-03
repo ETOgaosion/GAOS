@@ -93,23 +93,30 @@ int k_mkfs(){
         printk("[FS] Setting inode...\n\r");
         inode_t *inode = (inode_t *)pa2kva(INO_MEM_ADDR);
         clear_block((uintptr_t)inode);
-        inode[0].ino = 0;
-        inode[0].mode = ROOT;
-        inode[0].access = READ | WRITE;
-        inode[0].link_num = 0;
-        inode[0].size = 2;
-        inode[0].used_size = 2;
-        inode[0].create_time = get_timer();
-        inode[0].modified_time = get_timer();
-        inode[0].dir_blks[0] = alloc_block();
-        inode[0].dir_blks[1] = alloc_block();
+        inode->ino = 0;
+        inode->mode = ROOT;
+        inode->access = READ | WRITE;
+        inode->link_num = 0;
+        inode->size = 2;
+        inode->used_size = 2;
+        inode->create_time = get_timer();
+        inode->modified_time = get_timer();
+        inode->dir_blks[0] = alloc_block();
+        inode->dir_blks[1] = alloc_block();
         for(i = 2; i < MAX_DIR_BLK; i++)
-            inode[0].dir_blks[i] = 0;
-        inode[0].indir_blks_offset = 0;
-        inode[0].dbindir_blks_offset = 0;
-        inode[0].tpindir_blks_offset = 0;
+            inode->dir_blks[i] = 0;
+        inode->indir_blks_offset = 0;
+        inode->dbindir_blks_offset = 0;
+        inode->tpindir_blks_offset = 0;
 
         sbi_sd_blk_write(INO_MEM_ADDR, 1, FS_START_BLK + INO_SD_START);
+        for(int i = 1; i < INO_SIZE; i++){
+            printk("inode: %d/%d\r",i,INO_SIZE);
+            inode = (inode_t *)pa2kva(INO_MEM_ADDR + BLOCK_SIZE * i);
+            clear_block((uintptr_t)inode);
+            sbi_sd_blk_write(INO_MEM_ADDR + BLOCK_SIZE * i, 1, FS_START_BLK + INO_SD_START + i);
+        }
+        inode = (inode_t *)pa2kva(INO_MEM_ADDR);
 
         printk("[FS] Setting dentry...\n\r");
         memset(pa2kva(DATA_MEM_ADDR), 0, 2 * BLOCK_SIZE);
@@ -124,14 +131,14 @@ int k_mkfs(){
         de->mode = PAR;
         de->ino = 0;
 
-        sbi_sd_blk_write(DATA_MEM_ADDR , 1, FS_START_BLK + DATA_SD_START + inode[0].dir_blks[0]);
-        sbi_sd_blk_write(DATA_MEM_ADDR + BLOCK_SIZE,1,FS_START_BLK + DATA_SD_START + inode[0].dir_blks[1]);
+        sbi_sd_blk_write(DATA_MEM_ADDR , 1, FS_START_BLK + DATA_SD_START + inode->dir_blks[0]);
+        sbi_sd_blk_write(DATA_MEM_ADDR + BLOCK_SIZE,1,FS_START_BLK + DATA_SD_START + inode->dir_blks[1]);
 
         //uintptr_t sbi_sd_blk_write(unsigned int mem_address, unsigned int num_of_blocks(512B), unsigned int block_id)
         printk("[FS] Initialize filesystem finished!\n\r");
         // screen_reflush();
         current_inode = pa2kva(INO_MEM_ADDR);
-        current_ino = inode[0].ino;
+        current_ino = inode->ino;
         
     // }
     return 0;
@@ -246,7 +253,9 @@ int k_mkdir(char * dirname)
     dir_entry_t *de = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + start * BLOCK_SIZE);
     de->mode = DIR;
     de->ino = alloc_inode();
+    memset((uint8_t *)de->name,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
+    memset((uint8_t *)de->alias,0,MAX_NAME_LEN);
     sbi_sd_blk_write(DATA_MEM_ADDR + start * BLOCK_SIZE, 1, start_raw + start);
     sbi_sd_blk_write(INO_MEM_ADDR + current_ino * BLOCK_SIZE, 1, superblock->fs_start + superblock->inode_start + current_ino);
     // handle new inode
@@ -261,13 +270,17 @@ int k_mkdir(char * dirname)
     inode->dir_blks[0] = alloc_block();
     inode->dir_blks[1] = alloc_block();
     sbi_sd_blk_write(INO_MEM_ADDR + de->ino * BLOCK_SIZE, 1, superblock->fs_start + superblock->inode_start + inode->ino);
+    memset((uint8_t *)de->name,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->name, dirname, strlen(dirname));
+    memset((uint8_t *)de->alias,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->alias, ".", 1);
     de->mode = CUR;
     sbi_sd_blk_write(DATA_MEM_ADDR  + start * BLOCK_SIZE, 1, start_raw + inode->dir_blks[0]);
     status = sbi_sd_blk_read(DATA_MEM_ADDR + in->dir_blks[0] * BLOCK_SIZE, 1, start_raw + in->dir_blks[0]);
     dir_entry_t *par_de = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + in->dir_blks[0] * BLOCK_SIZE);
+    memset((uint8_t *)de->name,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->name, par_de->name, strlen(par_de->name));
+    memset((uint8_t *)de->alias,0,MAX_NAME_LEN);
     memcpy((uint8_t *)de->alias, "..", 2);
     de->mode = PAR;
     sbi_sd_blk_write(DATA_MEM_ADDR + start * BLOCK_SIZE, 1, start_raw + inode->dir_blks[1]);
@@ -348,8 +361,8 @@ dir_entry_t find_dir(uint8_t ino, char * name, int explore_in)
             uint32_t start = superblock->fs_start + superblock->datablock_start;
             for (int i = 0; i < inode->used_size; i++)
             {
-                status = sbi_sd_blk_read(DATA_MEM_ADDR + (inode->dir_blks[i] + i) * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
-                dir_entry_t *dentry = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i]);
+                status = sbi_sd_blk_read(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
+                dir_entry_t *dentry = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
                 if (!strcmp(dentry->name, name) && dentry->ino != 0xff){
                     memcpy((uint8_t *)dir.name, name, strlen(name));
                     dir.ino = dentry->ino;
@@ -360,11 +373,11 @@ dir_entry_t find_dir(uint8_t ino, char * name, int explore_in)
             dir.ino  = 0xff;
             return dir;
         }
-        else{{
+        else{
             memcpy((uint8_t *)dir.name, name, strlen(name));
             dir.ino  = ino;
             return dir;
-        }}
+        }
     }
     else
     {
@@ -420,7 +433,6 @@ int k_ls(char * dirname, int option)
             prints("%s/%s  ", dentry->name,dentry->alias);
         }
     }
-    prints("\n");
     return 0;
 }
 
@@ -433,7 +445,7 @@ int k_cd(char * dirname)
     // find inode
     dir_entry_t dir;
     if (dirname[0] != '/')
-        dir = find_dir(current_ino, dirname,0);
+        dir = find_dir(current_ino, dirname,1);
     else
         dir = find_dir(0, &dirname[1],0);
     if (dir.ino == 0xff)
@@ -451,10 +463,10 @@ int k_cd(char * dirname)
         if (dentry->ino != 0xff){
             current_ino = dentry->ino;
             current_inode = inode;
-            return 0;
+            break;
         }
     }
-    prints("\n");
+    prints("change dir to %s\n",dirname);
     return 0;
 }
 
@@ -925,7 +937,7 @@ uint32_t alloc_block()
     }
     status = sbi_sd_blk_read(BLK_MAP_MEM_ADDR, sublk->block_map_size, sublk->fs_start + sublk->block_map_start);
     uint8_t *blkmap = (uint8_t *)pa2kva(BLK_MAP_MEM_ADDR);
-    int free_blk = -1;
+    int free_blk = -1;\
     for(int i = 0; i < BLK_MAP_BYTE_SIZE; i++){
         for(int j = 0; j < 8; j++){
             if((*(blkmap + i) & (0x1 << j)) == 0){
@@ -942,6 +954,8 @@ uint32_t alloc_block()
         return -2;
     }
     sbi_sd_blk_write(BLK_MAP_MEM_ADDR, sublk->block_map_size, sublk->fs_start + sublk->block_map_start);
+    status = sbi_sd_blk_read(BLK_MAP_MEM_ADDR, sublk->block_map_size, sublk->fs_start + sublk->block_map_start);
+    blkmap = (uint8_t *)pa2kva(BLK_MAP_MEM_ADDR);
     return free_blk;
 }
 
@@ -980,7 +994,7 @@ uint32_t alloc_inode()
     if(free_inode == -1){
         return -2;
     }
-    sbi_sd_blk_write(INO_MAP_MEM_ADDR, sublk->block_map_size, sublk->fs_start + sublk->block_map_start);
+    sbi_sd_blk_write(INO_MAP_MEM_ADDR, sublk->inode_map_size, sublk->fs_start + sublk->inode_map_start);
     return free_inode;
 }
 
