@@ -329,7 +329,7 @@ static int shell_ls(int argc, char *argv[])
             memcpy((uint8_t *)filename, first_arg, SHELL_ARG_MAX_LENGTH);
         }
     }
-    char *second_arg = (char *)(argv + SHELL_ARG_MAX_LENGTH);
+    char *second_arg = (char *)argv + SHELL_ARG_MAX_LENGTH;
     if(argc == 2){
         if(first_arg[0] != '-'){
             panic(arg_num_error);
@@ -391,15 +391,16 @@ static int shell_ln(int argc, char *argv[])
         return -1;
     }
     char *first_arg = (char *)argv;
-    char *second_arg = (char *)(argv + SHELL_ARG_MAX_LENGTH);
+    char *second_arg = (char *)argv + SHELL_ARG_MAX_LENGTH;
     if(argc == 2){
+        printf("first_arg: %s, second_arg: %s\n",first_arg,second_arg);
         return ln(0,first_arg,second_arg);
     }
     if(strcmp(first_arg,"-s") || (strcmp(first_arg,"-h"))){
         panic(arg_num_error);
         return -1;
     }
-    char *third_arg = (char *)(argv + 2 * SHELL_ARG_MAX_LENGTH);
+    char *third_arg = (char *)argv + 2 * SHELL_ARG_MAX_LENGTH;
     return ln(first_arg[1] - 'h' > 0 ? 1 : 0, second_arg, third_arg);
 }
 

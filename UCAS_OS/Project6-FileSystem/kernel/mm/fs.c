@@ -425,12 +425,24 @@ int k_ls(char * dirname, int option)
     status = sbi_sd_blk_read(INO_MEM_ADDR + dir.ino * BLOCK_SIZE, SUBLK_SIZE, superblock->fs_start + superblock->inode_start + dir.ino);
     inode_t *inode = (inode_t *)pa2kva(INO_MEM_ADDR + dir.ino * BLOCK_SIZE);
     uint32_t start = superblock->fs_start + superblock->datablock_start;
+    prints("inode->used_size: %d\n",inode->used_size);
     for (int i = 0; i < inode->used_size; i++)
     {
         status = sbi_sd_blk_read(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
         dir_entry_t *dentry = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
         if (dentry->ino != 0xff){
-            prints("%s/%s  ", dentry->name,dentry->alias);
+            if(option < 0){
+                prints("%s/%s  ", dentry->name,dentry->alias);
+            }
+            else{
+                status = sbi_sd_blk_read(INO_MEM_ADDR + dentry->ino * BLOCK_SIZE, SUBLK_SIZE, superblock->fs_start + superblock->inode_start + dentry->ino);
+                inode_t *in = (inode_t *)pa2kva(INO_MEM_ADDR +  dentry->ino * BLOCK_SIZE);
+                prints("name: %s\n",dentry->name);
+                prints("    alias: %s\n",dentry->alias);
+                prints("    mode: %x\n",dentry->mode);
+                prints("    link num: %d\n",in->link_num);
+                prints("    used size: %d\n",in->used_size * BLOCK_SIZE);
+            }
         }
     }
     return 0;
@@ -738,6 +750,7 @@ int k_fwrite(int fd, char *buff, int size)
         file_discriptors[fd].w_pos += BLOCK_SIZE;
         through_times++;
     }
+    sbi_sd_blk_write(kva2pa(in),1,sublk->fs_start + sublk->inode_start + in->ino);
     if(sz >= size){
         return sz;
     }
@@ -763,6 +776,7 @@ int k_fwrite(int fd, char *buff, int size)
         through_times++;
         through_times_db = 0;
     }
+    sbi_sd_blk_write(kva2pa(in),1,sublk->fs_start + sublk->inode_start + in->ino);
     if(sz >= size){
         return sz;
     }
@@ -789,7 +803,7 @@ int k_linkop(int option, char *src, char *dst)
         return k_links(src,dst);
     }
     else{
-        // return k_linkh(src,dst);
+        return k_links(src,dst);
         return -1;
     }
 }
@@ -805,35 +819,38 @@ int k_links(char *src, char *dst)
     }
     spash ++;
     if (src[0] != '/')
-        dir_src = find_dir(current_ino, src,0);
+        dir_src = find_dir(current_ino, src,1);
     else
         dir_src = find_dir(0, &src[1], 0);
-    if (!strcmp(src,"/"))
-        dir_src.ino = 0;
-        
     if (dir_src.ino == 0xff)
     {
         prints("> No such file or directory.\n");
         return -2;
     }
     if (dst[0] != '/')
-        dir_dst = find_dir(current_ino, dst, 1);
+        dir_dst = find_dir(current_ino, dst, 0);
     else
-        dir_dst = find_dir(0, &dst[1], 1);
-    if (!strcmp(src,"/"))
-        dir_dst.ino = 0;
+        dir_dst = find_dir(0, &dst[1], 0);
     // Link
     uint8_t file_ino = find_file_ino(dir_src);
     uintptr_t status;
     status = sbi_sd_blk_read(SUBLK_MEM_ADDR, SUBLK_SIZE, FS_START_BLK + SUBLK_SD_START);
     superblock_t *sublk = (superblock_t *)pa2kva(SUBLK_MEM_ADDR);
-    sbi_sd_blk_read(INO_MEM_ADDR + dir_dst.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + dir_dst.ino);
-    inode_t *in = (inode_t *)pa2kva(INO_MEM_ADDR + dir_dst.ino * BLOCK_SIZE);
-    in->used_size++;
-    in->link_num++;
-    in->dir_blks[in->used_size - 1] = alloc_block();
-    sbi_sd_blk_write(DATA_MEM_ADDR + dir_dst.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->datablock_start + in->dir_blks[in->used_size]);
-    sbi_sd_blk_write(kva2pa(in), 1, sublk->fs_start + sublk->inode_start + dir_dst.ino);
+    status = sbi_sd_blk_read(INO_MEM_ADDR + dir_src.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + dir_src.ino);
+    inode_t *in_src = (inode_t *)pa2kva(INO_MEM_ADDR + dir_src.ino * BLOCK_SIZE);
+    inode_t *in_dst = (inode_t *)pa2kva(INO_MEM_ADDR + dir_dst.ino * BLOCK_SIZE);
+    in_dst->used_size++;
+    in_dst->link_num++;
+    in_dst->dir_blks[in_dst->used_size - 1] = alloc_block();
+    sbi_sd_blk_write(INO_MEM_ADDR + dir_dst.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + in_dst->dir_blks[in_dst->used_size]);
+    dir_entry_t *de_dst = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + in_dst->dir_blks[in_dst->used_size - 1] * BLOCK_SIZE);
+    memcpy((uint8_t *)de_dst->name, dir_dst.name, strlen(dir_dst.name));
+    memcpy((uint8_t *)de_dst->alias,dir_src.alias,strlen(dir_src.alias));
+    de_dst->mode = in_src->mode;
+    de_dst->ino = in_src->ino;
+    de_dst->access = in_src->access;
+    sbi_sd_blk_write(kva2pa(de_dst), 1, sublk->fs_start + sublk->datablock_start + in_dst->dir_blks[in_dst->used_size - 1]);
+    prints("successfully link %s to %s\n",src,dst);
     return 0;
 }
 
