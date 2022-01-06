@@ -61,7 +61,7 @@ extern long sys_get_timebase();
 extern long sys_get_tick();
 extern long sys_get_wall_time(long *);
 
-extern int sys_fsop(int op);
+extern int sys_fsop(int op,int option);
 extern int sys_dirop(int op, char *dirname, int option);
 extern int sys_fileop(int op, char *mul_char, int mul_int, int size);
 extern int sys_linkop(int op, char *src, char *dst);

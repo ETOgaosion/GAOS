@@ -14,9 +14,9 @@ inode_t *current_inode;
 fd_t file_discriptors[MAX_FILE_NUM] = {{.ino = 0, .access = 0, .r_pos = 0, .w_pos = 0}};
 
 
-int k_fsop(int op){
+int k_fsop(int op,int option){
     if(op == 0){
-        return k_mkfs();
+        return k_mkfs(option);
     }else{
         if(!check_fs())
         {
@@ -27,23 +27,23 @@ int k_fsop(int op){
     }
 }
 
-int k_mkfs(){
+int k_mkfs(int option){
     // read superblock from disk
     uintptr_t status;
     status = sbi_sd_blk_read(SUBLK_MEM_ADDR, SUBLK_SIZE, FS_START_BLK);
     superblock_t *superblock = (superblock_t *)pa2kva(SUBLK_MEM_ADDR);
 
     // judge if the fs exists. 
-    // if(superblock->magic == FS_MAGIC){
-    //     prints("The FS has existed!\n");
-    //     prints("magic : 0x%x                                      \n",superblock->magic);
-    //     prints("start sector : %d, num sector : %d                \n",superblock->fs_start,superblock->fs_size);
-    //     prints("block map: start at %d (size %d)                  \n",superblock->block_map_start,superblock->block_map_size);
-    //     prints("inode map: start at %d (size %d)                  \n",superblock->inode_map_start,superblock->inode_map_size);
-    //     prints("inode map: start at %d (size %d)                  \n",superblock->inode_start,superblock->inode_size);
-    //     prints("data offset : %d (%d)                             \n",superblock->datablock_start,superblock->datablock_size);
-    //     return 1;
-    // }else{
+    if(option && superblock->magic == FS_MAGIC){
+        prints("The FS has existed!\n");
+        prints("magic : 0x%x                                      \n",superblock->magic);
+        prints("start sector : %d, num sector : %d                \n",superblock->fs_start,superblock->fs_size);
+        prints("block map: start at %d (size %d)                  \n",superblock->block_map_start,superblock->block_map_size);
+        prints("inode map: start at %d (size %d)                  \n",superblock->inode_map_start,superblock->inode_map_size);
+        prints("inode map: start at %d (size %d)                  \n",superblock->inode_start,superblock->inode_size);
+        prints("data offset : %d (%d)                             \n",superblock->datablock_start,superblock->datablock_size);
+        return 1;
+    }else{
         printk("[FS] Start initialize filesystem!\n\r");
 
         // init superblock
@@ -140,7 +140,7 @@ int k_mkfs(){
         current_inode = pa2kva(INO_MEM_ADDR);
         current_ino = inode->ino;
         
-    // }
+    }
     return 0;
 }
 
@@ -363,7 +363,7 @@ dir_entry_t find_dir(uint8_t ino, char * name, int explore_in)
             {
                 status = sbi_sd_blk_read(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
                 dir_entry_t *dentry = (dir_entry_t *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE);
-                if (!strcmp(dentry->name, name) && dentry->ino != 0xff){
+                if ((!strcmp(dentry->name, name) || !strcmp(dentry->alias, name)) && dentry->ino != 0xff){
                     memcpy((uint8_t *)dir.name, name, strlen(name));
                     dir.ino = dentry->ino;
                     dir.mode = dentry->mode;
@@ -576,23 +576,24 @@ int k_touch(char * filename)
 int k_cat(char * filename)
 {
     // show file content
-    uint8_t file_ino = find_file_ino(find_dir(current_ino, filename, 0));
+    uint8_t file_ino = find_dir(current_ino, filename, 1).ino;
     superblock_t *sublk = (superblock_t *)pa2kva(SUBLK_MEM_ADDR);
     sbi_sd_blk_read(INO_MEM_ADDR + file_ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + file_ino);
     inode_t *inode = (inode_t *)pa2kva(INO_MEM_ADDR + file_ino * BLOCK_SIZE);
     uint32_t start = sublk->fs_start + sublk->datablock_start;
     memset(pa2kva(DATA_MEM_ADDR), 0, inode->used_size * SECTOR_SIZE * BLOCK_SECTORS);
-    for (int i = 0; i < inode->used_size; i++)
+    for (int i = 1; i < inode->used_size; i++)
     {
         sbi_sd_blk_read(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE, 1, start + inode->dir_blks[i]);
-        prints("%s", (char *)DATA_MEM_ADDR);
+        prints("%s", (char *)pa2kva(DATA_MEM_ADDR + inode->dir_blks[i] * BLOCK_SIZE));
     }
     return 0;
 }
 
 int k_fopen(char * filename, int access)
 {
-    uint8_t file_ino = find_file_ino(find_dir(current_ino, filename, 0));
+    prints("filename: %s, current_ino: %d\n",filename,current_ino);
+    uint8_t file_ino = find_file_ino(find_dir(current_ino, filename, 1));
     // alloc a file descriptor
     int id;
     for (id = 0; id < MAX_FILE_NUM; id++)
@@ -719,7 +720,7 @@ int k_fwrite(int fd, char *buff, int size)
         return sz;
     }
     // w_pos in dir_blks
-    int through_times = 0;
+    int through_times = file_discriptors[fd].w_pos/BLOCK_SIZE;
     while (through_times < MAX_DIR_BLK - 1 && file_discriptors[fd].w_pos < (MAX_DIR_BLK - 1) * BLOCK_SIZE && size > sz){
         int tmp_size = size - sz < BLOCK_SIZE ? size -sz : BLOCK_SIZE;
         memcpy(buffer, buff, tmp_size);
@@ -916,7 +917,7 @@ uint8_t find_file_ino(dir_entry_t dir)
         return -2;
     }
     // find inode
-    status = sbi_sd_blk_read(INO_MEM_ADDR + dir.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + current_ino);
+    status = sbi_sd_blk_read(INO_MEM_ADDR + dir.ino * BLOCK_SIZE, 1, sublk->fs_start + sublk->inode_start + dir.ino);
     inode_t *inode = (inode_t *)pa2kva(INO_MEM_ADDR + dir.ino * BLOCK_SIZE);
     uint32_t start = sublk->fs_start + sublk->datablock_start;
     uint8_t file_ino = 0xff;

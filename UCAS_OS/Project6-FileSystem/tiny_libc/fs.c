@@ -2,14 +2,14 @@
 #include <sys/syscall.h>
 #include <sys/syscall_number.h>
 
-int mkfs()
+int mkfs(int option)
 {
-    return sys_fsop(0);
+    return sys_fsop(0,option);
 }
 
 int statfs()
 {
-    return sys_fsop(1);
+    return sys_fsop(1,0);
 }
 
 // dir

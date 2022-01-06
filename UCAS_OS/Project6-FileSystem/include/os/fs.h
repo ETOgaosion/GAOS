@@ -136,8 +136,8 @@ typedef struct fd
 extern fd_t file_discriptors[MAX_FILE_NUM];
 
 // fs
-int k_fsop(int op);
-int k_mkfs();
+int k_fsop(int op,int option);
+int k_mkfs(int option);
 int k_statfs();
 
 // dir

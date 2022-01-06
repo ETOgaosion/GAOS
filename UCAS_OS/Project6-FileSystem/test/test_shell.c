@@ -275,7 +275,11 @@ static int shell_clear(int argc, char *argv[]){
 
 static int shell_mkfs(int argc, char *argv[])
 {
-    return mkfs();
+    int option = 0;
+    if(argc != 0){
+        option = strtol((char *)argv,NULL,16);
+    }
+    return mkfs(option);
 }
 
 static int shell_statfs(int argc, char *argv[])

@@ -298,7 +298,11 @@ void boot_first_core(uintptr_t _dtb){
 
     // setup file system
     #ifndef DEBUG_WITHOUT_INIT_FS
-    k_mkfs();
+    printk("enter fs load option please(0-setup fs, 1-check fs and set):\n\r");
+    int c;
+    while ((c = sbi_console_getchar()) < 0) ;
+    c -= '0';
+    k_mkfs(c);
     printk("> [INIT] File System initialization succeeded.\n\r");
     #endif
 

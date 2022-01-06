@@ -151,9 +151,9 @@ void sys_sleep(long time)
     invoke_syscall(SYSCALL_SLEEP,time,IGNORE,IGNORE,IGNORE,IGNORE);
 }
 
-int sys_fsop(int op)
+int sys_fsop(int op,int option)
 {
-    return invoke_syscall(SYSCALL_FSOP,op,IGNORE,IGNORE,IGNORE,IGNORE);
+    return invoke_syscall(SYSCALL_FSOP,op,option,IGNORE,IGNORE,IGNORE);
 }
 
 int sys_dirop(int op, char *dirname, int option)

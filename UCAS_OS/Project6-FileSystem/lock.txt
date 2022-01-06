@@ -156,18 +156,18 @@ Disassembly of section .text:
    101c0:	4505                	li	a0,1
    101c2:	45c010ef          	jal	ra,1161e <sys_move_cursor>
    101c6:	00002597          	auipc	a1,0x2
-   101ca:	97a58593          	addi	a1,a1,-1670 # 11b40 <__DATA_BEGIN__>
+   101ca:	98258593          	addi	a1,a1,-1662 # 11b48 <__DATA_BEGIN__>
    101ce:	00002517          	auipc	a0,0x2
-   101d2:	85a50513          	addi	a0,a0,-1958 # 11a28 <clear_bss_done+0xe>
+   101d2:	86250513          	addi	a0,a0,-1950 # 11a30 <clear_bss_done+0xe>
    101d6:	7d2000ef          	jal	ra,109a8 <printf>
    101da:	fe842783          	lw	a5,-24(s0)
    101de:	85be                	mv	a1,a5
    101e0:	4505                	li	a0,1
    101e2:	43c010ef          	jal	ra,1161e <sys_move_cursor>
    101e6:	00002517          	auipc	a0,0x2
-   101ea:	84a50513          	addi	a0,a0,-1974 # 11a30 <clear_bss_done+0x16>
+   101ea:	85250513          	addi	a0,a0,-1966 # 11a38 <clear_bss_done+0x16>
    101ee:	013000ef          	jal	ra,10a00 <puts>
-   101f2:	83018513          	addi	a0,gp,-2000 # 11b70 <mutex_lock>
+   101f2:	83018513          	addi	a0,gp,-2000 # 11b78 <mutex_lock>
    101f6:	725000ef          	jal	ra,1111a <mthread_mutex_lock>
    101fa:	fe042623          	sw	zero,-20(s0)
    101fe:	a02d                	j	10228 <try_lock+0x8c>
@@ -178,7 +178,7 @@ Disassembly of section .text:
    1020c:	fec42783          	lw	a5,-20(s0)
    10210:	85be                	mv	a1,a5
    10212:	00002517          	auipc	a0,0x2
-   10216:	83e50513          	addi	a0,a0,-1986 # 11a50 <clear_bss_done+0x36>
+   10216:	84650513          	addi	a0,a0,-1978 # 11a58 <clear_bss_done+0x36>
    1021a:	78e000ef          	jal	ra,109a8 <printf>
    1021e:	fec42783          	lw	a5,-20(s0)
    10222:	2785                	addiw	a5,a5,1
@@ -192,18 +192,18 @@ Disassembly of section .text:
    1023c:	4505                	li	a0,1
    1023e:	3e0010ef          	jal	ra,1161e <sys_move_cursor>
    10242:	00002597          	auipc	a1,0x2
-   10246:	8fe58593          	addi	a1,a1,-1794 # 11b40 <__DATA_BEGIN__>
+   10246:	90658593          	addi	a1,a1,-1786 # 11b48 <__DATA_BEGIN__>
    1024a:	00001517          	auipc	a0,0x1
-   1024e:	7de50513          	addi	a0,a0,2014 # 11a28 <clear_bss_done+0xe>
+   1024e:	7e650513          	addi	a0,a0,2022 # 11a30 <clear_bss_done+0xe>
    10252:	756000ef          	jal	ra,109a8 <printf>
    10256:	fe842783          	lw	a5,-24(s0)
    1025a:	85be                	mv	a1,a5
    1025c:	4505                	li	a0,1
    1025e:	3c0010ef          	jal	ra,1161e <sys_move_cursor>
    10262:	00002517          	auipc	a0,0x2
-   10266:	81e50513          	addi	a0,a0,-2018 # 11a80 <clear_bss_done+0x66>
+   10266:	82650513          	addi	a0,a0,-2010 # 11a88 <clear_bss_done+0x66>
    1026a:	796000ef          	jal	ra,10a00 <puts>
-   1026e:	83018513          	addi	a0,gp,-2000 # 11b70 <mutex_lock>
+   1026e:	83018513          	addi	a0,gp,-2000 # 11b78 <mutex_lock>
    10272:	6cb000ef          	jal	ra,1113c <mthread_mutex_unlock>
    10276:	b791                	j	101ba <try_lock+0x1e>
 
@@ -217,7 +217,7 @@ Disassembly of section .text:
    10286:	fcf42623          	sw	a5,-52(s0)
    1028a:	4785                	li	a5,1
    1028c:	fef42423          	sw	a5,-24(s0)
-   10290:	83018513          	addi	a0,gp,-2000 # 11b70 <mutex_lock>
+   10290:	83018513          	addi	a0,gp,-2000 # 11b78 <mutex_lock>
    10294:	667000ef          	jal	ra,110fa <mthread_mutex_init>
    10298:	fcc42783          	lw	a5,-52(s0)
    1029c:	2781                	sext.w	a5,a5
@@ -607,12 +607,12 @@ Disassembly of section .text:
    1077c:	9381                	srli	a5,a5,0x20
    1077e:	00279713          	slli	a4,a5,0x2
    10782:	00001797          	auipc	a5,0x1
-   10786:	32678793          	addi	a5,a5,806 # 11aa8 <clear_bss_done+0x8e>
+   10786:	32e78793          	addi	a5,a5,814 # 11ab0 <clear_bss_done+0x8e>
    1078a:	97ba                	add	a5,a5,a4
    1078c:	439c                	lw	a5,0(a5)
    1078e:	0007871b          	sext.w	a4,a5
    10792:	00001797          	auipc	a5,0x1
-   10796:	31678793          	addi	a5,a5,790 # 11aa8 <clear_bss_done+0x8e>
+   10796:	31e78793          	addi	a5,a5,798 # 11ab0 <clear_bss_done+0x8e>
    1079a:	97ba                	add	a5,a5,a4
    1079c:	8782                	jr	a5
    1079e:	4785                	li	a5,1
@@ -825,7 +825,7 @@ Disassembly of section .text:
    10a08:	fea43423          	sd	a0,-24(s0)
    10a0c:	fe843583          	ld	a1,-24(s0)
    10a10:	00001517          	auipc	a0,0x1
-   10a14:	12050513          	addi	a0,a0,288 # 11b30 <clear_bss_done+0x116>
+   10a14:	12850513          	addi	a0,a0,296 # 11b38 <clear_bss_done+0x116>
    10a18:	f91ff0ef          	jal	ra,109a8 <printf>
    10a1c:	87aa                	mv	a5,a0
    10a1e:	853e                	mv	a0,a5
@@ -844,7 +844,7 @@ Disassembly of section .text:
    10a36:	fec42783          	lw	a5,-20(s0)
    10a3a:	85be                	mv	a1,a5
    10a3c:	00001517          	auipc	a0,0x1
-   10a40:	0fc50513          	addi	a0,a0,252 # 11b38 <clear_bss_done+0x11e>
+   10a40:	10450513          	addi	a0,a0,260 # 11b40 <clear_bss_done+0x11e>
    10a44:	f65ff0ef          	jal	ra,109a8 <printf>
    10a48:	87aa                	mv	a5,a0
    10a4a:	853e                	mv	a0,a5
@@ -1759,7 +1759,7 @@ Disassembly of section .text:
    113a2:	fe046703          	lwu	a4,-32(s0)
    113a6:	4781                	li	a5,0
    113a8:	4501                	li	a0,0
-   113aa:	62a000ef          	jal	ra,119d4 <invoke_syscall>
+   113aa:	632000ef          	jal	ra,119dc <invoke_syscall>
    113ae:	87aa                	mv	a5,a0
    113b0:	2781                	sext.w	a5,a5
    113b2:	853e                	mv	a0,a5
@@ -1779,7 +1779,7 @@ Disassembly of section .text:
    113ca:	4601                	li	a2,0
    113cc:	4581                	li	a1,0
    113ce:	4505                	li	a0,1
-   113d0:	604000ef          	jal	ra,119d4 <invoke_syscall>
+   113d0:	60c000ef          	jal	ra,119dc <invoke_syscall>
    113d4:	0001                	nop
    113d6:	60a2                	ld	ra,8(sp)
    113d8:	6402                	ld	s0,0(sp)
@@ -1799,7 +1799,7 @@ Disassembly of section .text:
    113f4:	4681                	li	a3,0
    113f6:	4601                	li	a2,0
    113f8:	450d                	li	a0,3
-   113fa:	5da000ef          	jal	ra,119d4 <invoke_syscall>
+   113fa:	5e2000ef          	jal	ra,119dc <invoke_syscall>
    113fe:	87aa                	mv	a5,a0
    11400:	2781                	sext.w	a5,a5
    11402:	853e                	mv	a0,a5
@@ -1821,7 +1821,7 @@ Disassembly of section .text:
    11422:	4681                	li	a3,0
    11424:	4601                	li	a2,0
    11426:	4511                	li	a0,4
-   11428:	5ac000ef          	jal	ra,119d4 <invoke_syscall>
+   11428:	5b4000ef          	jal	ra,119dc <invoke_syscall>
    1142c:	87aa                	mv	a5,a0
    1142e:	2781                	sext.w	a5,a5
    11430:	853e                	mv	a0,a5
@@ -1841,7 +1841,7 @@ Disassembly of section .text:
    11448:	4601                	li	a2,0
    1144a:	4581                	li	a1,0
    1144c:	4515                	li	a0,5
-   1144e:	586000ef          	jal	ra,119d4 <invoke_syscall>
+   1144e:	58e000ef          	jal	ra,119dc <invoke_syscall>
    11452:	87aa                	mv	a5,a0
    11454:	2781                	sext.w	a5,a5
    11456:	853e                	mv	a0,a5
@@ -1861,7 +1861,7 @@ Disassembly of section .text:
    1146e:	4601                	li	a2,0
    11470:	4581                	li	a1,0
    11472:	4519                	li	a0,6
-   11474:	560000ef          	jal	ra,119d4 <invoke_syscall>
+   11474:	568000ef          	jal	ra,119dc <invoke_syscall>
    11478:	87aa                	mv	a5,a0
    1147a:	2781                	sext.w	a5,a5
    1147c:	853e                	mv	a0,a5
@@ -1881,7 +1881,7 @@ Disassembly of section .text:
    11494:	4601                	li	a2,0
    11496:	4581                	li	a1,0
    11498:	451d                	li	a0,7
-   1149a:	53a000ef          	jal	ra,119d4 <invoke_syscall>
+   1149a:	542000ef          	jal	ra,119dc <invoke_syscall>
    1149e:	0001                	nop
    114a0:	60a2                	ld	ra,8(sp)
    114a2:	6402                	ld	s0,0(sp)
@@ -1900,7 +1900,7 @@ Disassembly of section .text:
    114ba:	4601                	li	a2,0
    114bc:	fe843583          	ld	a1,-24(s0)
    114c0:	4525                	li	a0,9
-   114c2:	512000ef          	jal	ra,119d4 <invoke_syscall>
+   114c2:	51a000ef          	jal	ra,119dc <invoke_syscall>
    114c6:	0001                	nop
    114c8:	60e2                	ld	ra,24(sp)
    114ca:	6442                	ld	s0,16(sp)
@@ -1919,7 +1919,7 @@ Disassembly of section .text:
    114e4:	4681                	li	a3,0
    114e6:	4601                	li	a2,0
    114e8:	4529                	li	a0,10
-   114ea:	4ea000ef          	jal	ra,119d4 <invoke_syscall>
+   114ea:	4f2000ef          	jal	ra,119dc <invoke_syscall>
    114ee:	87aa                	mv	a5,a0
    114f0:	2781                	sext.w	a5,a5
    114f2:	853e                	mv	a0,a5
@@ -1942,7 +1942,7 @@ Disassembly of section .text:
    1151c:	4781                	li	a5,0
    1151e:	4701                	li	a4,0
    11520:	452d                	li	a0,11
-   11522:	4b2000ef          	jal	ra,119d4 <invoke_syscall>
+   11522:	4ba000ef          	jal	ra,119dc <invoke_syscall>
    11526:	87aa                	mv	a5,a0
    11528:	2781                	sext.w	a5,a5
    1152a:	853e                	mv	a0,a5
@@ -1965,7 +1965,7 @@ Disassembly of section .text:
    11550:	4701                	li	a4,0
    11552:	4681                	li	a3,0
    11554:	4535                	li	a0,13
-   11556:	47e000ef          	jal	ra,119d4 <invoke_syscall>
+   11556:	486000ef          	jal	ra,119dc <invoke_syscall>
    1155a:	87aa                	mv	a5,a0
    1155c:	2781                	sext.w	a5,a5
    1155e:	853e                	mv	a0,a5
@@ -1989,7 +1989,7 @@ Disassembly of section .text:
    1158a:	4781                	li	a5,0
    1158c:	4701                	li	a4,0
    1158e:	4539                	li	a0,14
-   11590:	444000ef          	jal	ra,119d4 <invoke_syscall>
+   11590:	44c000ef          	jal	ra,119dc <invoke_syscall>
    11594:	87aa                	mv	a5,a0
    11596:	2781                	sext.w	a5,a5
    11598:	853e                	mv	a0,a5
@@ -2011,7 +2011,7 @@ Disassembly of section .text:
    115b8:	4681                	li	a3,0
    115ba:	4601                	li	a2,0
    115bc:	453d                	li	a0,15
-   115be:	416000ef          	jal	ra,119d4 <invoke_syscall>
+   115be:	41e000ef          	jal	ra,119dc <invoke_syscall>
    115c2:	87aa                	mv	a5,a0
    115c4:	853e                	mv	a0,a5
    115c6:	60e2                	ld	ra,24(sp)
@@ -2031,7 +2031,7 @@ Disassembly of section .text:
    115e2:	4681                	li	a3,0
    115e4:	4601                	li	a2,0
    115e6:	4541                	li	a0,16
-   115e8:	3ec000ef          	jal	ra,119d4 <invoke_syscall>
+   115e8:	3f4000ef          	jal	ra,119dc <invoke_syscall>
    115ec:	0001                	nop
    115ee:	60e2                	ld	ra,24(sp)
    115f0:	6442                	ld	s0,16(sp)
@@ -2050,7 +2050,7 @@ Disassembly of section .text:
    1160a:	4681                	li	a3,0
    1160c:	4601                	li	a2,0
    1160e:	4551                	li	a0,20
-   11610:	3c4000ef          	jal	ra,119d4 <invoke_syscall>
+   11610:	3cc000ef          	jal	ra,119dc <invoke_syscall>
    11614:	0001                	nop
    11616:	60e2                	ld	ra,24(sp)
    11618:	6442                	ld	s0,16(sp)
@@ -2073,7 +2073,7 @@ Disassembly of section .text:
    1163e:	4701                	li	a4,0
    11640:	4681                	li	a3,0
    11642:	455d                	li	a0,23
-   11644:	390000ef          	jal	ra,119d4 <invoke_syscall>
+   11644:	398000ef          	jal	ra,119dc <invoke_syscall>
    11648:	0001                	nop
    1164a:	60e2                	ld	ra,24(sp)
    1164c:	6442                	ld	s0,16(sp)
@@ -2091,7 +2091,7 @@ Disassembly of section .text:
    11660:	4601                	li	a2,0
    11662:	4581                	li	a1,0
    11664:	4561                	li	a0,24
-   11666:	36e000ef          	jal	ra,119d4 <invoke_syscall>
+   11666:	376000ef          	jal	ra,119dc <invoke_syscall>
    1166a:	0001                	nop
    1166c:	60a2                	ld	ra,8(sp)
    1166e:	6402                	ld	s0,0(sp)
@@ -2109,7 +2109,7 @@ Disassembly of section .text:
    11682:	4601                	li	a2,0
    11684:	4581                	li	a1,0
    11686:	4565                	li	a0,25
-   11688:	34c000ef          	jal	ra,119d4 <invoke_syscall>
+   11688:	354000ef          	jal	ra,119dc <invoke_syscall>
    1168c:	87aa                	mv	a5,a0
    1168e:	fef407a3          	sb	a5,-17(s0)
    11692:	fef44783          	lbu	a5,-17(s0)
@@ -2135,7 +2135,7 @@ Disassembly of section .text:
    116c0:	4601                	li	a2,0
    116c2:	4581                	li	a1,0
    116c4:	4565                	li	a0,25
-   116c6:	30e000ef          	jal	ra,119d4 <invoke_syscall>
+   116c6:	316000ef          	jal	ra,119dc <invoke_syscall>
    116ca:	87aa                	mv	a5,a0
    116cc:	0ff7f793          	andi	a5,a5,255
    116d0:	853e                	mv	a0,a5
@@ -2157,7 +2157,7 @@ Disassembly of section .text:
    116f0:	4681                	li	a3,0
    116f2:	4601                	li	a2,0
    116f4:	4569                	li	a0,26
-   116f6:	2de000ef          	jal	ra,119d4 <invoke_syscall>
+   116f6:	2e6000ef          	jal	ra,119dc <invoke_syscall>
    116fa:	0001                	nop
    116fc:	60e2                	ld	ra,24(sp)
    116fe:	6442                	ld	s0,16(sp)
@@ -2175,7 +2175,7 @@ Disassembly of section .text:
    11712:	4601                	li	a2,0
    11714:	4581                	li	a1,0
    11716:	4571                	li	a0,28
-   11718:	2bc000ef          	jal	ra,119d4 <invoke_syscall>
+   11718:	2c4000ef          	jal	ra,119dc <invoke_syscall>
    1171c:	0001                	nop
    1171e:	60a2                	ld	ra,8(sp)
    11720:	6402                	ld	s0,0(sp)
@@ -2195,7 +2195,7 @@ Disassembly of section .text:
    11740:	4701                	li	a4,0
    11742:	4681                	li	a3,0
    11744:	4509                	li	a0,2
-   11746:	28e000ef          	jal	ra,119d4 <invoke_syscall>
+   11746:	296000ef          	jal	ra,119dc <invoke_syscall>
    1174a:	0001                	nop
    1174c:	60e2                	ld	ra,24(sp)
    1174e:	6442                	ld	s0,16(sp)
@@ -2213,7 +2213,7 @@ Disassembly of section .text:
    11762:	4601                	li	a2,0
    11764:	4581                	li	a1,0
    11766:	4579                	li	a0,30
-   11768:	26c000ef          	jal	ra,119d4 <invoke_syscall>
+   11768:	274000ef          	jal	ra,119dc <invoke_syscall>
    1176c:	87aa                	mv	a5,a0
    1176e:	853e                	mv	a0,a5
    11770:	60a2                	ld	ra,8(sp)
@@ -2232,7 +2232,7 @@ Disassembly of section .text:
    11786:	4601                	li	a2,0
    11788:	4581                	li	a1,0
    1178a:	457d                	li	a0,31
-   1178c:	248000ef          	jal	ra,119d4 <invoke_syscall>
+   1178c:	250000ef          	jal	ra,119dc <invoke_syscall>
    11790:	87aa                	mv	a5,a0
    11792:	853e                	mv	a0,a5
    11794:	60a2                	ld	ra,8(sp)
@@ -2252,7 +2252,7 @@ Disassembly of section .text:
    117b0:	4681                	li	a3,0
    117b2:	4601                	li	a2,0
    117b4:	02000513          	li	a0,32
-   117b8:	21c000ef          	jal	ra,119d4 <invoke_syscall>
+   117b8:	224000ef          	jal	ra,119dc <invoke_syscall>
    117bc:	87aa                	mv	a5,a0
    117be:	853e                	mv	a0,a5
    117c0:	60e2                	ld	ra,24(sp)
@@ -2272,7 +2272,7 @@ Disassembly of section .text:
    117da:	4601                	li	a2,0
    117dc:	fe843583          	ld	a1,-24(s0)
    117e0:	4509                	li	a0,2
-   117e2:	1f2000ef          	jal	ra,119d4 <invoke_syscall>
+   117e2:	1fa000ef          	jal	ra,119dc <invoke_syscall>
    117e6:	0001                	nop
    117e8:	60e2                	ld	ra,24(sp)
    117ea:	6442                	ld	s0,16(sp)
@@ -2285,234 +2285,236 @@ Disassembly of section .text:
    117f4:	e822                	sd	s0,16(sp)
    117f6:	1000                	addi	s0,sp,32
    117f8:	87aa                	mv	a5,a0
-   117fa:	fef42623          	sw	a5,-20(s0)
-   117fe:	fec42583          	lw	a1,-20(s0)
-   11802:	4781                	li	a5,0
-   11804:	4701                	li	a4,0
-   11806:	4681                	li	a3,0
-   11808:	4601                	li	a2,0
-   1180a:	02100513          	li	a0,33
-   1180e:	1c6000ef          	jal	ra,119d4 <invoke_syscall>
-   11812:	87aa                	mv	a5,a0
-   11814:	2781                	sext.w	a5,a5
-   11816:	853e                	mv	a0,a5
-   11818:	60e2                	ld	ra,24(sp)
-   1181a:	6442                	ld	s0,16(sp)
-   1181c:	6105                	addi	sp,sp,32
-   1181e:	8082                	ret
+   117fa:	872e                	mv	a4,a1
+   117fc:	fef42623          	sw	a5,-20(s0)
+   11800:	87ba                	mv	a5,a4
+   11802:	fef42423          	sw	a5,-24(s0)
+   11806:	fec42583          	lw	a1,-20(s0)
+   1180a:	fe842603          	lw	a2,-24(s0)
+   1180e:	4781                	li	a5,0
+   11810:	4701                	li	a4,0
+   11812:	4681                	li	a3,0
+   11814:	02100513          	li	a0,33
+   11818:	1c4000ef          	jal	ra,119dc <invoke_syscall>
+   1181c:	87aa                	mv	a5,a0
+   1181e:	2781                	sext.w	a5,a5
+   11820:	853e                	mv	a0,a5
+   11822:	60e2                	ld	ra,24(sp)
+   11824:	6442                	ld	s0,16(sp)
+   11826:	6105                	addi	sp,sp,32
+   11828:	8082                	ret
 
-0000000000011820 <sys_dirop>:
-   11820:	1101                	addi	sp,sp,-32
-   11822:	ec06                	sd	ra,24(sp)
-   11824:	e822                	sd	s0,16(sp)
-   11826:	1000                	addi	s0,sp,32
-   11828:	87aa                	mv	a5,a0
-   1182a:	feb43023          	sd	a1,-32(s0)
-   1182e:	8732                	mv	a4,a2
-   11830:	fef42623          	sw	a5,-20(s0)
-   11834:	87ba                	mv	a5,a4
-   11836:	fef42423          	sw	a5,-24(s0)
-   1183a:	fec42583          	lw	a1,-20(s0)
-   1183e:	fe043603          	ld	a2,-32(s0)
-   11842:	fe842683          	lw	a3,-24(s0)
-   11846:	4781                	li	a5,0
-   11848:	4701                	li	a4,0
-   1184a:	02200513          	li	a0,34
-   1184e:	186000ef          	jal	ra,119d4 <invoke_syscall>
-   11852:	87aa                	mv	a5,a0
-   11854:	2781                	sext.w	a5,a5
-   11856:	853e                	mv	a0,a5
-   11858:	60e2                	ld	ra,24(sp)
-   1185a:	6442                	ld	s0,16(sp)
-   1185c:	6105                	addi	sp,sp,32
-   1185e:	8082                	ret
+000000000001182a <sys_dirop>:
+   1182a:	1101                	addi	sp,sp,-32
+   1182c:	ec06                	sd	ra,24(sp)
+   1182e:	e822                	sd	s0,16(sp)
+   11830:	1000                	addi	s0,sp,32
+   11832:	87aa                	mv	a5,a0
+   11834:	feb43023          	sd	a1,-32(s0)
+   11838:	8732                	mv	a4,a2
+   1183a:	fef42623          	sw	a5,-20(s0)
+   1183e:	87ba                	mv	a5,a4
+   11840:	fef42423          	sw	a5,-24(s0)
+   11844:	fec42583          	lw	a1,-20(s0)
+   11848:	fe043603          	ld	a2,-32(s0)
+   1184c:	fe842683          	lw	a3,-24(s0)
+   11850:	4781                	li	a5,0
+   11852:	4701                	li	a4,0
+   11854:	02200513          	li	a0,34
+   11858:	184000ef          	jal	ra,119dc <invoke_syscall>
+   1185c:	87aa                	mv	a5,a0
+   1185e:	2781                	sext.w	a5,a5
+   11860:	853e                	mv	a0,a5
+   11862:	60e2                	ld	ra,24(sp)
+   11864:	6442                	ld	s0,16(sp)
+   11866:	6105                	addi	sp,sp,32
+   11868:	8082                	ret
 
-0000000000011860 <sys_fileop>:
-   11860:	7179                	addi	sp,sp,-48
-   11862:	f406                	sd	ra,40(sp)
-   11864:	f022                	sd	s0,32(sp)
-   11866:	1800                	addi	s0,sp,48
-   11868:	87aa                	mv	a5,a0
-   1186a:	feb43023          	sd	a1,-32(s0)
-   1186e:	8736                	mv	a4,a3
-   11870:	fef42623          	sw	a5,-20(s0)
-   11874:	87b2                	mv	a5,a2
-   11876:	fef42423          	sw	a5,-24(s0)
-   1187a:	87ba                	mv	a5,a4
-   1187c:	fcf42e23          	sw	a5,-36(s0)
-   11880:	fec42583          	lw	a1,-20(s0)
-   11884:	fe043603          	ld	a2,-32(s0)
-   11888:	fe842683          	lw	a3,-24(s0)
-   1188c:	fdc42703          	lw	a4,-36(s0)
-   11890:	4781                	li	a5,0
-   11892:	02300513          	li	a0,35
-   11896:	13e000ef          	jal	ra,119d4 <invoke_syscall>
-   1189a:	87aa                	mv	a5,a0
-   1189c:	2781                	sext.w	a5,a5
-   1189e:	853e                	mv	a0,a5
-   118a0:	70a2                	ld	ra,40(sp)
-   118a2:	7402                	ld	s0,32(sp)
-   118a4:	6145                	addi	sp,sp,48
-   118a6:	8082                	ret
+000000000001186a <sys_fileop>:
+   1186a:	7179                	addi	sp,sp,-48
+   1186c:	f406                	sd	ra,40(sp)
+   1186e:	f022                	sd	s0,32(sp)
+   11870:	1800                	addi	s0,sp,48
+   11872:	87aa                	mv	a5,a0
+   11874:	feb43023          	sd	a1,-32(s0)
+   11878:	8736                	mv	a4,a3
+   1187a:	fef42623          	sw	a5,-20(s0)
+   1187e:	87b2                	mv	a5,a2
+   11880:	fef42423          	sw	a5,-24(s0)
+   11884:	87ba                	mv	a5,a4
+   11886:	fcf42e23          	sw	a5,-36(s0)
+   1188a:	fec42583          	lw	a1,-20(s0)
+   1188e:	fe043603          	ld	a2,-32(s0)
+   11892:	fe842683          	lw	a3,-24(s0)
+   11896:	fdc42703          	lw	a4,-36(s0)
+   1189a:	4781                	li	a5,0
+   1189c:	02300513          	li	a0,35
+   118a0:	13c000ef          	jal	ra,119dc <invoke_syscall>
+   118a4:	87aa                	mv	a5,a0
+   118a6:	2781                	sext.w	a5,a5
+   118a8:	853e                	mv	a0,a5
+   118aa:	70a2                	ld	ra,40(sp)
+   118ac:	7402                	ld	s0,32(sp)
+   118ae:	6145                	addi	sp,sp,48
+   118b0:	8082                	ret
 
-00000000000118a8 <sys_linkop>:
-   118a8:	7179                	addi	sp,sp,-48
-   118aa:	f406                	sd	ra,40(sp)
-   118ac:	f022                	sd	s0,32(sp)
-   118ae:	1800                	addi	s0,sp,48
-   118b0:	87aa                	mv	a5,a0
-   118b2:	feb43023          	sd	a1,-32(s0)
-   118b6:	fcc43c23          	sd	a2,-40(s0)
-   118ba:	fef42623          	sw	a5,-20(s0)
-   118be:	fec42583          	lw	a1,-20(s0)
-   118c2:	fe043603          	ld	a2,-32(s0)
-   118c6:	fd843683          	ld	a3,-40(s0)
-   118ca:	4781                	li	a5,0
-   118cc:	4701                	li	a4,0
-   118ce:	02400513          	li	a0,36
-   118d2:	102000ef          	jal	ra,119d4 <invoke_syscall>
-   118d6:	87aa                	mv	a5,a0
-   118d8:	2781                	sext.w	a5,a5
-   118da:	853e                	mv	a0,a5
-   118dc:	70a2                	ld	ra,40(sp)
-   118de:	7402                	ld	s0,32(sp)
-   118e0:	6145                	addi	sp,sp,48
-   118e2:	8082                	ret
+00000000000118b2 <sys_linkop>:
+   118b2:	7179                	addi	sp,sp,-48
+   118b4:	f406                	sd	ra,40(sp)
+   118b6:	f022                	sd	s0,32(sp)
+   118b8:	1800                	addi	s0,sp,48
+   118ba:	87aa                	mv	a5,a0
+   118bc:	feb43023          	sd	a1,-32(s0)
+   118c0:	fcc43c23          	sd	a2,-40(s0)
+   118c4:	fef42623          	sw	a5,-20(s0)
+   118c8:	fec42583          	lw	a1,-20(s0)
+   118cc:	fe043603          	ld	a2,-32(s0)
+   118d0:	fd843683          	ld	a3,-40(s0)
+   118d4:	4781                	li	a5,0
+   118d6:	4701                	li	a4,0
+   118d8:	02400513          	li	a0,36
+   118dc:	100000ef          	jal	ra,119dc <invoke_syscall>
+   118e0:	87aa                	mv	a5,a0
+   118e2:	2781                	sext.w	a5,a5
+   118e4:	853e                	mv	a0,a5
+   118e6:	70a2                	ld	ra,40(sp)
+   118e8:	7402                	ld	s0,32(sp)
+   118ea:	6145                	addi	sp,sp,48
+   118ec:	8082                	ret
 
-00000000000118e4 <sys_lseek>:
-   118e4:	1101                	addi	sp,sp,-32
-   118e6:	ec06                	sd	ra,24(sp)
-   118e8:	e822                	sd	s0,16(sp)
-   118ea:	1000                	addi	s0,sp,32
-   118ec:	87aa                	mv	a5,a0
-   118ee:	8736                	mv	a4,a3
-   118f0:	fef42623          	sw	a5,-20(s0)
-   118f4:	87ae                	mv	a5,a1
-   118f6:	fef42423          	sw	a5,-24(s0)
-   118fa:	87b2                	mv	a5,a2
-   118fc:	fef42223          	sw	a5,-28(s0)
-   11900:	87ba                	mv	a5,a4
-   11902:	fef42023          	sw	a5,-32(s0)
-   11906:	fec42583          	lw	a1,-20(s0)
-   1190a:	fe842603          	lw	a2,-24(s0)
-   1190e:	fe442683          	lw	a3,-28(s0)
-   11912:	fe042703          	lw	a4,-32(s0)
-   11916:	4781                	li	a5,0
-   11918:	02500513          	li	a0,37
-   1191c:	0b8000ef          	jal	ra,119d4 <invoke_syscall>
-   11920:	87aa                	mv	a5,a0
-   11922:	2781                	sext.w	a5,a5
-   11924:	853e                	mv	a0,a5
-   11926:	60e2                	ld	ra,24(sp)
-   11928:	6442                	ld	s0,16(sp)
-   1192a:	6105                	addi	sp,sp,32
-   1192c:	8082                	ret
+00000000000118ee <sys_lseek>:
+   118ee:	1101                	addi	sp,sp,-32
+   118f0:	ec06                	sd	ra,24(sp)
+   118f2:	e822                	sd	s0,16(sp)
+   118f4:	1000                	addi	s0,sp,32
+   118f6:	87aa                	mv	a5,a0
+   118f8:	8736                	mv	a4,a3
+   118fa:	fef42623          	sw	a5,-20(s0)
+   118fe:	87ae                	mv	a5,a1
+   11900:	fef42423          	sw	a5,-24(s0)
+   11904:	87b2                	mv	a5,a2
+   11906:	fef42223          	sw	a5,-28(s0)
+   1190a:	87ba                	mv	a5,a4
+   1190c:	fef42023          	sw	a5,-32(s0)
+   11910:	fec42583          	lw	a1,-20(s0)
+   11914:	fe842603          	lw	a2,-24(s0)
+   11918:	fe442683          	lw	a3,-28(s0)
+   1191c:	fe042703          	lw	a4,-32(s0)
+   11920:	4781                	li	a5,0
+   11922:	02500513          	li	a0,37
+   11926:	0b6000ef          	jal	ra,119dc <invoke_syscall>
+   1192a:	87aa                	mv	a5,a0
+   1192c:	2781                	sext.w	a5,a5
+   1192e:	853e                	mv	a0,a5
+   11930:	60e2                	ld	ra,24(sp)
+   11932:	6442                	ld	s0,16(sp)
+   11934:	6105                	addi	sp,sp,32
+   11936:	8082                	ret
 
-000000000001192e <sys_net_recv>:
-   1192e:	7179                	addi	sp,sp,-48
-   11930:	f406                	sd	ra,40(sp)
-   11932:	f022                	sd	s0,32(sp)
-   11934:	1800                	addi	s0,sp,48
-   11936:	fea43423          	sd	a0,-24(s0)
-   1193a:	feb43023          	sd	a1,-32(s0)
-   1193e:	87b2                	mv	a5,a2
-   11940:	fcd43823          	sd	a3,-48(s0)
-   11944:	fcf42e23          	sw	a5,-36(s0)
-   11948:	87ba                	mv	a5,a4
-   1194a:	fcf42c23          	sw	a5,-40(s0)
-   1194e:	fe843583          	ld	a1,-24(s0)
-   11952:	fe043603          	ld	a2,-32(s0)
-   11956:	fdc42683          	lw	a3,-36(s0)
-   1195a:	fd043703          	ld	a4,-48(s0)
-   1195e:	fd842783          	lw	a5,-40(s0)
-   11962:	02b00513          	li	a0,43
-   11966:	06e000ef          	jal	ra,119d4 <invoke_syscall>
-   1196a:	87aa                	mv	a5,a0
-   1196c:	853e                	mv	a0,a5
-   1196e:	70a2                	ld	ra,40(sp)
-   11970:	7402                	ld	s0,32(sp)
-   11972:	6145                	addi	sp,sp,48
-   11974:	8082                	ret
+0000000000011938 <sys_net_recv>:
+   11938:	7179                	addi	sp,sp,-48
+   1193a:	f406                	sd	ra,40(sp)
+   1193c:	f022                	sd	s0,32(sp)
+   1193e:	1800                	addi	s0,sp,48
+   11940:	fea43423          	sd	a0,-24(s0)
+   11944:	feb43023          	sd	a1,-32(s0)
+   11948:	87b2                	mv	a5,a2
+   1194a:	fcd43823          	sd	a3,-48(s0)
+   1194e:	fcf42e23          	sw	a5,-36(s0)
+   11952:	87ba                	mv	a5,a4
+   11954:	fcf42c23          	sw	a5,-40(s0)
+   11958:	fe843583          	ld	a1,-24(s0)
+   1195c:	fe043603          	ld	a2,-32(s0)
+   11960:	fdc42683          	lw	a3,-36(s0)
+   11964:	fd043703          	ld	a4,-48(s0)
+   11968:	fd842783          	lw	a5,-40(s0)
+   1196c:	02b00513          	li	a0,43
+   11970:	06c000ef          	jal	ra,119dc <invoke_syscall>
+   11974:	87aa                	mv	a5,a0
+   11976:	853e                	mv	a0,a5
+   11978:	70a2                	ld	ra,40(sp)
+   1197a:	7402                	ld	s0,32(sp)
+   1197c:	6145                	addi	sp,sp,48
+   1197e:	8082                	ret
 
-0000000000011976 <sys_net_send>:
-   11976:	1101                	addi	sp,sp,-32
-   11978:	ec06                	sd	ra,24(sp)
-   1197a:	e822                	sd	s0,16(sp)
-   1197c:	1000                	addi	s0,sp,32
-   1197e:	fea43423          	sd	a0,-24(s0)
-   11982:	feb43023          	sd	a1,-32(s0)
-   11986:	fe843583          	ld	a1,-24(s0)
-   1198a:	fe043603          	ld	a2,-32(s0)
-   1198e:	4781                	li	a5,0
-   11990:	4701                	li	a4,0
-   11992:	4681                	li	a3,0
-   11994:	02c00513          	li	a0,44
-   11998:	03c000ef          	jal	ra,119d4 <invoke_syscall>
-   1199c:	0001                	nop
-   1199e:	60e2                	ld	ra,24(sp)
-   119a0:	6442                	ld	s0,16(sp)
-   119a2:	6105                	addi	sp,sp,32
-   119a4:	8082                	ret
+0000000000011980 <sys_net_send>:
+   11980:	1101                	addi	sp,sp,-32
+   11982:	ec06                	sd	ra,24(sp)
+   11984:	e822                	sd	s0,16(sp)
+   11986:	1000                	addi	s0,sp,32
+   11988:	fea43423          	sd	a0,-24(s0)
+   1198c:	feb43023          	sd	a1,-32(s0)
+   11990:	fe843583          	ld	a1,-24(s0)
+   11994:	fe043603          	ld	a2,-32(s0)
+   11998:	4781                	li	a5,0
+   1199a:	4701                	li	a4,0
+   1199c:	4681                	li	a3,0
+   1199e:	02c00513          	li	a0,44
+   119a2:	03a000ef          	jal	ra,119dc <invoke_syscall>
+   119a6:	0001                	nop
+   119a8:	60e2                	ld	ra,24(sp)
+   119aa:	6442                	ld	s0,16(sp)
+   119ac:	6105                	addi	sp,sp,32
+   119ae:	8082                	ret
 
-00000000000119a6 <sys_net_irq_mode>:
-   119a6:	1101                	addi	sp,sp,-32
-   119a8:	ec06                	sd	ra,24(sp)
-   119aa:	e822                	sd	s0,16(sp)
-   119ac:	1000                	addi	s0,sp,32
-   119ae:	87aa                	mv	a5,a0
-   119b0:	fef42623          	sw	a5,-20(s0)
-   119b4:	fec42583          	lw	a1,-20(s0)
-   119b8:	4781                	li	a5,0
-   119ba:	4701                	li	a4,0
-   119bc:	4681                	li	a3,0
-   119be:	4601                	li	a2,0
-   119c0:	02d00513          	li	a0,45
-   119c4:	010000ef          	jal	ra,119d4 <invoke_syscall>
-   119c8:	0001                	nop
-   119ca:	60e2                	ld	ra,24(sp)
-   119cc:	6442                	ld	s0,16(sp)
-   119ce:	6105                	addi	sp,sp,32
-   119d0:	8082                	ret
+00000000000119b0 <sys_net_irq_mode>:
+   119b0:	1101                	addi	sp,sp,-32
+   119b2:	ec06                	sd	ra,24(sp)
+   119b4:	e822                	sd	s0,16(sp)
+   119b6:	1000                	addi	s0,sp,32
+   119b8:	87aa                	mv	a5,a0
+   119ba:	fef42623          	sw	a5,-20(s0)
+   119be:	fec42583          	lw	a1,-20(s0)
+   119c2:	4781                	li	a5,0
+   119c4:	4701                	li	a4,0
+   119c6:	4681                	li	a3,0
+   119c8:	4601                	li	a2,0
+   119ca:	02d00513          	li	a0,45
+   119ce:	00e000ef          	jal	ra,119dc <invoke_syscall>
+   119d2:	0001                	nop
+   119d4:	60e2                	ld	ra,24(sp)
+   119d6:	6442                	ld	s0,16(sp)
+   119d8:	6105                	addi	sp,sp,32
+   119da:	8082                	ret
+
+00000000000119dc <invoke_syscall>:
+   119dc:	88aa                	mv	a7,a0
+   119de:	852e                	mv	a0,a1
+   119e0:	85b2                	mv	a1,a2
+   119e2:	8636                	mv	a2,a3
+   119e4:	86ba                	mv	a3,a4
+   119e6:	873e                	mv	a4,a5
+   119e8:	00000073          	ecall
+
+00000000000119ec <syscall_return>:
+   119ec:	8082                	ret
+   119ee:	0001                	nop
+
+00000000000119f0 <sys_fork>:
+   119f0:	48a1                	li	a7,8
+   119f2:	4685                	li	a3,1
+   119f4:	00000073          	ecall
+   119f8:	8082                	ret
 	...
 
-00000000000119d4 <invoke_syscall>:
-   119d4:	88aa                	mv	a7,a0
-   119d6:	852e                	mv	a0,a1
-   119d8:	85b2                	mv	a1,a2
-   119da:	8636                	mv	a2,a3
-   119dc:	86ba                	mv	a3,a4
-   119de:	873e                	mv	a4,a5
-   119e0:	00000073          	ecall
+00000000000119fc <sys_exit_crt0>:
+   119fc:	4885                	li	a7,1
+   119fe:	00000073          	ecall
+   11a02:	8082                	ret
 
-00000000000119e4 <syscall_return>:
-   119e4:	8082                	ret
-   119e6:	0001                	nop
+0000000000011a04 <_start>:
+   11a04:	00001197          	auipc	gp,0x1
+   11a08:	94418193          	addi	gp,gp,-1724 # 12348 <__global_pointer$>
+   11a0c:	82e18693          	addi	a3,gp,-2002 # 11b76 <__SDATA_BEGIN__>
+   11a10:	83818713          	addi	a4,gp,-1992 # 11b80 <__BSS_END__>
+   11a14:	00e6d763          	bge	a3,a4,11a22 <clear_bss_done>
 
-00000000000119e8 <sys_fork>:
-   119e8:	48a1                	li	a7,8
-   119ea:	4685                	li	a3,1
-   119ec:	00000073          	ecall
-   119f0:	8082                	ret
-	...
+0000000000011a18 <clear_bss>:
+   11a18:	0006b023          	sd	zero,0(a3)
+   11a1c:	06a1                	addi	a3,a3,8
+   11a1e:	fee6cde3          	blt	a3,a4,11a18 <clear_bss>
 
-00000000000119f4 <sys_exit_crt0>:
-   119f4:	4885                	li	a7,1
-   119f6:	00000073          	ecall
-   119fa:	8082                	ret
-
-00000000000119fc <_start>:
-   119fc:	00001197          	auipc	gp,0x1
-   11a00:	94418193          	addi	gp,gp,-1724 # 12340 <__global_pointer$>
-   11a04:	82e18693          	addi	a3,gp,-2002 # 11b6e <__SDATA_BEGIN__>
-   11a08:	83818713          	addi	a4,gp,-1992 # 11b78 <__BSS_END__>
-   11a0c:	00e6d763          	bge	a3,a4,11a1a <clear_bss_done>
-
-0000000000011a10 <clear_bss>:
-   11a10:	0006b023          	sd	zero,0(a3)
-   11a14:	06a1                	addi	a3,a3,8
-   11a16:	fee6cde3          	blt	a3,a4,11a10 <clear_bss>
-
-0000000000011a1a <clear_bss_done>:
-   11a1a:	85ffe0ef          	jal	ra,10278 <main>
-   11a1e:	fd7ff0ef          	jal	ra,119f4 <sys_exit_crt0>
+0000000000011a22 <clear_bss_done>:
+   11a22:	857fe0ef          	jal	ra,10278 <main>
+   11a26:	fd7ff0ef          	jal	ra,119fc <sys_exit_crt0>
 	...
