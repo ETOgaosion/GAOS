@@ -146,3 +146,221 @@ void k_unblock(list_head *queue)
     list_add_tail(&fetch_pcb->list,&ready_queue);
 }
 ```
+
+## The whole project
+
+### Bootblock
+
+work on physical address. 
+
+master core:
+
+1. read input to decide which kernel to boot.
+2. calculate kernel size and offset.
+3. SBI read kernel from SD to memory.
+4. jump to kernel start
+
+slave core do not do 1~3, just IDLE and wait for IPI, then execute 4.
+
+### kernel entry
+
+head.S: clear bss, setup C environment and jump to boot kernel
+
+boot.c: setup virtual memory, load kenel elf and jump to main
+
+SV-39: user low address, 3-level page table, kernel high address, 2-level page table
+
+### kernel init
+
+master init:
+
+- kernel lock
+- exception
+- syscall
+- network card
+- file system
+- pcb & current_running_task
+- screen
+
+slave init:
+
+- cancel kenel direct map
+- pcb & current_running_task
+
+### kernel schedule
+
+Check ready_queue queue: if empty, just return; or goto bubble task from boot process
+
+priority schedule: consider block time and priority to choose which task in ready_queue to be scheduled
+
+simple schedule: always pop the front task from ready_queue
+
+block queue: lock
+timer list: sleep syscall
+
+syscall: spawn, exit, kill, waitpid, process show, taskset, get pid
+
+enter or exit kernel: save and load all registers (gp/csr)
+switch between tasks: only load store saved registers. (kernek function call)
+
+### exception
+
+After exception, hardware enter kernel, goto interrupt handler. Use handle table to find handler function directly, indexed by exception code reported by hardware.
+
+Then goto handle clock interrupt, SIP, pagefault or syscall. After handle, return to user mode, goto recovery point.
+
+### lock
+
+spin lock: atomic_swap, check old value returned. If busy, spin.
+mutex_lock: atomic_cmpxchg to get operation to lock, use flag to judge lock status. If busy, block and schedule
+
+### communication
+
+#### semaphore
+
+data structure:
+
+```C
+typedef struct Semaphore{
+    basic_info_t sem_info;
+    int sem;
+    list_head wait_queue;
+} Semaphore_t;
+```
+
+p operation:
+
+```C
+    sem_list[key]->sem--;
+    if(sem_list[key]->sem < 0){
+        k_block(&(*current_running)->list,&sem_list[key]->wait_queue);
+        k_schedule();
+    }
+```
+
+v operation:
+
+```C
+    sem_list[key]->sem++;
+    if(sem_list[key]->sem <= 0 && !list_is_empty(&sem_list[key]->wait_queue)){
+        k_unblock(sem_list[key]->wait_queue.next,2);
+    }
+```
+
+#### condition
+
+data structure:
+
+```C
+typedef struct cond{
+    basic_info_t cond_info;
+    int num_wait;       // initialized to 0
+    list_head wait_queue;
+} cond_t;
+```
+
+wait operation:
+
+```C
+    cond_list[key]->num_wait++;
+    k_block(&(*current_running)->list,&cond_list[key]->wait_queue);
+    k_mutex_lock_release(lock_id,operator);
+    k_schedule();
+    k_mutex_lock_acquire(lock_id,operator);
+```
+
+signal operation:
+
+```C
+    if(cond_list[key]->num_wait > 0){
+        k_unblock(cond_list[key]->wait_queue.next,2);
+        cond_list[key]->num_wait--;
+    }
+```
+
+broadcast operation:
+
+```C
+    while(cond_list[key]->num_wait > 0){
+        k_unblock(cond_list[key]->wait_queue.next,2);
+        cond_list[key]->num_wait--;
+    }
+```
+
+#### barrier
+
+data structure:
+
+```C
+typedef struct barrier{
+    basic_info_t barrier_info;
+    int count;
+    int total;
+    int mutex_id;
+    int cond_id;
+} barrier_t;
+```
+
+wait operation:
+
+```C
+    k_mutex_lock_acquire(barrier_list[key]->mutex_id - 1,operator);
+    if((++barrier_list[key]->count) == barrier_list[key]->total){
+        barrier_list[key]->count = 0;
+        k_cond_broadcast(barrier_list[key]->cond_id - 1,operator);
+    }
+    else{
+        k_cond_wait(barrier_list[key]->cond_id - 1, barrier_list[key]->mutex_id - 1,operator);
+    }
+    k_mutex_lock_release(barrier_list[key]->mutex_id - 1,operator);
+```
+
+#### mailbox
+
+```C
+typedef struct mbox{
+    basic_info_t mailbox_info;
+    char name[MBOX_NAME_LEN];
+    char buff[MBOX_MSG_MAX_LEN];
+    int read_head, write_tail;
+    int used_units;
+    int mutex_id;
+    int full_cond_id;
+    int empty_cond_id;
+    int cited_num;
+    int cited_pid[MBOX_MAX_USER];
+} mbox_t;
+```
+
+send operation:
+
+- if there is enough space to send (space are used in cycle)
+    - put message in
+    - maintain the write tail pointer and fields related
+    - wake up read process
+- else cond wait
+
+recv operation:
+
+- if buffer is empty then cond wait
+- else read message, maintain read_head pointer and fields related
+- wake up blocked 
+
+### file system
+
+```C
+#define SUBLK_SIZE          1
+#define BLK_MAP_SIZE        8
+#define INO_MAP_SIZE        1
+#define INO_SIZE            512
+#define DATA_BLK_SD_SIZE    FS_SIZE_BLK - DATA_SD_START - FS_START_BLK
+#define DATA_BLK_SIZE       DATA_BLK_SD_SIZE >> 3
+```
+
+#### soft and hard link
+
+hard link point to inode, while soft link point to file name.
+
+if rename original file, soft link will loss target while hard link won't.
+
+if delete original file, soft link will point to non-existing file, while hard link will become original file's new name.

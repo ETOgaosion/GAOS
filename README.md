@@ -1,10 +1,6 @@
-# UCAS_OS lab4
-
-author: Gao Ziyuan   &nbsp;&nbsp;   Stu. Num:2019K8009929026
+# UCAS_OS lab - GAOS
 
 ---
-
-TASK 1\~5 has been finisched
 
 ## How to run
 
@@ -25,26 +21,8 @@ You shall modify into `test/` file folder, head files, and `include/tasks.h`
 - the head in original `init/main.c` (running 2 tasks) is like:
 
 ```h
-#ifndef TASKS_H
-#define TASKS_H
-
-// #define TEST_SCHEDULE_1
-// #define TASK_1
-// #define TEST_LOCK
-// #define TASK_2
-// #define TEST_TIMER
-// #define TEST_SCHEDULE_2
-// #define TASK_3
-// #define TEST_LOCK_2
-// #define TEST_SCHEDULE_2
-// #define TASK_4
-#define TASK_5
-
-
 #define USE_CLOCK_INT
 // #define INIT_WITH_PRIORITY
-
-#endif
 
 ```
 
@@ -78,14 +56,21 @@ and back to terminal, run:
 > 0
 ```
 
-### Task 5 run guide
-
-In task 5, you can add at most 15 children processes(set max number for security reason), after enter the program, you can press `0~9` to set priority of processes, you can view the kid process number, priority, and increasing number of each process in lines below.
-
-If you want to see the calculation results of each process and know the principle behind, please enter the `include/task.h`, uncomment the `// #define PRINT_PRIORITY`
-
 ## Report
 
-lab report is in report.md or report.pdf
+lab report is in `report.md` or `report.pdf`
 
-实验报告位于`report/report.md`和`report/report.pdf`
+## Completion
+
+final score: 91
+
+|Project|Core|Function|
+|:-:|:-:|:-|
+|1 - bootloader|C|load large kernel from SD<br>multiple OS kernel start|
+|2 - simple kernel|C|time interrupt/preempt process schedule<br>syscall and exception handler<br>fork process<br>mutex lock<br>priority scheduling|
+|3 - complex kernel|C|implement a simple shell<br>barrier, semaphore and mailbox<br>dual-core start<br>taskset (process bind cpu)|
+|4 - virtual memory|A|virtual memory isolation<br>page fault error handling<br>swap page between memory and SD<br>thread|
+|5 - device driver|C-|web card interrupt send and recv packages<br>listen on multi-port|
+|6 - file system|A-|command:<br>touch, cat, open read, write, close, ln<br>ls, rm, lseek|
+
+core evaluation: S-simple, A, C-Complex
