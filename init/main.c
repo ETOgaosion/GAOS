@@ -47,7 +47,7 @@ void init_pcb_stack(
         pt_regs->regs[i]=0;
     }
     pt_regs->regs[1] = entry_point;
-    if(pcb->type == USER_PROCESS || KERNEL_PROCESS){
+    if(pcb->type == USER_PROCESS || pcb->type == KERNEL_PROCESS){
         pt_regs->regs[3] = (reg_t)__global_pointer$;
     }
     else{
